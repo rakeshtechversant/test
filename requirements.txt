@@ -28,6 +28,7 @@ phonenumberslite==8.10.21
 PyJWT==1.7.1
 pytz==2019.3
 PyYAML==5.1.2
+psycopg2==2.7.5
 qrcode==6.1
 requests==2.22.0
 six==1.12.0
