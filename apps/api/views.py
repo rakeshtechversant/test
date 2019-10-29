@@ -1,5 +1,5 @@
 from django.shortcuts import render
-
+from django.contrib.auth import password_validation, authenticate
 # Create your views here.
 from rest_framework import mixins
 from rest_framework.views import APIView
@@ -16,9 +16,9 @@ from rest_framework import viewsets
 
 from apps.api.permissions import IsOwnerOrReadOnly
 from apps.api.utils import MultipartJsonParser
-from apps.api.serializers import FamilyListSerializer,UserRegistrationMobileSerializer,PrayerGroupAddMembersSerializer,PrayerGroupAddSerializer,UserListSerializer,UserRetrieveSerializer,UserCreateSerializer,ChurchAddUpdateSerializer,FileUploadSerializer,OTPVeifySerializer,SecondaryaddSerializer
+from apps.api.serializers import LoginSerializer,FamilyListSerializer,UserRegistrationMobileSerializer,PrayerGroupAddMembersSerializer,PrayerGroupAddSerializer,UserListSerializer,UserRetrieveSerializer,UserCreateSerializer,ChurchAddUpdateSerializer,FileUploadSerializer,OTPVeifySerializer,SecondaryaddSerializer
 from apps.church.models import Family,UserProfile,ChurchDetails,FileUpload,OtpModels,PrayerGroup, Notification
-from rest_framework.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST , HTTP_401_UNAUTHORIZED
+from rest_framework.status import HTTP_200_OK,HTTP_201_CREATED, HTTP_400_BAD_REQUEST , HTTP_401_UNAUTHORIZED
 from django.utils.crypto import get_random_string
 from twilio.rest import Client
 from church_project import settings
@@ -121,6 +121,66 @@ class UserRegistrationMobileView(CreateAPIView):
         # raise serializers.ValidationError("Invalid usertype,Please select again")
             return Response({'message': 'Something Went Wrong','success':False},status=HTTP_400_BAD_REQUEST)
 
+
+class UserLoginView(APIView):
+    queryset = User.objects.all()
+    serializer_class = LoginSerializer
+
+
+    def post(self, request, format=None):
+        serializer = LoginSerializer(data=request.data)
+        username =  self.request.POST.get('username')
+        password = self.request.POST.get('password')
+        if username and password:
+            user = authenticate(username=username, password=password)
+            try:
+                token, created = Token.objects.get_or_create(user=user)
+                if user:
+
+                    if user.is_superuser==True:
+                        data = {
+                                'username': user.username,
+                                'token': token.key,
+                                'user_type': "SUPERUSER"
+                                }
+                        return Response({'success': True,'message':'Login Successfully'}, status=HTTP_200_OK)
+                    else:
+                        userprofile = UserProfile.objects.filter(user=user)
+                        for userprofiles in userprofile:
+                            if userprofiles.is_primary ==True:
+                                data = {
+                                'username': user.username,
+                                'token': token.key,
+                                'user_type': "PRIMARY"
+                                }
+                                return Response({'success': True,'message':'Login Successfully'}, status=HTTP_200_OK)
+                            elif userprofiles.is_church_user ==True:
+                                data = {
+                                'username': user.username,
+                                'token': token.key,
+                                'user_type': "CHURCH"
+                                }
+                                return Response({'success': True,'message':'Login Successfully'}, status=HTTP_200_OK)
+                            elif userprofiles.is_church_user ==False and userprofiles.is_primary==False:
+                                data = {
+                                'username': user.username,
+                                'token': token.key,
+                                'user_type': "SECONDARY"
+                                }
+                                return Response({'success': True,'message':'Login Successfully'}, status=HTTP_200_OK)
+                            else:
+                                data = {
+                                'username': user.username,
+                                'token': token.key,
+                                'user_type': "NO DATA"
+                                }
+                                return Response({'message': 'Something went wrong','success':False},status=HTTP_400_BAD_REQUEST)
+                else:
+                    return Response({'message': 'Invalid credentials','success':False},status=HTTP_400_BAD_REQUEST)
+            except:
+                return Response({'message': 'Invalid credentials','success':False},status=HTTP_400_BAD_REQUEST)
+        else:
+            return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 
 class UserListView(ListAPIView):
     queryset = UserProfile.objects.all()

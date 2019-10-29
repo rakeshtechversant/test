@@ -1,12 +1,12 @@
 from django.urls import include, path
 from django.conf.urls import url
 
-from apps.api.views import UserRegistrationMobileView,UserListView,UserDetailView,UserDeleteView,UserUpdateView,UserCreateView,PostsViewset,OtpVerifyViewSet,SecondaryaddView
+from apps.api.views import UserLoginView,UserRegistrationMobileView,UserListView,UserDetailView,UserDeleteView,UserUpdateView,UserCreateView,PostsViewset,OtpVerifyViewSet,SecondaryaddView
 from rest_framework import routers
 router = routers.DefaultRouter()
 router.register(r'excel-import', PostsViewset, basename='excel_import')
 urlpatterns = [
-    path('rest-auth/', include('rest_auth.urls')),
+    path('login-user/', UserLoginView.as_view(),name='login'),
     path('create/',UserCreateView.as_view(),name='create_user'),
     path('mobile/',UserRegistrationMobileView.as_view(),name='create_user_mobile'),
     path('lists/',UserListView.as_view(),name='user_list'),

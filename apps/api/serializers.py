@@ -164,3 +164,13 @@ class PrayerGroupAddMembersSerializer(serializers.ModelSerializer):
         #    raise serializers.ValidationError("You don't have permission to add family members")
         # seconday_user =  data.get('sec_user')
         return instance
+
+
+class LoginSerializer(serializers.ModelSerializer):
+    """Serializer to login an user thorugh API
+    """
+    class Meta:
+        model = User
+        fields = ['username','password']
+
+
