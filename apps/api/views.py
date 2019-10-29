@@ -102,22 +102,24 @@ class UserRegistrationMobileView(CreateAPIView):
                         if UserProfile.objects.filter(mobile_number = mobile_number).exists():
                     # raise serializers.ValidationError("This number is already taken")
                             return Response({'message': 'This number is already taken','success':False},status=HTTP_400_BAD_REQUEST)
-                        if mobile_number:
-                            otp_number = get_random_string(length=6, allowed_chars='1234567890')
-                            try:
-                                OtpModels.objects.filter(mobile_number=mobile_number).delete()
-                            except:
-                                pass
-                            OtpModels.objects.create(mobile_number=mobile_number, otp=otp_number)
-                            client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
-                            message = client.messages.create(to='+91' + mobile_number, from_='+15036837180',body=otp_number)
-                            return Response({'success': True,'message':'OTP Sent Successfully'}, status=HTTP_201_CREATED)
+                    if mobile_number:
+                        otp_number = get_random_string(length=6, allowed_chars='1234567890')
+                        try:
+                            OtpModels.objects.filter(mobile_number=mobile_number).delete()
+                        except:
+                            pass
+                        OtpModels.objects.create(mobile_number=mobile_number, otp=otp_number)
+                        # client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
+                        # message = client.messages.create(to='+91' + mobile_number, from_='+15036837180',body=otp_number)
+                        return Response({'success': True,'message':'OTP Sent Successfully'}, status=HTTP_201_CREATED)
+                    else:
+                        if user_count == 0:
+                        # raise serializers.ValidationError("We couldn't find your profile in database,Please contact service providers")
+                            return Response({'message': 'We couldnt find your profile in database,Please contact service providers','success':False},status=HTTP_400_BAD_REQUEST)
+                        else:
+                            return Response({'message': 'Invalid usertype,Please select again','success':False},status=HTTP_400_BAD_REQUEST)
             else:
-                if user_count == 0:
-                # raise serializers.ValidationError("We couldn't find your profile in database,Please contact service providers")
-                    return Response({'message': 'We couldnt find your profile in database,Please contact service providers','success':False},status=HTTP_400_BAD_REQUEST)
-                else:
-                    return Response({'message': 'Invalid usertype,Please select again','success':False},status=HTTP_400_BAD_REQUEST)
+                return Response({'message': 'Invalid usertype,Please select again','success':False},status=HTTP_400_BAD_REQUEST)
         except:
         # raise serializers.ValidationError("Invalid usertype,Please select again")
             return Response({'message': 'Something Went Wrong','success':False},status=HTTP_400_BAD_REQUEST)
