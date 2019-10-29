@@ -102,6 +102,7 @@ WSGI_APPLICATION = 'church_project.wsgi.application'
 DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'NAME': 'postgresql_db',
         },
     }
 
