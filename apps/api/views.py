@@ -17,16 +17,70 @@ from rest_framework import viewsets
 from apps.api.permissions import IsOwnerOrReadOnly
 from apps.api.utils import MultipartJsonParser
 from apps.api.serializers import FamilyListSerializer,UserRegistrationMobileSerializer,PrayerGroupAddMembersSerializer,PrayerGroupAddSerializer,UserListSerializer,UserRetrieveSerializer,UserCreateSerializer,ChurchAddUpdateSerializer,FileUploadSerializer,OTPVeifySerializer,SecondaryaddSerializer
-from apps.church.models import Family,UserProfile,ChurchDetails,FileUpload,OtpModels,PrayerGroup
+from apps.church.models import Family,UserProfile,ChurchDetails,FileUpload,OtpModels,PrayerGroup, Notification
 from rest_framework.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST , HTTP_401_UNAUTHORIZED
 from django.utils.crypto import get_random_string
 from twilio.rest import Client
 from church_project import settings
-
+from datetime import datetime, timezone
 
 class UserCreateView(CreateAPIView):
     queryset = UserProfile.objects.all()
     serializer_class = UserCreateSerializer
+
+    def create(self, request):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        mobile_number = self.request.GET.get('mobile_number')
+        user_type = self.request.GET.get('user_type')
+
+        user_name = serializer.validated_data.get("user_name", None)
+        password = serializer.validated_data.get("password", None)
+        confirm_password = serializer.validated_data.get("confirm_password", None)
+
+        if User.objects.filter(username=user_name).exists():
+            return Response({'message': 'Username already exists','success':False},status=HTTP_400_BAD_REQUEST)
+        if mobile_number and user_type:
+            if user_type == 'PRIMARY':
+                if(password ==  confirm_password):
+                    user = User.objects.create(
+                        username=user_name,
+                    )
+                    user.set_password(password)
+                    user.save()
+                    userprofile=UserProfile.objects.create(user=user,mobile_number = mobile_number,is_primary=True)
+                    Notification.objects.create(user=userprofile,is_new_register=True,created_time=datetime.strptime('2018-02-16 11:00 AM', "%Y-%m-%d %I:%M %p"))
+                    return Response({'success': True,'message':'User Profile Created Successfully'}, status=HTTP_201_CREATED)
+                else:
+                    return Response({'message': 'Password Missmatch','success':False},status=HTTP_400_BAD_REQUEST)
+            elif user_type =='SECONDARY':
+                if(password ==  confirm_password):
+                    user = User.objects.create(
+                        username=user_name,
+                    )
+                    user.set_password(password)
+                    user.save()
+                    userprofile=UserProfile.objects.create(user=user,mobile_number = mobile_number)
+                    Notification.objects.create(user=userprofile,is_new_register=True,created_time=datetime.strptime('2018-02-16 11:00 AM', "%Y-%m-%d %I:%M %p"))
+                    return Response({'success': True,'message':'User Profile Created Successfully'}, status=HTTP_201_CREATED)
+                else:
+                    return Response({'message': 'Password Missmatch','success':False},status=HTTP_400_BAD_REQUEST)
+            elif user_type =='CHURCH':
+                if(password ==  confirm_password):
+                    user = User.objects.create(
+                        username=user_name,
+                    )
+                    user.set_password(password)
+                    user.save()
+                    userprofile=UserProfile.objects.create(user=user,mobile_number = mobile_number,is_church_user=True)
+                    Notification.objects.create(user=userprofile,is_new_register=True,created_time=datetime.strptime('2018-02-16 11:00 AM', "%Y-%m-%d %I:%M %p"))
+                    return Response({'success': True,'message':'User Profile Created Successfully'}, status=HTTP_201_CREATED)
+                else:
+                    return Response({'message': 'Password Missmatch','success':False},status=HTTP_400_BAD_REQUEST)
+            else:
+                return Response({'message': 'Something Went Wrong','success':False},status=HTTP_400_BAD_REQUEST)
+        else:   
+            return Response({'message': 'Something Went Wrong','success':False},status=HTTP_400_BAD_REQUEST)
 
 class UserRegistrationMobileView(CreateAPIView):
     queryset = UserProfile.objects.all()
@@ -85,8 +139,6 @@ class UserUpdateView(RetrieveUpdateAPIView):
     permission_classes = [IsAuthenticated]
 
 
-
-
 class UserDeleteView(DestroyAPIView):
     queryset = UserProfile.objects.all()
     serializer_class = UserListSerializer
@@ -120,6 +172,24 @@ class PostsViewset(viewsets.ModelViewSet):
 class OtpVerifyViewSet(CreateAPIView):
     queryset = OtpModels.objects.all()
     serializer_class = OTPVeifySerializer
+    def create(self, request):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        otp = serializer.validated_data.get("otp", None)
+        try:
+            otp_obj = OtpModels.objects.get(otp=otp)
+            if (datetime.now(timezone.utc) - otp_obj.created_time).total_seconds() >= 1800:
+                otp_obj.is_expired = True
+                otp_obj.save()
+                return Response({'success': False,'message': 'Otp Expired'}, status=HTTP_400_BAD_REQUEST)
+            if otp_obj.is_expired:
+                return Response({'success': False,'message': 'Otp Already Used'}, status=HTTP_400_BAD_REQUEST)
+        except:
+            return Response({'success': False,'message': 'Invalid Otp'}, status=HTTP_400_BAD_REQUEST)
+        else:
+            otp_obj.is_expired = True
+            otp_obj.save()
+            return Response({'success': True,'message':'OTP Verified Successfully'}, status=HTTP_201_CREATED)
 
 
 class SecondaryaddView(RetrieveUpdateAPIView):

@@ -59,67 +59,33 @@ class UserRegistrationMobileSerializer(serializers.ModelSerializer):
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
-    token = CharField(allow_blank=True, read_only=True)
-    refresh_token = CharField(allow_blank=True, read_only=True)
-    user_name = serializers.CharField(source='user.username')
-    password = serializers.CharField(source='user.password')
-    mobile_number = serializers.CharField()
+    # token = CharField(allow_blank=True, read_only=True)
+    # refresh_token = CharField(allow_blank=True, read_only=True)
+    user_name = serializers.CharField()
+    password = serializers.CharField()
+    confirm_password = serializers.CharField()
     class Meta:
         model = UserProfile
-        fields = ['token','refresh_token','user_name','password','mobile_number']
+        fields = ['user_name','password','confirm_password']
 
 
-    # def create(self, validated_data):
-    #     mobile_number = self['mobile_number'].value
-    #     user_type = self['user_type'].value
-    #
-    #     if mobile_number and user_type:
-    #         if user_type == 'PRIMARY':
-    #             user = User.objects.create(
-    #                 username=self['user_name'].value,
-    #             )
-    #             user.set_password(self['password'].value)
-    #             user.save()
-    #             userprofile=UserProfile.objects.create(user=user,mobile_number = self['mobile_number'].value,is_primary=True)
-    #             Notification.objects.create(user=userprofile,is_new_register=True,created_time=datetime.strptime('2018-02-16 11:00 AM', "%Y-%m-%d %I:%M %p"))
-    #         elif user_type =='SECONDARY':
-    #             user = User.objects.create(
-    #                 username=self['user_name'].value,
-    #             )
-    #             user.set_password(self['password'].value)
-    #             user.save()
-    #             userprofile=UserProfile.objects.create(user=user,mobile_number = self['mobile_number'].value)
-    #             Notification.objects.create(user=userprofile,is_new_register=True,created_time=datetime.strptime('2018-02-16 11:00 AM', "%Y-%m-%d %I:%M %p"))
-    #         else:
-    #             user = User.objects.create(
-    #                 username=self['user_name'].value,
-    #             )
-    #             user.set_password(self['password'].value)
-    #             user.save()
-    #             userprofile=UserProfile.objects.create(user=user,mobile_number = self['mobile_number'].value,is_church_user=True)
-    #             Notification.objects.create(user=userprofile,is_new_register=True,created_time=datetime.strptime('2018-02-16 11:00 AM', "%Y-%m-%d %I:%M %p"))
-    #
-    #     return user
+    # def validate(self, data):
+    #     user_count=0
+    #     mobile_number = data.get("mobile_number", None)
+    #     username=data.get("user")['username']
+    #     password=data.get("user")['password']
+    #     if not password or not username:
+    #         raise serializers.ValidationError("This field is required")
+    #     if User.objects.filter(username=username).exists():
+    #         raise serializers.ValidationError("Username already exists")
 
 
-
-    def validate(self, data):
-        user_count=0
-        mobile_number = data.get("mobile_number", None)
-        username=data.get("user")['username']
-        password=data.get("user")['password']
-        if not password or not username:
-            raise serializers.ValidationError("This field is required")
-        if User.objects.filter(username=username).exists():
-            raise serializers.ValidationError("Username already exists")
-
-
-            # message = "OTP for login is %s" % (otp_number,)
-            # requests.get(
-            #         "http://unifiedbuzz.com/api/insms/format/json/?mobile=" + mobile_number + "&text=" + message +
-            #         "&flash=0&type=1&sender=MARCHR",
-            #         headers={"X-API-Key": "918e0674e62e01ec16ddba9a0cea447b"})
-        return data
+    #         # message = "OTP for login is %s" % (otp_number,)
+    #         # requests.get(
+    #         #         "http://unifiedbuzz.com/api/insms/format/json/?mobile=" + mobile_number + "&text=" + message +
+    #         #         "&flash=0&type=1&sender=MARCHR",
+    #         #         headers={"X-API-Key": "918e0674e62e01ec16ddba9a0cea447b"})
+    #     return data
 
 class FamilyListSerializer(serializers.ModelSerializer):
     class Meta:
@@ -156,24 +122,6 @@ class OTPVeifySerializer(serializers.ModelSerializer):
     class Meta:
         model = OtpVerify
         fields = ['otp']
-
-    def validate(self, data):
-        otp = data.get('otp')
-        otp_obj = OtpModels.objects.get(otp=otp)
-        mobile_number = otp_obj.mobile_number
-        try:
-            user_profile = UserProfile.objects.get(mobile_number=mobile_number)
-            if user_profile.is_otp_verified == False:
-                user_profile.is_otp_verified = True
-                user_profile.save()
-            user = user_profile.user
-        except UserProfile.DoesNotExist:
-            pass
-        otp_obj.is_expired = True
-        otp_obj.save()
-        content = {'Successfully registered': 'Go to login section'}
-        # return Response( status=status.HTTP_200_OK)
-        return data
 
 
 class SecondaryaddSerializer(serializers.ModelSerializer):
