@@ -191,10 +191,33 @@ class OtpVerifyViewSet(CreateAPIView):
             return Response({'success': True,'message':'OTP Verified Successfully'}, status=HTTP_201_CREATED)
 
 
-class SecondaryaddView(RetrieveUpdateAPIView):
+class SecondaryaddView(CreateAPIView):
     queryset = UserProfile.objects.all()
     serializer_class = SecondaryaddSerializer
     permission_classes=[IsAuthenticated]
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user_id = self.kwargs['pk']
+        secondary_users = serializer.validated_data.get('secondary_user',None)
+        try:
+            if secondary_users:
+                user_instance = UserProfile.objects.get(id=user_id) 
+                if user_instance.is_primary == True:
+                    for secondary_user in secondary_users:
+                        sec_user = FileUpload.objects.get(id=secondary_user.id)
+                        user_instance.secondary_user.add(sec_user)
+                    Notification.objects.create(user=user_instance,is_user_add_new_member=True,created_time=datetime.strptime('2018-02-16 11:00 AM', "%Y-%m-%d %I:%M %p"))
+                    return Response({'success': True,'message':'Secondary User Added Successfully'}, status=HTTP_201_CREATED)
+                else:
+                   # raise serializers.ValidationError("You don't have permission to add family members")
+                   return Response({'success': False,'message': 'You dont have permission to add family members'}, status=HTTP_400_BAD_REQUEST)
+            else:
+                return Response({'success': False,'message': 'Something Went Wrong'}, status=HTTP_400_BAD_REQUEST)
+        except:
+            return Response({'success': False,'message': 'Something Went Wrong'}, status=HTTP_400_BAD_REQUEST)
+
 
 class PrayerGroupaddView(CreateAPIView):
     queryset = PrayerGroup.objects.all()
