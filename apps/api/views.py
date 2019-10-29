@@ -33,7 +33,6 @@ class UserRegistrationMobileView(CreateAPIView):
     serializer_class = UserRegistrationMobileSerializer
 
     def create(self, request):
-        import pdb;pdb.set_trace()
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user_count=0
