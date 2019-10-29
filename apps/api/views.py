@@ -214,7 +214,7 @@ class UserDetailView(RetrieveAPIView):
 class ChurchDetailView(RetrieveAPIView):
     queryset = ChurchDetails.objects.all()
     serializer_class = ChurchAddUpdateSerializer
-    permission_classes = [IsAdminUser]
+    # permission_classes = [IsAdminUser]
 
 class ChurchEditView(RetrieveUpdateAPIView):
     queryset = ChurchDetails.objects.all()
