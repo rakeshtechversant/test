@@ -143,7 +143,7 @@ class UserLoginView(APIView):
                                 'token': token.key,
                                 'user_type': "SUPERUSER"
                                 }
-                        return Response({'success': True,'message':'Login Successfully'}, status=HTTP_200_OK)
+                        return Response({'success': True,'message':'Login Successfully','user-details':data}, status=HTTP_200_OK)
                     else:
                         userprofile = UserProfile.objects.filter(user=user)
                         for userprofiles in userprofile:
@@ -153,21 +153,21 @@ class UserLoginView(APIView):
                                 'token': token.key,
                                 'user_type': "PRIMARY"
                                 }
-                                return Response({'success': True,'message':'Login Successfully'}, status=HTTP_200_OK)
+                                return Response({'success': True,'message':'Login Successfully','user-details':data}, status=HTTP_200_OK)
                             elif userprofiles.is_church_user ==True:
                                 data = {
                                 'username': user.username,
                                 'token': token.key,
                                 'user_type': "CHURCH"
                                 }
-                                return Response({'success': True,'message':'Login Successfully'}, status=HTTP_200_OK)
+                                return Response({'success': True,'message':'Login Successfully','user-details':data}, status=HTTP_200_OK)
                             elif userprofiles.is_church_user ==False and userprofiles.is_primary==False:
                                 data = {
                                 'username': user.username,
                                 'token': token.key,
                                 'user_type': "SECONDARY"
                                 }
-                                return Response({'success': True,'message':'Login Successfully'}, status=HTTP_200_OK)
+                                return Response({'success': True,'message':'Login Successfully','user-details':data}, status=HTTP_200_OK)
                             else:
                                 data = {
                                 'username': user.username,
@@ -300,7 +300,7 @@ class PrayerGroupMemberaddView(CreateAPIView):
                 for prayer_profile in prayer_profiles:
                     member_user = FileUpload.objects.get(id=prayer_profile.id)
                     prayer_instance.user_profile.add(member_user)
-                return Response({'success': True,'message':'Secondary User Added Successfully'}, status=HTTP_201_CREATED)
+                return Response({'success': True,'message':'Group member Added Successfully'}, status=HTTP_201_CREATED)
             else:
                 return Response({'success': False,'message': 'Something Went Wrong'}, status=HTTP_400_BAD_REQUEST)
         except:
