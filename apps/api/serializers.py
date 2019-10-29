@@ -155,12 +155,12 @@ class PrayerGroupAddMembersSerializer(serializers.ModelSerializer):
         fields = ['user_profile']
         read_only_fields = ('name',)
 
-    def update(self, instance, validated_data):
-        # if instance.is_staff == True:
-        for user_profiles in validated_data['user_profile']:
-            member_user = FileUpload.objects.get(id=user_profiles.id)
-            instance.user_profile.add(member_user)
-        # else:
-        #    raise serializers.ValidationError("You don't have permission to add family members")
-        # seconday_user =  data.get('sec_user')
-        return instance
+    # def update(self, instance, validated_data):
+    #     # if instance.is_staff == True:
+    #     for user_profiles in validated_data['user_profile']:
+    #         member_user = FileUpload.objects.get(id=user_profiles.id)
+    #         instance.user_profile.add(member_user)
+    #     # else:
+    #     #    raise serializers.ValidationError("You don't have permission to add family members")
+    #     # seconday_user =  data.get('sec_user')
+    #     return instance

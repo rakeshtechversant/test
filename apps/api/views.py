@@ -224,10 +224,28 @@ class PrayerGroupaddView(CreateAPIView):
     serializer_class = PrayerGroupAddSerializer
     permission_classes = [IsAdminUser]
 
-
-class PrayerGroupMemberaddView(RetrieveUpdateAPIView):
+class PrayerGroupMemberaddView(CreateAPIView):
     queryset = PrayerGroup.objects.all()
     serializer_class = PrayerGroupAddMembersSerializer
-    permission_classes = [IsAdminUser]
+    # permission_classes = [IsAdminUser]
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        prayer_id = self.kwargs['pk']
+        prayer_profiles = serializer.validated_data.get('user_profile',None)
+        try:
+            if prayer_profiles:   
+                prayer_instance = PrayerGroup.objects.get(id=prayer_id) 
+                for prayer_profile in prayer_profiles:
+                    member_user = FileUpload.objects.get(id=prayer_profile.id)
+                    prayer_instance.user_profile.add(member_user)
+                return Response({'success': True,'message':'Secondary User Added Successfully'}, status=HTTP_201_CREATED)
+            else:
+                return Response({'success': False,'message': 'Something Went Wrong'}, status=HTTP_400_BAD_REQUEST)
+        except:
+            return Response({'success': False,'message': 'Something Went Wrong'}, status=HTTP_400_BAD_REQUEST)
+
+
 
 
