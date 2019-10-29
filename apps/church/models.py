@@ -21,7 +21,7 @@ class FileUpload(models.Model):
 	user = models.CharField(max_length = 200,null=True,blank=True)
 	first_name = models.CharField(max_length = 200,null=True,blank=True)
 	last_name = models.CharField(max_length = 200,null=True,blank=True)
-	dob=models.DateField(null=True,blank=True)
+	dob= models.DateField(null=True, blank=True, auto_now_add=True)
 	date_of_marriage = models.DateField(null=True,blank=True)
 	address=models.TextField(max_length=500)
 	occupation = models.CharField(max_length=200)
@@ -34,7 +34,7 @@ class FileUpload(models.Model):
 class UserProfile(models.Model):
 	user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='user_profile')
 	family = models.ForeignKey(Family,on_delete=models.CASCADE,null=True,blank = True)
-	dob=models.DateTimeField(null=True,blank=True)
+	dob= models.DateField(null=True, blank=True, auto_now_add=True)
 	address=models.TextField(max_length=500)
 	occupation = models.CharField(max_length=200)
 	about = models.TextField(max_length=5000)
