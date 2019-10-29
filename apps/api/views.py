@@ -33,7 +33,7 @@ class UserRegistrationMobileView(CreateAPIView):
     serializer_class = UserRegistrationMobileSerializer
 
     def create(self, request):
-        # import pdb;pdb.set_trace()
+        import pdb;pdb.set_trace()
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user_count=0
@@ -59,12 +59,12 @@ class UserRegistrationMobileView(CreateAPIView):
                             client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
                             message = client.messages.create(to='+91' + mobile_number, from_='+15036837180',body=otp_number)
                             return Response({'success': True,'message':'OTP Sent Successfully'}, status=HTTP_201_CREATED)
-                    else:
-                        if user_count == 0:
-                        # raise serializers.ValidationError("We couldn't find your profile in database,Please contact service providers")
-                            return Response({'message': 'We couldnt find your profile in database,Please contact service providers','success':False},status=HTTP_400_BAD_REQUEST)
-                        else:
-                            return Response({'message': 'Invalid usertype,Please select again','success':False},status=HTTP_400_BAD_REQUEST)
+            else:
+                if user_count == 0:
+                # raise serializers.ValidationError("We couldn't find your profile in database,Please contact service providers")
+                    return Response({'message': 'We couldnt find your profile in database,Please contact service providers','success':False},status=HTTP_400_BAD_REQUEST)
+                else:
+                    return Response({'message': 'Invalid usertype,Please select again','success':False},status=HTTP_400_BAD_REQUEST)
         except:
         # raise serializers.ValidationError("Invalid usertype,Please select again")
             return Response({'message': 'Something Went Wrong','success':False},status=HTTP_400_BAD_REQUEST)
