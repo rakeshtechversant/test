@@ -132,16 +132,6 @@ class SecondaryaddSerializer(serializers.ModelSerializer):
         fields = ['secondary_user']
         read_only_fields = ('user',)
 
-    def update(self, instance, validated_data):
-        if instance.is_primary == True:
-            for secondary_user in validated_data['secondary_user']:
-                sec_user = FileUpload.objects.get(id=secondary_user.id)
-                instance.secondary_user.add(sec_user)
-            Notification.objects.create(user=instance,is_user_add_new_member=True,created_time=datetime.strptime('2018-02-16 11:00 AM', "%Y-%m-%d %I:%M %p"))
-        else:
-           raise serializers.ValidationError("You don't have permission to add family members")
-        # seconday_user =  data.get('sec_user')
-        return instance
 
 class PrayerGroupAddSerializer(serializers.ModelSerializer):
     class Meta:
@@ -155,15 +145,6 @@ class PrayerGroupAddMembersSerializer(serializers.ModelSerializer):
         fields = ['user_profile']
         read_only_fields = ('name',)
 
-    def update(self, instance, validated_data):
-        # if instance.is_staff == True:
-        for user_profiles in validated_data['user_profile']:
-            member_user = FileUpload.objects.get(id=user_profiles.id)
-            instance.user_profile.add(member_user)
-        # else:
-        #    raise serializers.ValidationError("You don't have permission to add family members")
-        # seconday_user =  data.get('sec_user')
-        return instance
 
 
 class LoginSerializer(serializers.ModelSerializer):
@@ -172,5 +153,4 @@ class LoginSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['username','password']
-
 
