@@ -131,50 +131,47 @@ class UserLoginView(APIView):
         serializer = LoginSerializer(data=request.data)
         username =  self.request.POST.get('username')
         password = self.request.POST.get('password')
+        if not username:
+            return Response({'message': 'This field should not be blank','success':False},status=HTTP_400_BAD_REQUEST)
+        if not password:
+            return Response({'message': 'This field should not be blank','success':False},status=HTTP_400_BAD_REQUEST)
         if username and password:
             user = authenticate(username=username, password=password)
             try:
                 token, created = Token.objects.get_or_create(user=user)
                 if user:
-
-                    if user.is_superuser==True:
-                        data = {
-                                'username': user.username,
-                                'token': token.key,
-                                'user_type': "SUPERUSER"
-                                }
-                        return Response({'success': True,'message':'Login Successfully','user-details':data}, status=HTTP_200_OK)
-                    else:
-                        userprofile = UserProfile.objects.filter(user=user)
-                        for userprofiles in userprofile:
-                            if userprofiles.is_primary ==True:
-                                data = {
-                                'username': user.username,
-                                'token': token.key,
-                                'user_type': "PRIMARY"
-                                }
-                                return Response({'success': True,'message':'Login Successfully','user-details':data}, status=HTTP_200_OK)
-                            elif userprofiles.is_church_user ==True:
-                                data = {
-                                'username': user.username,
-                                'token': token.key,
-                                'user_type': "CHURCH"
-                                }
-                                return Response({'success': True,'message':'Login Successfully','user-details':data}, status=HTTP_200_OK)
-                            elif userprofiles.is_church_user ==False and userprofiles.is_primary==False:
-                                data = {
-                                'username': user.username,
-                                'token': token.key,
-                                'user_type': "SECONDARY"
-                                }
-                                return Response({'success': True,'message':'Login Successfully','user-details':data}, status=HTTP_200_OK)
-                            else:
-                                data = {
-                                'username': user.username,
-                                'token': token.key,
-                                'user_type': "NO DATA"
-                                }
-                                return Response({'message': 'Something went wrong','success':False},status=HTTP_400_BAD_REQUEST)
+                    try:
+                        userprofiles = UserProfile.objects.get(user=user)
+                        if userprofiles.is_primary ==True:
+                            data = {
+                            'username': user.username,
+                            'token': token.key,
+                            'user_type': "PRIMARY"
+                            }
+                            return Response({'success': True,'message':'Login Successfully','user-details':data}, status=HTTP_200_OK)
+                        elif userprofiles.is_church_user ==True:
+                            data = {
+                            'username': user.username,
+                            'token': token.key,
+                            'user_type': "CHURCH"
+                            }
+                            return Response({'success': True,'message':'Login Successfully','user-details':data}, status=HTTP_200_OK)
+                        elif userprofiles.is_church_user ==False and userprofiles.is_primary==False:
+                            data = {
+                            'username': user.username,
+                            'token': token.key,
+                            'user_type': "SECONDARY"
+                            }
+                            return Response({'success': True,'message':'Login Successfully','user-details':data}, status=HTTP_200_OK)
+                        else:
+                            data = {
+                            'username': user.username,
+                            'token': token.key,
+                            'user_type': "NO DATA"
+                            }
+                            return Response({'message': 'Something went wrong','success':False},status=HTTP_400_BAD_REQUEST)
+                    except:
+                        return Response({'message': 'Admin credentials,check with other users','success':False},status=HTTP_400_BAD_REQUEST)
                 else:
                     return Response({'message': 'Invalid credentials','success':False},status=HTTP_400_BAD_REQUEST)
             except:
@@ -196,6 +193,10 @@ class UserUpdateView(RetrieveUpdateAPIView):
     queryset = UserProfile.objects.all()
     serializer_class = UserListSerializer
     permission_classes = [IsAuthenticated]
+
+
+
+
 
 
 class UserDeleteView(DestroyAPIView):
@@ -268,6 +269,8 @@ class SecondaryaddView(CreateAPIView):
                     for secondary_user in secondary_users:
                         sec_user = FileUpload.objects.get(id=secondary_user.id)
                         user_instance.secondary_user.add(sec_user)
+                    total_count = user_instance.secondary_user.count()
+                    total_count=total_count+1
                     Notification.objects.create(user=user_instance,is_user_add_new_member=True,created_time=datetime.strptime('2018-02-16 11:00 AM', "%Y-%m-%d %I:%M %p"))
                     return Response({'success': True,'message':'Secondary User Added Successfully'}, status=HTTP_201_CREATED)
                 else:
