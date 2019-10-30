@@ -90,7 +90,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
 class FamilyListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Family
-        fields = ['name']
+        fields = ['name','members_length']
 
 class UserRetrieveSerializer(serializers.ModelSerializer):
     class Meta:
