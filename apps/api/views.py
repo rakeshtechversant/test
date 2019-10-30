@@ -129,8 +129,8 @@ class UserLoginView(APIView):
 
     def post(self, request, format=None):
         serializer = LoginSerializer(data=request.data)
-        username =  self.request.POST.get('username')
-        password = self.request.POST.get('password')
+        username =   request.data['username']
+        password =  request.data['password']
         if not username:
             return Response({'message': 'Username should not be blank','success':False},status=HTTP_400_BAD_REQUEST)
         if not password:

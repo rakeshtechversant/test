@@ -106,6 +106,7 @@ class UserListSerializer(serializers.ModelSerializer):
 
 
 
+
 class ChurchAddUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = ChurchDetails
