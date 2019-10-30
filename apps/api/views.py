@@ -140,38 +140,44 @@ class UserLoginView(APIView):
             try:
                 token, created = Token.objects.get_or_create(user=user)
                 if user:
-                    try:
-                        userprofiles = UserProfile.objects.get(user=user)
-                        if userprofiles.is_primary ==True:
-                            data = {
-                            'username': user.username,
-                            'token': token.key,
-                            'user_type': "PRIMARY"
-                            }
-                            return Response({'success': True,'message':'Login Successfully','user-details':data}, status=HTTP_200_OK)
-                        elif userprofiles.is_church_user ==True:
-                            data = {
-                            'username': user.username,
-                            'token': token.key,
-                            'user_type': "CHURCH"
-                            }
-                            return Response({'success': True,'message':'Login Successfully','user-details':data}, status=HTTP_200_OK)
-                        elif userprofiles.is_church_user ==False and userprofiles.is_primary==False:
-                            data = {
-                            'username': user.username,
-                            'token': token.key,
-                            'user_type': "SECONDARY"
-                            }
-                            return Response({'success': True,'message':'Login Successfully','user-details':data}, status=HTTP_200_OK)
-                        else:
-                            data = {
-                            'username': user.username,
-                            'token': token.key,
-                            'user_type': "NO DATA"
-                            }
-                            return Response({'message': 'Something went wrong','success':False},status=HTTP_400_BAD_REQUEST)
-                    except:
-                        return Response({'message': 'Admin credentials,check with other users','success':False},status=HTTP_400_BAD_REQUEST)
+                    if user.is_superuser==True:
+                        data = {
+                                'username': user.username,
+                                'token': token.key,
+                                'user_type': "SUPERUSER"
+                                }
+                        return Response({'success': True,'message':'Login Successfully','user-details':data}, status=HTTP_200_OK)
+                    else:
+                        userprofile = UserProfile.objects.filter(user=user)
+                        for userprofiles in userprofile:
+                            if userprofiles.is_primary ==True:
+                                data = {
+                                'username': user.username,
+                                'token': token.key,
+                                'user_type': "PRIMARY"
+                                }
+                                return Response({'success': True,'message':'Login Successfully','user-details':data}, status=HTTP_200_OK)
+                            elif userprofiles.is_church_user ==True:
+                                data = {
+                                'username': user.username,
+                                'token': token.key,
+                                'user_type': "CHURCH"
+                                }
+                                return Response({'success': True,'message':'Login Successfully','user-details':data}, status=HTTP_200_OK)
+                            elif userprofiles.is_church_user ==False and userprofiles.is_primary==False:
+                                data = {
+                                'username': user.username,
+                                'token': token.key,
+                                'user_type': "SECONDARY"
+                                }
+                                return Response({'success': True,'message':'Login Successfully','user-details':data}, status=HTTP_200_OK)
+                            else:
+                                data = {
+                                'username': user.username,
+                                'token': token.key,
+                                'user_type': "NO DATA"
+                                }
+                                return Response({'message': 'Something went wrong','success':False},status=HTTP_400_BAD_REQUEST)
                 else:
                     return Response({'message': 'Invalid credentials','success':False},status=HTTP_400_BAD_REQUEST)
             except:
