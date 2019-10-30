@@ -132,9 +132,9 @@ class UserLoginView(APIView):
         username =  self.request.POST.get('username')
         password = self.request.POST.get('password')
         if not username:
-            return Response({'message': 'This field should not be blank','success':False},status=HTTP_400_BAD_REQUEST)
+            return Response({'message': 'Username should not be blank','success':False},status=HTTP_400_BAD_REQUEST)
         if not password:
-            return Response({'message': 'This field should not be blank','success':False},status=HTTP_400_BAD_REQUEST)
+            return Response({'message': 'Password should not be blank','success':False},status=HTTP_400_BAD_REQUEST)
         if username and password:
             user = authenticate(username=username, password=password)
             try:
