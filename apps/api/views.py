@@ -20,8 +20,9 @@ from apps.api.utils import MultipartJsonParser
 from apps.api.serializers import LoginSerializer, FamilyListSerializer, UserRegistrationMobileSerializer, \
     PrayerGroupAddMembersSerializer, PrayerGroupAddSerializer, UserListSerializer, UserRetrieveSerializer, \
     UserCreateSerializer, ChurchAddUpdateSerializer, FileUploadSerializer, OTPVeifySerializer, SecondaryaddSerializer
-from apps.church.models import AdminProfile, Members, Family, UserProfile, ChurchDetails, FileUpload, OtpModels, \
+from apps.church.models import  Members, Family, UserProfile, ChurchDetails, FileUpload, OtpModels, \
     PrayerGroup, Notification
+from apps.api.models import AdminProfile
 from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_400_BAD_REQUEST, HTTP_401_UNAUTHORIZED
 from django.utils.crypto import get_random_string
 from twilio.rest import Client
