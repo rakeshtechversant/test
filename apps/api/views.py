@@ -318,7 +318,7 @@ class FamilyListView(ListAPIView):
 
 
 class UserUpdateView(RetrieveUpdateAPIView):
-    queryset = UserProfile.objects.all()
+    queryset = FileUpload.objects.all()
     serializer_class = UserListSerializer
     permission_classes = [IsAuthenticated]
 
@@ -330,7 +330,7 @@ class UserDeleteView(DestroyAPIView):
 
 
 class UserDetailView(RetrieveAPIView):
-    queryset = UserProfile.objects.all()
+    queryset = FileUpload.objects.all()
     serializer_class = UserRetrieveSerializer
     permission_classes = [IsAuthenticated]
     # lookup_field = 'user'

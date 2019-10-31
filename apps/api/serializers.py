@@ -62,8 +62,8 @@ class FamilyListSerializer(serializers.ModelSerializer):
 
 class UserRetrieveSerializer(serializers.ModelSerializer):
     class Meta:
-        model = UserProfile
-        fields = ['user','family','dob','occupation','about','profile_image','mobile_number','date_of_marriage']
+        model = FileUpload
+        fields = ['name','address','phone_no_primary','phone_no_secondary','dob','dom','blood_group','email']
 
 
 class UserListSerializer(serializers.ModelSerializer):
