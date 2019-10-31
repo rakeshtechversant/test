@@ -10,6 +10,10 @@ class Notice(models.Model):
 	image = models.FileField(upload_to = 'cards/pan_folder/',null=True,blank=True)
 
 
+class AdminProfile(models.Model):
+	user=models.OneToOneField(User,on_delete=models.CASCADE)
+	mobile_number=models.CharField(null=True,blank=True,max_length=100)
+
 class FileUpload(models.Model):
     primary_user_id = models.AutoField(max_length=5,primary_key=True)
     name = models.CharField(max_length = 200,null=True,blank=True)
@@ -114,6 +118,3 @@ class Notification(models.Model):
 
 
 
-class AdminProfile(models.Model):
-	user=models.OneToOneField(User,on_delete=models.CASCADE)
-	mobile_number=models.CharField(null=True,blank=True,max_length=100)
