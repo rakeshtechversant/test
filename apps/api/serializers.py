@@ -75,11 +75,32 @@ class UserListSerializer(serializers.ModelSerializer):
 
 
 
-class ChurchAddUpdateSerializer(serializers.ModelSerializer):
+class ChurchVicarSerializer(serializers.ModelSerializer):
     class Meta:
         model = ChurchDetails
-        fields = ['church_name','description','image','cover_image','address']
+        fields = ['vicar_inf']
 
+class ChurchHistorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ChurchDetails
+        fields = ['description','cover_image']
+
+class ChurchImagesSerializer(serializers.ModelSerializer):
+
+    image=serializers.SerializerMethodField()
+
+    class Meta:
+        model = ChurchDetails
+        fields = ['image']
+        # lookup_field = 'image'
+
+    def get_image(self, obj):
+        images = obj.image.all()
+        url_lst = []
+        request = self.context['request']
+        for image in images:
+            url_lst.append(request.build_absolute_uri(image.image.url))
+        return url_lst
 
 class FileUploadSerializer(serializers.ModelSerializer):
     class Meta:

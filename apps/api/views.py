@@ -17,9 +17,9 @@ from rest_framework import viewsets
 
 from apps.api.permissions import IsOwnerOrReadOnly
 from apps.api.utils import MultipartJsonParser
-from apps.api.serializers import LoginSerializer, FamilyListSerializer, UserRegistrationMobileSerializer, \
+from apps.api.serializers import ChurchHistorySerializer,ChurchImagesSerializer,LoginSerializer, FamilyListSerializer, UserRegistrationMobileSerializer, \
     PrayerGroupAddMembersSerializer, PrayerGroupAddSerializer, UserListSerializer, UserRetrieveSerializer, \
-    UserCreateSerializer, ChurchAddUpdateSerializer, FileUploadSerializer, OTPVeifySerializer, SecondaryaddSerializer
+    UserCreateSerializer, ChurchVicarSerializer, FileUploadSerializer, OTPVeifySerializer, SecondaryaddSerializer
 from apps.church.models import  Members, Family, UserProfile, ChurchDetails, FileUpload, OtpModels, \
     PrayerGroup, Notification
 from apps.api.models import AdminProfile
@@ -41,13 +41,16 @@ class UserLoginMobileView(APIView):
             return Response({'message': 'Mobile field should not be blank', 'success': False},
                             status=HTTP_400_BAD_REQUEST)
         else:
-            if mobile_number=='9999988888':
-                # admin_profile = AdminProfile.objects.get(mobile_number=mobile_number)
-                if mobile_number == '9999988888':
+            if AdminProfile.objects.filter(mobile_number=mobile_number):
+                admin_profile = AdminProfile.objects.get(mobile_number=mobile_number)
+                if mobile_number == admin_profile.mobile_number:
+                    user=User.objects.get(username=admin_profile.user)
+                    token, created = Token.objects.get_or_create(user=user)
                     data = {
-                        'mobile': 9999988888,
+                        'mobile': admin_profile.mobile_number,
                         'user_type': 'ADMIN',
-                        'name': 'admin'
+                        'name': 'admin',
+                        'token':token.key
                     }
                     otp_number = get_random_string(length=6, allowed_chars='1234567890')
                     try:
@@ -66,10 +69,13 @@ class UserLoginMobileView(APIView):
                     user_profiles = FileUpload.objects.filter(phone_no_primary=mobile_number)
                     for user_profile in user_profiles:
                         if mobile_number == user_profile.phone_no_primary:
+                            user,created=User.objects.get_or_create(username=mobile_number)
+                            token, created = Token.objects.get_or_create(user=user)
                             data = {
                                 'mobile': user_profile.phone_no_primary,
                                 'user_type': 'PRIMARY',
-                                'name': user_profile.name
+                                'name': user_profile.name,
+                                'token':token.key
                             }
                             otp_number = get_random_string(length=6, allowed_chars='1234567890')
                             try:
@@ -90,10 +96,13 @@ class UserLoginMobileView(APIView):
                     user_profiles = FileUpload.objects.filter(phone_no_secondary=mobile_number)
                     for user_profile in user_profiles:
                         if mobile_number == user_profile.phone_no_secondary:
+                            user,created=User.objects.get_or_create(username=mobile_number)
+                            token, created = Token.objects.get_or_create(user=user)
                             data = {
                                 'mobile': user_profile.phone_no_primary,
                                 'user_type': 'PRIMARY',
-                                'name': user_profile.name
+                                'name': user_profile.name,
+                                'token':token.key
                             }
                             otp_number = get_random_string(length=6, allowed_chars='1234567890')
                             try:
@@ -114,11 +123,14 @@ class UserLoginMobileView(APIView):
                 elif Members.objects.filter(phone_no_secondary_user=mobile_number):
                     user_details = Members.objects.filter(phone_no_secondary_user=mobile_number)
                     for user_profile in user_details:
+                        user,created=User.objects.get_or_create(username=mobile_number)
+                        token, created = Token.objects.get_or_create(user=user)
                         if mobile_number == user_profile.phone_no_secondary_user:
                             data = {
                                 'mobile': user_profile.phone_no_secondary_user,
                                 'user_type': 'SECONDARY',
-                                'name': user_profile.member_name
+                                'name': user_profile.member_name,
+                                'token':token.key
                             }
                             otp_number = get_random_string(length=6, allowed_chars='1234567890')
                             try:
@@ -325,20 +337,30 @@ class UserDetailView(RetrieveAPIView):
     # lookup_url_kwarg = "abc"
 
 
-class ChurchDetailView(RetrieveAPIView):
+class ChurchVicarView(RetrieveAPIView):
     queryset = ChurchDetails.objects.all()
-    serializer_class = ChurchAddUpdateSerializer
+    serializer_class = ChurchVicarSerializer
     permission_classes = [IsAdminUser]
 
 
-class ChurchEditView(RetrieveUpdateAPIView):
+class ChurchHistoryView(RetrieveAPIView):
     queryset = ChurchDetails.objects.all()
-    serializer_class = ChurchAddUpdateSerializer
+    serializer_class = ChurchHistorySerializer
     permission_classes = [IsAdminUser]
+
+class ChurchImagesView(RetrieveAPIView):
+    queryset = ChurchDetails.objects.all()
+    serializer_class = ChurchImagesSerializer
+    permission_classes = [IsAdminUser]
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
 
 
 class PostsViewset(viewsets.ModelViewSet):
-    serializer_class = FileUploadSerializer
+    serializer_class = ChurchImagesSerializer
     parser_classes = (MultipartJsonParser, parsers.JSONParser)
     queryset = FileUpload.objects.all()
     # lookup_field = 'id'
