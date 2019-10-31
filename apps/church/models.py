@@ -7,7 +7,7 @@ from django.utils import timezone
 
 class Notice(models.Model):
 	notice = models.CharField(max_length=255,null=True,blank=True)
-	image = models.FileField(upload_to = 'cards/pan_folder/',null=True,blank=True)
+	# image = models.FileField(upload_to = 'cards/pan_folder/',null=True,blank=True)
 
 
 
@@ -107,7 +107,7 @@ class OtpVerify(models.Model):
 
 
 class Notification(models.Model):
-	user = models.ForeignKey(UserProfile,on_delete=models.CASCADE,null=True,blank=True)
+	user = models.ForeignKey(FileUpload,on_delete=models.CASCADE,null=True,blank=True)
 	is_new_register = models.BooleanField(default = False)
 	is_user_add_new_member = models.BooleanField(default = False)
 	created_time = models.DateTimeField(default=timezone.now, blank=True)

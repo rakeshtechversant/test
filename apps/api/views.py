@@ -367,33 +367,31 @@ class PostsViewset(viewsets.ModelViewSet):
 
 
 class SecondaryaddView(CreateAPIView):
-    queryset = UserProfile.objects.all()
+    queryset = FileUpload.objects.all()
     serializer_class = SecondaryaddSerializer
     permission_classes = [IsAuthenticated]
 
-    # def create(self, request, *args, **kwargs):
-    #     serializer = self.get_serializer(data=request.data)
-    #     serializer.is_valid(raise_exception=True)
-    #     user_id = self.kwargs['pk']
-    #     secondary_users = serializer.validated_data.get('secondary_user',None)
-    #     try:
-    #         if secondary_users:
-    #             user_instance = UserProfile.objects.get(id=user_id)
-    #             if user_instance.is_primary == True:
-    #                 for secondary_user in secondary_users:
-    #                     sec_user = FileUpload.objects.get(id=secondary_user.id)
-    #                     user_instance.secondary_user.add(sec_user)
-    #                 total_count = user_instance.secondary_user.count()
-    #                 total_count=total_count+1
-    #                 Notification.objects.create(user=user_instance,is_user_add_new_member=True,created_time=datetime.strptime('2018-02-16 11:00 AM', "%Y-%m-%d %I:%M %p"))
-    #                 return Response({'success': True,'message':'Secondary User Added Successfully'}, status=HTTP_201_CREATED)
-    #             else:
-    #                # raise serializers.ValidationError("You don't have permission to add family members")
-    #                return Response({'success': False,'message': 'You dont have permission to add family members'}, status=HTTP_400_BAD_REQUEST)
-    #         else:
-    #             return Response({'success': False,'message': 'Something Went Wrong'}, status=HTTP_400_BAD_REQUEST)
-    #     except:
-    #         return Response({'success': False,'message': 'Something Went Wrong'}, status=HTTP_400_BAD_REQUEST)
+    def create(self, request, *args, **kwargs):
+        user_id = self.kwargs['pk']
+        secondary_users = request.data['secondary_user_id']
+        try:
+            if secondary_users:
+                user_instance = FileUpload.objects.get(primary_user_id=user_id)
+                if user_instance:
+                    for secondary_user in secondary_users:
+                        sec_user = Members.objects.get(secondary_user_id=secondary_user)
+                        user_instance.get_primary_user.add(sec_user)
+                    total_count = user_instance.get_primary_user.count()
+                    total_count=total_count+1
+                    Notification.objects.create(user=user_instance,is_user_add_new_member=True,created_time=datetime.strptime('2018-02-16 11:00 AM', "%Y-%m-%d %I:%M %p"))
+                    return Response({'success': True,'message':'Secondary User Added Successfully'}, status=HTTP_201_CREATED)
+                else:
+                   # raise serializers.ValidationError("You don't have permission to add family members")
+                   return Response({'success': False,'message': 'You dont have permission to add family members'}, status=HTTP_400_BAD_REQUEST)
+            else:
+                return Response({'success': False,'message': 'Something Went Wrong'}, status=HTTP_400_BAD_REQUEST)
+        except:
+            return Response({'success': False,'message': 'Something Went Wrong'}, status=HTTP_400_BAD_REQUEST)
 
 
 class PrayerGroupaddView(CreateAPIView):
@@ -405,22 +403,22 @@ class PrayerGroupaddView(CreateAPIView):
 class PrayerGroupMemberaddView(CreateAPIView):
     queryset = PrayerGroup.objects.all()
     serializer_class = PrayerGroupAddMembersSerializer
-    # permission_classes = [IsAdminUser]
+    permission_classes = [IsAdminUser]
 
-#     def create(self, request, *args, **kwargs):
-#         serializer = self.get_serializer(data=request.data)
-#         serializer.is_valid(raise_exception=True)
-#         prayer_id = self.kwargs['pk']
-#         prayer_profiles = serializer.validated_data.get('user_profile',None)
-#         try:
-#             if prayer_profiles:
-#                 prayer_instance = PrayerGroup.objects.get(id=prayer_id)
-#                 for prayer_profile in prayer_profiles:
-#                     member_user = FileUpload.objects.get(id=prayer_profile.id)
-#                     prayer_instance.user_profile.add(member_user)
-#                 return Response({'success': True,'message':'Group member Added Successfully'}, status=HTTP_201_CREATED)
-#             else:
-#                 return Response({'success': False,'message': 'Something Went Wrong'}, status=HTTP_400_BAD_REQUEST)
-#         except:
-#             return Response({'success': False,'message': 'Something Went Wrong'}, status=HTTP_400_BAD_REQUEST)
-#
+    # def create(self, request, *args, **kwargs):
+    #     serializer = self.get_serializer(data=request.data)
+    #     serializer.is_valid(raise_exception=True)
+    #     prayer_id = self.kwargs['pk']
+    #     prayer_profiles = serializer.validated_data.get('user_profile',None)
+    #     try:
+    #         if prayer_profiles:
+    #             prayer_instance = PrayerGroup.objects.get(id=prayer_id)
+    #             for prayer_profile in prayer_profiles:
+    #                 member_user = FileUpload.objects.get(id=prayer_profile.primary_user_id)
+    #                 prayer_instance.user_profile.add(member_user)
+    #             return Response({'success': True,'message':'Group member Added Successfully'}, status=HTTP_201_CREATED)
+    #         else:
+    #             return Response({'success': False,'message': 'Something Went Wrong'}, status=HTTP_400_BAD_REQUEST)
+    #     except:
+    #         return Response({'success': False,'message': 'Something Went Wrong'}, status=HTTP_400_BAD_REQUEST)
+

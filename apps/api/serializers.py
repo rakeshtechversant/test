@@ -117,7 +117,7 @@ class OTPVeifySerializer(serializers.ModelSerializer):
 class SecondaryaddSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = UserProfile
+        model = FileUpload
         # read_only_fields = ('user',)
 
 
