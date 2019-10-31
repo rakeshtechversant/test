@@ -110,6 +110,8 @@ class Notification(models.Model):
 	created_time = models.DateTimeField(default=timezone.now, blank=True)
 
 
+
+
 class AdminProfile(models.Model):
 	user=models.OneToOneField(User,on_delete=models.CASCADE)
 	mobile_number=models.CharField(null=True,blank=True,max_length=100)
