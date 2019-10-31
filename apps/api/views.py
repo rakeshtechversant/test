@@ -265,7 +265,7 @@ class UserLoginView(APIView):
 #             return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 
 class UserListView(ListAPIView):
-    queryset = UserProfile.objects.all()
+    queryset = FileUpload.objects.all()
     serializer_class = UserListSerializer
     permission_classes=[AllowAny]
 
