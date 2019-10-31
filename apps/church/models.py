@@ -10,26 +10,40 @@ class Notice(models.Model):
 	image = models.FileField(upload_to = 'cards/pan_folder/',null=True,blank=True)
 
 
+class FileUpload(models.Model):
+    primary_user_id = models.AutoField(max_length=5,primary_key=True)
+    name = models.CharField(max_length = 200,null=True,blank=True)
 
+    address = models.TextField(max_length=500,null=True,blank=True)
+    phone_no_primary =  models.CharField(max_length = 20,null=True,blank=True)
+    phone_no_secondary = models.CharField(max_length = 20,null=True,blank=True)
+    dob = models.CharField(max_length = 20,null=True,blank=True)
+    dom = models.CharField(max_length = 20,null=True,blank=True)
+    blood_group=  models.CharField(max_length = 20,null=True,blank=True)
+    email = models.EmailField(max_length=254,null=True,blank=True)
+
+    def __str__(self):
+        return self.name
 
 class Family(models.Model):
 	name = models.CharField(max_length = 255,null=True,blank=True)
 	members_length = models.IntegerField(default=0)
+	primary_user_id = models.ForeignKey(FileUpload,on_delete=models.CASCADE,related_name='get_file_upload',null=True,blank = True)
 
+	def __str__(self):
+		return self.name
 
-class FileUpload(models.Model):
-	user = models.CharField(max_length = 200,null=True,blank=True)
-	first_name = models.CharField(max_length = 200,null=True,blank=True)
-	last_name = models.CharField(max_length = 200,null=True,blank=True)
-	dob= models.DateField(null=True, blank=True, default=timezone.now)
-	date_of_marriage = models.DateField(null=True,blank=True)
-	address=models.TextField(max_length=500)
-	occupation = models.CharField(max_length=200)
-	about = models.TextField(max_length=5000)
-	profile_image = models.FileField(upload_to = 'cards/pan_folder/',null=True,blank=True)
-	mobile_number = models.CharField(max_length = 20,null=True,blank=True)
+class Members(models.Model):
+	secondary_user_id = models.AutoField(max_length=5,primary_key=True)
+	member_name = models.CharField(max_length=255,null=True,blank=True)
+	relation = models.CharField(max_length=255,null=True,blank=True)
+	dob = models.CharField(max_length = 20,null=True,blank=True)
+	dom = models.CharField(max_length = 20,null=True,blank=True)
+	phone_no_secondary_user = models.CharField(max_length = 20,null=True,blank=True)
+	primary_user_id = models.ForeignKey(FileUpload,on_delete=models.CASCADE,related_name='get_primary_user',null=True,blank = True)
 
-
+	def __str__(self):
+		return self.member_name
 
 class UserProfile(models.Model):
 	user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='user_profile')
@@ -43,15 +57,14 @@ class UserProfile(models.Model):
 	date_of_marriage = models.DateTimeField(null=True,blank=True)
 	is_primary = models.BooleanField(default=False)
 	is_otp_verified = models.BooleanField(default=False)
-	secondary_user = models.ManyToManyField(FileUpload)
+	# secondary_user = models.ManyToManyField(Members)
 	is_church_user = models.BooleanField(default=False)
 
 
 
-
-
 class PrayerGroup(models.Model):
-	user_profile = models.ManyToManyField(FileUpload)
+	# user_profile = models.ManyToManyField(FileUpload)
+	primary_user_id = models.ForeignKey(FileUpload,on_delete=models.CASCADE,related_name='get_file_upload_prayergroup',null=True,blank = True)
 	name = models.CharField(max_length=255,null=True,blank=True)
 	notice = models.ForeignKey(Notice,on_delete=models.CASCADE,null=True,blank=True)
 

@@ -23,39 +23,7 @@ class LoginSerializer(serializers.ModelSerializer):
 class UserRegistrationMobileSerializer(serializers.ModelSerializer):
     class Meta:
         model=OtpModels
-        fields = ['mobile_number','user_type']
-
-    # def validate(self, data):
-    #     user_count=0
-    #     mobile_number = data.get("mobile_number", None)
-    #     user_type = data.get("user_type", None)
-    #     if user_type == 'PRIMARY' or 'SECONDARY' or 'CHURCH':
-    #
-    #         for userprofile in FileUpload.objects.all():
-    #             if userprofile.mobile_number == mobile_number:
-    #                 user_count=user_count+1
-    #                 if not mobile_number:
-    #                     raise serializers.ValidationError("This field is required")
-    #                 if UserProfile.objects.filter(mobile_number = mobile_number).exists():
-    #                     raise serializers.ValidationError("This number is already taken")
-    #                 if mobile_number:
-    #                     otp_number = get_random_string(length=6, allowed_chars='1234567890')
-    #                     try:
-    #                         OtpModels.objects.filter(mobile_number=mobile_number).delete()
-    #                     except:
-    #                         pass
-    #                     OtpModels.objects.create(mobile_number=mobile_number, otp=otp_number)
-    #                     client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
-    #                     message = client.messages.create(to='+91' + mobile_number, from_='+15036837180',body=otp_number)
-    #
-    #             else:
-    #                 if user_count ==0:
-    #                     raise serializers.ValidationError("We couldn't find your profile in database,Please contact service providers")
-    #
-    #     else:
-    #         raise serializers.ValidationError("Invalid usertype,Please select again")
-    #
-    #     return data
+        fields = ['mobile_number']
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
@@ -126,12 +94,10 @@ class OTPVeifySerializer(serializers.ModelSerializer):
 
 
 class SecondaryaddSerializer(serializers.ModelSerializer):
-    secondary_user = serializers.PrimaryKeyRelatedField(queryset=FileUpload.objects.all(), many=True,read_only=False)
 
     class Meta:
         model = UserProfile
-        fields = ['secondary_user']
-        read_only_fields = ('user',)
+        # read_only_fields = ('user',)
 
 
 class PrayerGroupAddSerializer(serializers.ModelSerializer):
