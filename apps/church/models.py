@@ -108,3 +108,8 @@ class Notification(models.Model):
 	is_new_register = models.BooleanField(default = False)
 	is_user_add_new_member = models.BooleanField(default = False)
 	created_time = models.DateTimeField(default=timezone.now, blank=True)
+
+
+class AdminProfile(models.Model):
+	user=models.OneToOneField(User,on_delete=models.CASCADE, related_name='admin_profile')
+	mobile_number=models.CharField(null=True,blank=True,max_length=100)

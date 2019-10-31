@@ -6,19 +6,23 @@ from rest_framework.views import APIView
 from rest_framework.viewsets import GenericViewSet
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
-from rest_framework.generics import ListCreateAPIView,ListAPIView,RetrieveAPIView,RetrieveUpdateAPIView,DestroyAPIView,CreateAPIView,UpdateAPIView
+from rest_framework.generics import ListCreateAPIView, ListAPIView, RetrieveAPIView, RetrieveUpdateAPIView, \
+    DestroyAPIView, CreateAPIView, UpdateAPIView
 from rest_framework import status
 from django.contrib.auth.models import User
 from django.http import JsonResponse, HttpResponse
-from rest_framework.permissions import IsAuthenticated,IsAdminUser,AllowAny
+from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
 from rest_framework import parsers
 from rest_framework import viewsets
 
 from apps.api.permissions import IsOwnerOrReadOnly
 from apps.api.utils import MultipartJsonParser
-from apps.api.serializers import LoginSerializer,FamilyListSerializer,UserRegistrationMobileSerializer,PrayerGroupAddMembersSerializer,PrayerGroupAddSerializer,UserListSerializer,UserRetrieveSerializer,UserCreateSerializer,ChurchAddUpdateSerializer,FileUploadSerializer,OTPVeifySerializer,SecondaryaddSerializer
-from apps.church.models import Members,Family,UserProfile,ChurchDetails,FileUpload,OtpModels,PrayerGroup, Notification
-from rest_framework.status import HTTP_200_OK,HTTP_201_CREATED, HTTP_400_BAD_REQUEST , HTTP_401_UNAUTHORIZED
+from apps.api.serializers import LoginSerializer, FamilyListSerializer, UserRegistrationMobileSerializer, \
+    PrayerGroupAddMembersSerializer, PrayerGroupAddSerializer, UserListSerializer, UserRetrieveSerializer, \
+    UserCreateSerializer, ChurchAddUpdateSerializer, FileUploadSerializer, OTPVeifySerializer, SecondaryaddSerializer
+from apps.church.models import AdminProfile, Members, Family, UserProfile, ChurchDetails, FileUpload, OtpModels, \
+    PrayerGroup, Notification
+from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_400_BAD_REQUEST, HTTP_401_UNAUTHORIZED
 from django.utils.crypto import get_random_string
 from twilio.rest import Client
 from church_project import settings
@@ -28,86 +32,118 @@ from datetime import datetime, timezone
 class UserLoginMobileView(APIView):
     queryset = UserProfile.objects.all()
     serializer_class = UserRegistrationMobileSerializer
-    permission_classes=[AllowAny]
-
+    permission_classes = [AllowAny]
 
     def post(self, request):
         mobile_number = request.data['mobile_number']
         if not mobile_number:
-            return Response({'message': 'Mobile field should not be blank','success':False},status=HTTP_400_BAD_REQUEST)
+            return Response({'message': 'Mobile field should not be blank', 'success': False},
+                            status=HTTP_400_BAD_REQUEST)
         else:
-            if FileUpload.objects.filter(phone_no_primary=mobile_number):
-                user_profiles=FileUpload.objects.filter(phone_no_primary=mobile_number)
-                for user_profile in user_profiles:
-                    if mobile_number==user_profile.phone_no_primary:
-                        data={
-                            'mobile' : user_profile.phone_no_primary,
-                            'user_type': 'PRIMARY',
-                            'name' : user_profile.name
-                        }
-                        otp_number = get_random_string(length=6, allowed_chars='1234567890')
-                        try:
-                            OtpModels.objects.filter(mobile_number=mobile_number).delete()
-                        except:
-                            pass
-                        OtpModels.objects.create(mobile_number=mobile_number, otp=otp_number)
-                        client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
-                        message = client.messages.create(to='+91' + mobile_number, from_='+15036837180',body=otp_number)
-                        return Response({'success': True,'message':'OTP Sent Successfully','user_details':data}, status=HTTP_200_OK)
-                    else:
-                        data={}
-                        return Response({'message': 'You are not in primary list','success':False},status=HTTP_400_BAD_REQUEST)
-            elif FileUpload.objects.filter(phone_no_secondary=mobile_number):
-                user_profiles=FileUpload.objects.filter(phone_no_secondary=mobile_number)
-                for user_profile in user_profiles:
-                    if mobile_number==user_profile.phone_no_secondary:
-                        data={
-                            'mobile' : user_profile.phone_no_primary,
-                            'user_type': 'PRIMARY',
-                            'name' : user_profile.name
-                        }
-                        otp_number = get_random_string(length=6, allowed_chars='1234567890')
-                        try:
-                            OtpModels.objects.filter(mobile_number=user_profile.phone_no_primary).delete()
-                        except:
-                            pass
-                        OtpModels.objects.create(mobile_number=user_profile.phone_no_primary, otp=otp_number)
-                        client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
-                        message = client.messages.create(to='+91' + user_profile.phone_no_primary, from_='+15036837180',body=otp_number)
-                        return Response({'success': True,'message':'OTP Sent Successfully','user_details':data}, status=HTTP_200_OK)
-                    else:
-                        data={}
-                        return Response({'message': 'You are not in primary list','success':False},status=HTTP_400_BAD_REQUEST)
-
-            elif Members.objects.filter(phone_no_secondary_user=mobile_number):
-                user_details = Members.objects.filter(phone_no_secondary_user=mobile_number)
-                for user_profile in user_details:
-                    if mobile_number==user_profile.phone_no_secondary_user:
-                        data={
-                                'mobile' : user_profile.phone_no_secondary_user,
-                                'user_type': 'SECONDARY',
-                                'name' : user_profile.member_name
-                            }
-                        otp_number = get_random_string(length=6, allowed_chars='1234567890')
-                        try:
-                            OtpModels.objects.filter(mobile_number=user_profile.phone_no_secondary_user).delete()
-                        except:
-                            pass
-                        OtpModels.objects.create(mobile_number=user_profile.phone_no_secondary_user, otp=otp_number)
-                        client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
-                        message = client.messages.create(to='+91' + user_profile.phone_no_secondary_user, from_='+15036837180',body=otp_number)
-                        return Response({'success': True,'message':'OTP Sent Successfully','user_details':data}, status=HTTP_200_OK)
-                    else:
-                        data={}
-                        return Response({'message': 'You are not in secondary list','success':False},status=HTTP_400_BAD_REQUEST)
-
-
-
+            if AdminProfile.objects.filter(mobile_number=mobile_number):
+                admin_profile = AdminProfile.objects.get(mobile_number=mobile_number)
+                if admin_profile.mobile_number == mobile_number:
+                    data = {
+                        'mobile': admin_profile.mobile_number,
+                        'user_type': 'ADMIN',
+                        'name': 'admin'
+                    }
+                    otp_number = get_random_string(length=6, allowed_chars='1234567890')
+                    try:
+                        OtpModels.objects.filter(mobile_number=mobile_number).delete()
+                    except:
+                        pass
+                    OtpModels.objects.create(mobile_number=mobile_number, otp=otp_number)
+                    # client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
+                    # message = client.messages.create(to='+91' + mobile_number, from_='+15036837180', body=otp_number)
+                    return Response({'success': True, 'message': 'OTP Sent Successfully', 'user_details': data},
+                                    status=HTTP_200_OK)
+                else:
+                    pass
             else:
-                data={
-                    'mobile' : mobile_number,
-                        }
-                return Response({'message': 'You are not in primary list,go to next section for update your number as secondary user','success':False,'user_mobile':data},status=HTTP_400_BAD_REQUEST)
+                if FileUpload.objects.filter(phone_no_primary=mobile_number):
+                    user_profiles = FileUpload.objects.filter(phone_no_primary=mobile_number)
+                    for user_profile in user_profiles:
+                        if mobile_number == user_profile.phone_no_primary:
+                            data = {
+                                'mobile': user_profile.phone_no_primary,
+                                'user_type': 'PRIMARY',
+                                'name': user_profile.name
+                            }
+                            otp_number = get_random_string(length=6, allowed_chars='1234567890')
+                            try:
+                                OtpModels.objects.filter(mobile_number=mobile_number).delete()
+                            except:
+                                pass
+                            OtpModels.objects.create(mobile_number=mobile_number, otp=otp_number)
+                            client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
+                            message = client.messages.create(to='+91' + mobile_number, from_='+15036837180',
+                                                             body=otp_number)
+                            return Response({'success': True, 'message': 'OTP Sent Successfully', 'user_details': data},
+                                            status=HTTP_200_OK)
+                        else:
+                            data = {}
+                            return Response({'message': 'You are not in primary list', 'success': False},
+                                            status=HTTP_400_BAD_REQUEST)
+                elif FileUpload.objects.filter(phone_no_secondary=mobile_number):
+                    user_profiles = FileUpload.objects.filter(phone_no_secondary=mobile_number)
+                    for user_profile in user_profiles:
+                        if mobile_number == user_profile.phone_no_secondary:
+                            data = {
+                                'mobile': user_profile.phone_no_primary,
+                                'user_type': 'PRIMARY',
+                                'name': user_profile.name
+                            }
+                            otp_number = get_random_string(length=6, allowed_chars='1234567890')
+                            try:
+                                OtpModels.objects.filter(mobile_number=user_profile.phone_no_primary).delete()
+                            except:
+                                pass
+                            OtpModels.objects.create(mobile_number=user_profile.phone_no_primary, otp=otp_number)
+                            client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
+                            message = client.messages.create(to='+91' + user_profile.phone_no_primary, from_='+15036837180',
+                                                             body=otp_number)
+                            return Response({'success': True, 'message': 'OTP Sent Successfully', 'user_details': data},
+                                            status=HTTP_200_OK)
+                        else:
+                            data = {}
+                            return Response({'message': 'You are not in primary list', 'success': False},
+                                            status=HTTP_400_BAD_REQUEST)
+
+                elif Members.objects.filter(phone_no_secondary_user=mobile_number):
+                    user_details = Members.objects.filter(phone_no_secondary_user=mobile_number)
+                    for user_profile in user_details:
+                        if mobile_number == user_profile.phone_no_secondary_user:
+                            data = {
+                                'mobile': user_profile.phone_no_secondary_user,
+                                'user_type': 'SECONDARY',
+                                'name': user_profile.member_name
+                            }
+                            otp_number = get_random_string(length=6, allowed_chars='1234567890')
+                            try:
+                                OtpModels.objects.filter(mobile_number=user_profile.phone_no_secondary_user).delete()
+                            except:
+                                pass
+                            OtpModels.objects.create(mobile_number=user_profile.phone_no_secondary_user, otp=otp_number)
+                            client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
+                            message = client.messages.create(to='+91' + user_profile.phone_no_secondary_user,
+                                                             from_='+15036837180', body=otp_number)
+                            return Response({'success': True, 'message': 'OTP Sent Successfully', 'user_details': data},
+                                            status=HTTP_200_OK)
+                        else:
+                            data = {}
+                            return Response({'message': 'You are not in secondary list', 'success': False},
+                                            status=HTTP_400_BAD_REQUEST)
+
+
+
+                else:
+                    data = {
+                        'mobile': mobile_number,
+                    }
+                    return Response({
+                                        'message': 'You are not in primary list,go to next section for update your number as secondary user',
+                                        'success': False, 'user_mobile': data}, status=HTTP_400_BAD_REQUEST)
 
 
 class OtpVerifyViewSet(CreateAPIView):
@@ -123,22 +159,15 @@ class OtpVerifyViewSet(CreateAPIView):
             if (datetime.now(timezone.utc) - otp_obj.created_time).total_seconds() >= 1800:
                 otp_obj.is_expired = True
                 otp_obj.save()
-                return Response({'success': False,'message': 'Otp Expired'}, status=HTTP_400_BAD_REQUEST)
+                return Response({'success': False, 'message': 'Otp Expired'}, status=HTTP_400_BAD_REQUEST)
             if otp_obj.is_expired:
-                return Response({'success': False,'message': 'Otp Already Used'}, status=HTTP_400_BAD_REQUEST)
+                return Response({'success': False, 'message': 'Otp Already Used'}, status=HTTP_400_BAD_REQUEST)
         except:
-            return Response({'success': False,'message': 'Invalid Otp'}, status=HTTP_400_BAD_REQUEST)
+            return Response({'success': False, 'message': 'Invalid Otp'}, status=HTTP_400_BAD_REQUEST)
         else:
             otp_obj.is_expired = True
             otp_obj.save()
-            return Response({'success': True,'message':'OTP Verified Successfully'}, status=HTTP_201_CREATED)
-
-
-
-
-
-
-
+            return Response({'success': True, 'message': 'OTP Verified Successfully'}, status=HTTP_201_CREATED)
 
 
 class UserCreateView(CreateAPIView):
@@ -198,7 +227,6 @@ class UserCreateView(CreateAPIView):
     #             return Response({'message': 'Something Went Wrong','success':False},status=HTTP_400_BAD_REQUEST)
     #     else:
     #         return Response({'message': 'Something Went Wrong','success':False},status=HTTP_400_BAD_REQUEST)
-
 
 
 class UserLoginView(APIView):
@@ -267,12 +295,14 @@ class UserLoginView(APIView):
 class UserListView(ListAPIView):
     queryset = FileUpload.objects.all()
     serializer_class = UserListSerializer
-    permission_classes=[AllowAny]
+    permission_classes = [AllowAny]
+
 
 class FamilyListView(ListAPIView):
     queryset = Family.objects.all()
     serializer_class = FamilyListSerializer
-    permission_classes=[AllowAny]
+    permission_classes = [AllowAny]
+
 
 class UserUpdateView(RetrieveUpdateAPIView):
     queryset = UserProfile.objects.all()
@@ -280,19 +310,16 @@ class UserUpdateView(RetrieveUpdateAPIView):
     permission_classes = [IsAuthenticated]
 
 
-
-
-
-
 class UserDeleteView(DestroyAPIView):
     queryset = UserProfile.objects.all()
     serializer_class = UserListSerializer
-    permission_classes=[IsAuthenticated]
+    permission_classes = [IsAuthenticated]
+
 
 class UserDetailView(RetrieveAPIView):
     queryset = UserProfile.objects.all()
     serializer_class = UserRetrieveSerializer
-    permission_classes=[IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     # lookup_field = 'user'
     # lookup_url_kwarg = "abc"
 
@@ -301,6 +328,7 @@ class ChurchDetailView(RetrieveAPIView):
     queryset = ChurchDetails.objects.all()
     serializer_class = ChurchAddUpdateSerializer
     permission_classes = [IsAdminUser]
+
 
 class ChurchEditView(RetrieveUpdateAPIView):
     queryset = ChurchDetails.objects.all()
@@ -315,11 +343,10 @@ class PostsViewset(viewsets.ModelViewSet):
     # lookup_field = 'id'
 
 
-
 class SecondaryaddView(CreateAPIView):
     queryset = UserProfile.objects.all()
     serializer_class = SecondaryaddSerializer
-    permission_classes=[IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     # def create(self, request, *args, **kwargs):
     #     serializer = self.get_serializer(data=request.data)
@@ -351,6 +378,7 @@ class PrayerGroupaddView(CreateAPIView):
     serializer_class = PrayerGroupAddSerializer
     permission_classes = [IsAdminUser]
 
+
 class PrayerGroupMemberaddView(CreateAPIView):
     queryset = PrayerGroup.objects.all()
     serializer_class = PrayerGroupAddMembersSerializer
@@ -373,6 +401,3 @@ class PrayerGroupMemberaddView(CreateAPIView):
 #         except:
 #             return Response({'success': False,'message': 'Something Went Wrong'}, status=HTTP_400_BAD_REQUEST)
 #
-
-
-
