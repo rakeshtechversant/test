@@ -81,6 +81,7 @@ class ChurchDetails(models.Model):
 	address = models.CharField(max_length=200,null=True,blank=True)
 	vicar_inf=models.TextField(max_length=1000,null=True,blank=True)
 
+
 	class Meta:
 		verbose_name_plural = "ChurchDetails"
 
