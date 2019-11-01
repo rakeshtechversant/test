@@ -71,13 +71,13 @@ class PrayerGroup(models.Model):
 	notice = models.ForeignKey(Notice,on_delete=models.CASCADE,null=True,blank=True)
 
 class Images(models.Model):
-	image = models.FileField(upload_to = 'cards/pan_folder/',null=True,blank=True)
+	image = models.FileField(upload_to = 'pan_folder/',null=True,blank=True)
 
 class ChurchDetails(models.Model):
 	church_name = models.CharField(max_length = 200,null=True,blank=True)
 	description = models.TextField(max_length=5000,null=True,blank=True)
 	image = models.ManyToManyField(Images)
-	cover_image = models.FileField(upload_to = 'cards/pan_folder/',null=True,blank=True)
+	cover_image = models.FileField(upload_to = 'pan_folder/',null=True,blank=True)
 	# address = models.CharField(max_length=200,null=True,blank=True)
 	# vicar_inf=models.TextField(max_length=1000,null=True,blank=True)
 
