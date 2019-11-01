@@ -78,12 +78,21 @@ class UserListSerializer(serializers.ModelSerializer):
 class ChurchVicarSerializer(serializers.ModelSerializer):
     class Meta:
         model = ChurchDetails
-        fields = ['vicar_inf','address']
+        fields = ['vicar_inf']
 
 class ChurchHistorySerializer(serializers.ModelSerializer):
+    image=serializers.SerializerMethodField()
     class Meta:
         model = ChurchDetails
-        fields = ['description','cover_image','church_name']
+        fields = ['description','cover_image','church_name','address','image']
+
+    def get_image(self, obj):
+        images = obj.image.all()
+        url_lst = []
+        request = self.context['request']
+        for image in images:
+            url_lst.append(request.build_absolute_uri(image.image.url))
+        return url_lst
 
 class ChurchImagesSerializer(serializers.ModelSerializer):
 
@@ -94,13 +103,13 @@ class ChurchImagesSerializer(serializers.ModelSerializer):
         fields = ['image']
         # lookup_field = 'image'
 
-    def get_image(self, obj):
-        images = obj.image.all()
-        url_lst = []
-        request = self.context['request']
-        for image in images:
-            url_lst.append(request.build_absolute_uri(image.image.url))
-        return url_lst
+    # def get_image(self, obj):
+    #     images = obj.image.all()
+    #     url_lst = []
+    #     request = self.context['request']
+    #     for image in images:
+    #         url_lst.append(request.build_absolute_uri(image.image.url))
+    #     return url_lst
 
 class FileUploadSerializer(serializers.ModelSerializer):
     class Meta:
@@ -124,7 +133,7 @@ class SecondaryaddSerializer(serializers.ModelSerializer):
 class PrayerGroupAddSerializer(serializers.ModelSerializer):
     class Meta:
         model = PrayerGroup
-        fields = ['name']
+        fields = ['name','id']
 
 class PrayerGroupAddMembersSerializer(serializers.ModelSerializer):
     user_profile = serializers.PrimaryKeyRelatedField(queryset=FileUpload.objects.all(), many=True,read_only=False)
