@@ -78,8 +78,8 @@ class ChurchDetails(models.Model):
 	description = models.TextField(max_length=5000,null=True,blank=True)
 	image = models.ManyToManyField(Images)
 	cover_image = models.FileField(upload_to = 'cards/pan_folder/',null=True,blank=True)
-	# address = models.CharField(max_length=200,null=True,blank=True)
-	# vicar_inf=models.TextField(max_length=1000,null=True,blank=True)
+	address = models.CharField(max_length=200,null=True,blank=True)
+	vicar_inf=models.TextField(max_length=1000,null=True,blank=True)
 
 	class Meta:
 		verbose_name_plural = "ChurchDetails"
