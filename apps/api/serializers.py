@@ -83,7 +83,7 @@ class ChurchVicarSerializer(serializers.ModelSerializer):
 class ChurchHistorySerializer(serializers.ModelSerializer):
     class Meta:
         model = ChurchDetails
-        fields = ['description','cover_image']
+        fields = ['description','cover_image','church_name']
 
 class ChurchImagesSerializer(serializers.ModelSerializer):
 
