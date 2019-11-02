@@ -192,13 +192,26 @@ class OtpVerifyViewSet(CreateAPIView):
                 try:
                     admin = AdminProfile.objects.get(mobile_number=otp_obj.mobile_number)
                     user = admin.user
+                    data = {
+                        'mobile': admin.mobile_number,
+                        'user_type': 'ADMIN',
+                        'name': 'Admin',
+                    }
+
                 except AdminProfile.DoesNotExist:
                     return Response({'success': False, 'message': 'Admin account does not exist'}, status=HTTP_404_NOT_FOUND)
             
             elif user_type == "PRIMARY":
                 try:
-                    file = FileUpload.objects.get(Q(phone_no_secondary=otp_obj.mobile_number) | Q(phone_no_primary=otp_obj.mobile_number))
+                    user_profile = FileUpload.objects.get(Q(phone_no_secondary=otp_obj.mobile_number) | Q(phone_no_primary=otp_obj.mobile_number))
                     user = otp_obj.mobile_number
+                    mobile = user_profile.phone_no_primary if user_profile.phone_no_primary else user_profile.phone_no_secondary
+
+                    data = {
+                        'mobile': mobile,
+                        'user_type': 'PRIMARY',
+                        'name': user_profile.name,
+                    }
                 except FileUpload.DoesNotExist:
                     return Response({'success': False, 'message': 'Primary account does not exist'}, status=HTTP_404_NOT_FOUND)
 
@@ -206,16 +219,25 @@ class OtpVerifyViewSet(CreateAPIView):
                 try:
                     member = Members.objects.get(phone_no_secondary_user=otp_obj.mobile_number)
                     user = tpotp_obj_obj.mobile_number
+
+                    data = {
+                            'mobile': member.phone_no_secondary_user,
+                            'user_type': 'SECONDARY',
+                            'name': usermember_profile.member_name,
+                        }
+
                 except Members.DoesNotExist:
                     return Response({'success': False, 'message': 'Secondary account does not exist'}, status=HTTP_404_NOT_FOUND)
 
             try:
                 user = User.objects.get(username=user)
+                
             except User.DoesNotExist:
                 return Response({'success': False, 'message': ' User does not exist'}, status=HTTP_404_NOT_FOUND)
 
             token, created = Token.objects.get_or_create(user=user)
-            return Response({'success': True, 'message': 'OTP Verified Successfully', 'token':str(token.key)}, status=HTTP_201_CREATED)
+            data.update({"token": token.key})
+            return Response({'success': True, 'message': 'OTP Verified Successfully', 'user_details': data}, status=HTTP_201_CREATED)
 
 
 class UserCreateView(CreateAPIView):
