@@ -2,7 +2,8 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 from django.contrib.auth.models import User
 import requests
-from apps.church.models import UserProfile,ChurchDetails,FileUpload,OtpModels,OtpVerify,PrayerGroup,Notification,Family
+from apps.church.models import UserProfile, ChurchDetails, FileUpload, OtpModels, \
+    OtpVerify, PrayerGroup, Notification, Family, Members
 from rest_framework.serializers import CharField
 from apps.api.token_create import get_tokens_for_user
 from django.utils.crypto import get_random_string
@@ -150,4 +151,9 @@ class LoginSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['username','password']
+
+class MembersSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Members
+        fields = '__all__'
 

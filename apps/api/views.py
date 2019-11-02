@@ -23,7 +23,8 @@ from apps.api.permissions import IsOwnerOrReadOnly
 from apps.api.utils import MultipartJsonParser
 from apps.api.serializers import ChurchHistorySerializer,ChurchImagesSerializer,LoginSerializer, FamilyListSerializer, UserRegistrationMobileSerializer, \
     PrayerGroupAddMembersSerializer, PrayerGroupAddSerializer, UserListSerializer, UserRetrieveSerializer, \
-    UserCreateSerializer, ChurchVicarSerializer, FileUploadSerializer, OTPVeifySerializer, SecondaryaddSerializer
+    UserCreateSerializer, ChurchVicarSerializer, FileUploadSerializer, OTPVeifySerializer, SecondaryaddSerializer, \
+    MembersSerializer
 from apps.church.models import  Members, Family, UserProfile, ChurchDetails, FileUpload, OtpModels, \
     PrayerGroup, Notification
 from apps.api.models import AdminProfile
@@ -63,8 +64,8 @@ class UserLoginMobileView(APIView):
                     except:
                         pass
                     OtpModels.objects.create(mobile_number=mobile_number, otp=otp_number)
-                    # client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
-                    # message = client.messages.create(to='+91' + mobile_number, from_='+15036837180', body=otp_number)
+                    client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
+                    message = client.messages.create(to='+91' + mobile_number, from_='+15036837180', body=otp_number)
                     return Response({'success': True, 'message': 'OTP Sent Successfully', 'user_details': data},
                                     status=HTTP_200_OK)
                 else:
@@ -321,7 +322,6 @@ class FamilyListView(ListAPIView):
     serializer_class = FamilyListSerializer
     permission_classes = [AllowAny]
 
-
 class UserUpdateView(RetrieveUpdateAPIView):
     queryset = FileUpload.objects.all()
     serializer_class = UserListSerializer
@@ -436,7 +436,7 @@ class PrayerGrouplistView(ListAPIView):
 class PrayerGroupBasedFamilyView(ListAPIView):
     queryset = PrayerGroup.objects.all()
     serializer_class = PrayerGroupAddSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def get_queryset(self, *args, **kwargs):
         prayer_id = self.kwargs['pk']
@@ -448,4 +448,20 @@ class PrayerGroupBasedFamilyView(ListAPIView):
         
         family_list = Family.objects.filter(primary_user_id=prayer_group.primary_user_id)
         return family_list
+
+class FamilyMemberList(ListAPIView):
+    lookup_field = 'pk'
+    queryset = Family.objects.all()
+    serializer_class = MembersSerializer
+    permission_classes = [AllowAny]
+
+    def get_queryset(self, *args, **kwargs):
+        family_id = self.kwargs['pk']
+        try:
+            family = Family.objects.get(id=family_id)
+        except FamilyoesNotExist:
+            raise exceptions.NotFound(detail="Family does not exist")
+
+        members = Members.objects.filter(primary_user_id=family.primary_user_id)
+        return members
 
