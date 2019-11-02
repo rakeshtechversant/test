@@ -1,7 +1,11 @@
 from django.shortcuts import render
 from django.contrib.auth import password_validation, authenticate
 # Create your views here.
+
+
+from django.http import Http404
 from rest_framework import mixins
+from rest_framework import exceptions
 from rest_framework.views import APIView
 from rest_framework.viewsets import GenericViewSet
 from rest_framework.authtoken.models import Token
@@ -23,7 +27,8 @@ from apps.api.serializers import ChurchHistorySerializer,ChurchImagesSerializer,
 from apps.church.models import  Members, Family, UserProfile, ChurchDetails, FileUpload, OtpModels, \
     PrayerGroup, Notification
 from apps.api.models import AdminProfile
-from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_400_BAD_REQUEST, HTTP_401_UNAUTHORIZED
+from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_400_BAD_REQUEST, HTTP_401_UNAUTHORIZED, \
+HTTP_404_NOT_FOUND
 from django.utils.crypto import get_random_string
 from twilio.rest import Client
 from church_project import settings
@@ -431,14 +436,16 @@ class PrayerGrouplistView(ListAPIView):
 class PrayerGroupBasedFamilyView(ListAPIView):
     queryset = PrayerGroup.objects.all()
     serializer_class = PrayerGroupAddSerializer
-    permission_classes = []
-
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self, *args, **kwargs):
-        import pdb;pdb.set_trace()
-        prayer_name=self.request.query_params.get('name',None)
-        prayer_id=self.request.query_params.get('id',None)
-        user_family_list = PrayerGroup.objects.filter(id=prayer_id).values('primary_user_id')
-        family_list = Family.objects.filter(primary_user_id=user_family_list)
+        prayer_id = self.kwargs['pk']
+        
+        try:
+            prayer_group = PrayerGroup.objects.get(id=prayer_id)
+        except PrayerGroup.DoesNotExist:
+            raise exceptions.NotFound(detail="Prayer group does not exist")
+        
+        family_list = Family.objects.filter(primary_user_id=prayer_group.primary_user_id)
         return family_list
 
