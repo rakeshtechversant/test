@@ -4,9 +4,11 @@ from . import views
 from rest_framework.routers import DefaultRouter
 from apps.api.views import PrayerGroupBasedFamilyView, PrayerGrouplistView, ChurchVicarView, \
     ChurchHistoryView, ChurchImagesView, PrayerGroupaddView, PrayerGroupMemberaddView, \
-    FamilyListView, FamilyMemberList, NoticeModelViewSet
+    FamilyListView, FamilyMemberList, NoticeModelViewSet, SendOtp
 
 router = DefaultRouter()
+
+# Notice APIs
 router.register(r'notices', NoticeModelViewSet)
 
 urlpatterns = [
@@ -25,7 +27,9 @@ urlpatterns = [
     url(r'^(?P<pk>[\w-]+)/church-images-details/$',ChurchImagesView.as_view(),name='church_images'),
     url(r'^(?P<pk>[\w-]+)/add-members/$',PrayerGroupMemberaddView.as_view(),name='add_members'),
     
-    # Notice APIs
+    # Generate OTP
+    url(r'^get-otp/$',SendOtp.as_view(),name='send_otp'),
+    
 
 ]
 

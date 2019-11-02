@@ -506,7 +506,7 @@ class FamilyMemberList(ListAPIView):
         family_id = self.kwargs['pk']
         try:
             family = Family.objects.get(id=family_id)
-        except FamilyoesNotExist:
+        except Family.DoesNotExist:
             raise exceptions.NotFound(detail="Family does not exist")
 
         members = Members.objects.filter(primary_user_id=family.primary_user_id)
@@ -516,5 +516,19 @@ class NoticeModelViewSet(ModelViewSet):
     queryset = Notice.objects.all()
     serializer_class = NoticeSerializer
     permission_classes = [IsAdminUser]
-    
+
+class SendOtp(APIView):
+
+    def get(self, request, format=None):
+        user_id = self.request.query_params.get('user_id')
+        
+        try:
+            user = Members.objects.get(secondary_user_id=user_id)
+        except Members.DoesNotExist:
+            raise exceptions.NotFound(detail="User does not exist")
+        
+        superusers = User.objects.filter(is_superuser=True).first()
+        
+        # if user.primary_user_id:
+        #     return Response({'success': False,'message': superusers.}, status=HTTP_400_BAD_REQUEST)
 
