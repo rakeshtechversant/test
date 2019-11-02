@@ -1,9 +1,9 @@
 from django.shortcuts import render
 from django.contrib.auth import password_validation, authenticate
+from django.db.models import Q
+from django.http import Http404
 # Create your views here.
 
-
-from django.http import Http404
 from rest_framework import mixins
 from rest_framework import exceptions
 from rest_framework.views import APIView
@@ -173,6 +173,7 @@ class OtpVerifyViewSet(CreateAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         otp = serializer.validated_data.get("otp", None)
+        user_type = serializer.validated_data.get("user_type", None)
         try:
             otp_obj = OtpModels.objects.get(otp=otp)
             if (datetime.now(timezone.utc) - otp_obj.created_time).total_seconds() >= 1800:
@@ -186,7 +187,35 @@ class OtpVerifyViewSet(CreateAPIView):
         else:
             otp_obj.is_expired = True
             otp_obj.save()
-            return Response({'success': True, 'message': 'OTP Verified Successfully'}, status=HTTP_201_CREATED)
+            
+            if user_type == "ADMIN":
+                try:
+                    admin = AdminProfile.objects.get(mobile_number=otp_obj.mobile_number)
+                    user = admin.user
+                except AdminProfile.DoesNotExist:
+                    return Response({'success': False, 'message': 'Admin account does not exist'}, status=HTTP_404_NOT_FOUND)
+            
+            elif user_type == "PRIMARY":
+                try:
+                    file = FileUpload.objects.get(Q(phone_no_secondary=otp_obj.mobile_number) | Q(phone_no_primary=otp_obj.mobile_number))
+                    user = otp_obj.mobile_number
+                except FileUpload.DoesNotExist:
+                    return Response({'success': False, 'message': 'Primary account does not exist'}, status=HTTP_404_NOT_FOUND)
+
+            elif user_type == "SECONDARY":
+                try:
+                    member = Members.objects.get(phone_no_secondary_user=otp_obj.mobile_number)
+                    user = tpotp_obj_obj.mobile_number
+                except Members.DoesNotExist:
+                    return Response({'success': False, 'message': 'Secondary account does not exist'}, status=HTTP_404_NOT_FOUND)
+
+            try:
+                user = User.objects.get(username=user)
+            except User.DoesNotExist:
+                return Response({'success': False, 'message': ' User does not exist'}, status=HTTP_404_NOT_FOUND)
+
+            token, created = Token.objects.get_or_create(user=user)
+            return Response({'success': True, 'message': 'OTP Verified Successfully', 'token':str(token.key)}, status=HTTP_201_CREATED)
 
 
 class UserCreateView(CreateAPIView):
