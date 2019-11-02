@@ -7,7 +7,10 @@ from django.utils import timezone
 
 class Notice(models.Model):
 	notice = models.CharField(max_length=255,null=True,blank=True)
-	# image = models.FileField(upload_to = 'cards/pan_folder/',null=True,blank=True)
+	description=models.TextField(max_length=10000,null=True,blank=True)
+
+# class NoticeBereavement(models.Model):
+
 
 
 

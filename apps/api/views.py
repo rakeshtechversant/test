@@ -422,3 +422,23 @@ class PrayerGroupMemberaddView(CreateAPIView):
     #     except:
     #         return Response({'success': False,'message': 'Something Went Wrong'}, status=HTTP_400_BAD_REQUEST)
 
+
+class PrayerGrouplistView(ListAPIView):
+    queryset = PrayerGroup.objects.all()
+    serializer_class = PrayerGroupAddSerializer
+
+
+class PrayerGroupBasedFamilyView(ListAPIView):
+    queryset = PrayerGroup.objects.all()
+    serializer_class = PrayerGroupAddSerializer
+    permission_classes = []
+
+
+    def get_queryset(self, *args, **kwargs):
+        import pdb;pdb.set_trace()
+        prayer_name=self.request.query_params.get('name',None)
+        prayer_id=self.request.query_params.get('id',None)
+        user_family_list = PrayerGroup.objects.filter(id=prayer_id).values('primary_user_id')
+        family_list = Family.objects.filter(primary_user_id=user_family_list)
+        return family_list
+
