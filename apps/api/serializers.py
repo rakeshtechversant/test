@@ -160,8 +160,8 @@ class MembersSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class NoticeSerializer(serializers.ModelSerializer):
-    created_at = serializers.DateTimeField(format="%d/%m/%Y %I:%M %p")
-    updated_at = serializers.DateTimeField(format="%d/%m/%Y %I:%M %p")
+    created_at = serializers.DateTimeField(format="%d/%m/%Y %I:%M %p", read_only=True)
+    updated_at = serializers.DateTimeField(format="%d/%m/%Y %I:%M %p", read_only=True)
 
     class Meta:
         model = Notice
