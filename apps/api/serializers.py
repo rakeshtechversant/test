@@ -3,7 +3,7 @@ from rest_framework.validators import UniqueValidator
 from django.contrib.auth.models import User
 import requests
 from apps.church.models import UserProfile, ChurchDetails, FileUpload, OtpModels, \
-    OtpVerify, PrayerGroup, Notification, Family, Members
+    OtpVerify, PrayerGroup, Notification, Family, Members, Notice
 from rest_framework.serializers import CharField
 from apps.api.token_create import get_tokens_for_user
 from django.utils.crypto import get_random_string
@@ -157,5 +157,13 @@ class LoginSerializer(serializers.ModelSerializer):
 class MembersSerializer(serializers.ModelSerializer):
     class Meta:
         model = Members
+        fields = '__all__'
+
+class NoticeSerializer(serializers.ModelSerializer):
+    created_at = serializers.DateTimeField(format="%d/%m/%Y %I:%M %p")
+    updated_at = serializers.DateTimeField(format="%d/%m/%Y %I:%M %p")
+
+    class Meta:
+        model = Notice
         fields = '__all__'
 

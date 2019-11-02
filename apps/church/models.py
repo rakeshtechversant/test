@@ -8,12 +8,10 @@ from django.utils import timezone
 class Notice(models.Model):
 	notice = models.CharField(max_length=255,null=True,blank=True)
 	description=models.TextField(max_length=10000,null=True,blank=True)
+	created_at = models.DateTimeField(auto_now_add=True)
+	updated_at = models.DateTimeField(auto_now=True)
 
 # class NoticeBereavement(models.Model):
-
-
-
-
 
 class FileUpload(models.Model):
     primary_user_id = models.AutoField(max_length=5,primary_key=True)

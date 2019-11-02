@@ -7,7 +7,7 @@ from django.http import Http404
 from rest_framework import mixins
 from rest_framework import exceptions
 from rest_framework.views import APIView
-from rest_framework.viewsets import GenericViewSet
+from rest_framework.viewsets import GenericViewSet, ModelViewSet
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from rest_framework.generics import ListCreateAPIView, ListAPIView, RetrieveAPIView, RetrieveUpdateAPIView, \
@@ -24,9 +24,9 @@ from apps.api.utils import MultipartJsonParser
 from apps.api.serializers import ChurchHistorySerializer,ChurchImagesSerializer,LoginSerializer, FamilyListSerializer, UserRegistrationMobileSerializer, \
     PrayerGroupAddMembersSerializer, PrayerGroupAddSerializer, UserListSerializer, UserRetrieveSerializer, \
     UserCreateSerializer, ChurchVicarSerializer, FileUploadSerializer, OTPVeifySerializer, SecondaryaddSerializer, \
-    MembersSerializer
+    MembersSerializer, NoticeSerializer
 from apps.church.models import  Members, Family, UserProfile, ChurchDetails, FileUpload, OtpModels, \
-    PrayerGroup, Notification
+    PrayerGroup, Notification, Notice
 from apps.api.models import AdminProfile
 from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_400_BAD_REQUEST, HTTP_401_UNAUTHORIZED, \
 HTTP_404_NOT_FOUND
@@ -511,4 +511,10 @@ class FamilyMemberList(ListAPIView):
 
         members = Members.objects.filter(primary_user_id=family.primary_user_id)
         return members
+
+class NoticeModelViewSet(ModelViewSet):
+    queryset = Notice.objects.all()
+    serializer_class = NoticeSerializer
+    permission_classes = [IsAdminUser]
+    
 
