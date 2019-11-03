@@ -59,12 +59,15 @@ class UserLoginMobileView(APIView):
                         'token':token.key
                     }
                     otp_number = get_random_string(length=6, allowed_chars='1234567890')
+
                     try:
                         OtpModels.objects.filter(mobile_number=mobile_number).delete()
                     except:
                         pass
+
                     OtpModels.objects.create(mobile_number=mobile_number, otp=otp_number)
                     client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
+
                     message = client.messages.create(to='+91' + mobile_number, from_='+15036837180', body=otp_number)
                     return Response({'success': True, 'message': 'OTP Sent Successfully', 'user_details': data},
                                     status=HTTP_200_OK)
@@ -144,14 +147,21 @@ class UserLoginMobileView(APIView):
                             }
 
                             otp_number = get_random_string(length=6, allowed_chars='1234567890')
+
                             try:
                                 OtpModels.objects.filter(mobile_number=user_profile.phone_no_secondary_user).delete()
                             except:
                                 pass
+
                             OtpModels.objects.create(mobile_number=user_profile.phone_no_secondary_user, otp=otp_number)
+                            
                             client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
-                            message = client.messages.create(to='+91' + user_profile.phone_no_secondary_user,
-                                                             from_='+15036837180', body=otp_number)
+
+                            message_body = user_profile.member_name + ' requested OTP for login: ' + otp_number
+
+                            message = client.messages.create(to='+91' + user_profile.primary_user_id.phone_no_primary,
+                                                             from_='+15036837180', body=message_body)
+
                             return Response({'success': True, 'message': 'OTP Sent Successfully', 'user_details': data},
                                             status=HTTP_200_OK)
                         else:
@@ -433,7 +443,7 @@ class ChurchHistoryView(RetrieveAPIView):
     queryset = ChurchDetails.objects.all()
     serializer_class = ChurchHistorySerializer
     permission_classes = [AllowAny]
-    
+
 
 class ChurchImagesView(RetrieveAPIView):
     queryset = ChurchDetails.objects.all()
