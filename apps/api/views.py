@@ -98,6 +98,7 @@ class UserLoginMobileView(APIView):
                             data = {}
                             return Response({'message': 'You are not in primary list', 'success': False},
                                             status=HTTP_400_BAD_REQUEST)
+                            
                 elif FileUpload.objects.filter(phone_no_secondary=mobile_number):
                     user_profiles = FileUpload.objects.filter(phone_no_secondary=mobile_number)
                     for user_profile in user_profiles:
@@ -136,7 +137,8 @@ class UserLoginMobileView(APIView):
                                 'mobile': user_profile.phone_no_secondary_user,
                                 'user_type': 'SECONDARY',
                                 'name': user_profile.member_name,
-                                'token':token.key
+                                'token':token.key,
+                                'primary_user': user_profile.primary_user_id.name
                             }
                             otp_number = get_random_string(length=6, allowed_chars='1234567890')
                             try:
@@ -368,6 +370,35 @@ class FamilyListView(ListAPIView):
     queryset = Family.objects.all()
     serializer_class = FamilyListSerializer
     permission_classes = [AllowAny]
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+
+            data = {
+                'code': 200,
+                'status': "OK",
+            }
+
+            page_nated_data = self.get_paginated_response(serializer.data).data
+            data.update(page_nated_data)
+            data['response'] = data.pop('results')
+
+            return Response(data)
+
+
+        serializer = self.get_serializer(queryset, many=True)
+
+        data = {
+            'code': 200,
+            'status': "OK",
+            'response': serializer.data
+        }
+
+        return Response(data)
 
 class UserUpdateView(RetrieveUpdateAPIView):
     queryset = FileUpload.objects.all()
