@@ -479,6 +479,33 @@ class PrayerGrouplistView(ListAPIView):
     queryset = PrayerGroup.objects.all()
     serializer_class = PrayerGroupAddSerializer
 
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+
+            data = {
+                'code': 200,
+                'status': "OK",
+                'response': serializer.data
+            }
+
+            return self.get_paginated_response(data)
+
+
+        serializer = self.get_serializer(queryset, many=True)
+
+        data = {
+            'code': 200,
+            'status': "OK",
+            'response': serializer.data
+        }
+
+        return Response(data)
+
+
 
 class PrayerGroupBasedFamilyView(ListAPIView):
     queryset = PrayerGroup.objects.all()
