@@ -489,10 +489,13 @@ class PrayerGrouplistView(ListAPIView):
             data = {
                 'code': 200,
                 'status': "OK",
-                'response': serializer.data
             }
 
-            return self.get_paginated_response(data)
+            page_nated_data = self.get_paginated_response(serializer.data).data
+            data.update(page_nated_data)
+            data['response'] = data.pop('results')
+
+            return Response(data)
 
 
         serializer = self.get_serializer(queryset, many=True)
@@ -523,6 +526,36 @@ class PrayerGroupBasedFamilyView(ListAPIView):
         family_list = Family.objects.filter(primary_user_id=prayer_group.primary_user_id)
         return family_list
 
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+
+            data = {
+                'code': 200,
+                'status': "OK",
+            }
+
+            page_nated_data = self.get_paginated_response(serializer.data).data
+            data.update(page_nated_data)
+            data['response'] = data.pop('results')
+
+            return Response(data)
+
+
+        serializer = self.get_serializer(queryset, many=True)
+
+        data = {
+            'code': 200,
+            'status': "OK",
+            'response': serializer.data
+        }
+
+        return Response(data)
+
+
 class FamilyMemberList(ListAPIView):
     lookup_field = 'pk'
     queryset = Family.objects.all()
@@ -538,6 +571,38 @@ class FamilyMemberList(ListAPIView):
 
         members = Members.objects.filter(primary_user_id=family.primary_user_id)
         return members
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+
+            data = {
+                'code': 200,
+                'status': "OK",
+            }
+
+            page_nated_data = self.get_paginated_response(serializer.data).data
+            data.update(page_nated_data)
+            data['response'] = data.pop('results')
+
+            return Response(data)
+
+
+        serializer = self.get_serializer(queryset, many=True)
+
+        data = {
+            'code': 200,
+            'status': "OK",
+            'response': serializer.data
+        }
+
+        return Response(data)
+
+
+
 
 class NoticeModelViewSet(ModelViewSet):
     queryset = Notice.objects.all()

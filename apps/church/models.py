@@ -42,6 +42,7 @@ class Members(models.Model):
 	relation = models.CharField(max_length=255,null=True,blank=True)
 	dob = models.CharField(max_length = 20,null=True,blank=True)
 	dom = models.CharField(max_length = 20,null=True,blank=True)
+	image = models.ImageField(upload_to='members/', null=True,blank=True)
 	phone_no_secondary_user = models.CharField(max_length = 20,null=True,blank=True)
 	primary_user_id = models.ForeignKey(FileUpload,on_delete=models.CASCADE,related_name='get_primary_user',null=True,blank = True)
 
