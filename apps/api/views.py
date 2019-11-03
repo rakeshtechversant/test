@@ -139,8 +139,10 @@ class UserLoginMobileView(APIView):
                                 'name': user_profile.member_name,
                                 'token':token.key,
                                 'primary_user_name': user_profile.primary_user_id.name,
-                                'primary_user_id': user_profile.primary_user_id.primary_user_id
+                                'primary_user_id': user_profile.primary_user_id.primary_user_id,
+                                'phone_no_primary' : user_profile.primary_user_id.phone_no_primary
                             }
+                            
                             otp_number = get_random_string(length=6, allowed_chars='1234567890')
                             try:
                                 OtpModels.objects.filter(mobile_number=user_profile.phone_no_secondary_user).delete()
