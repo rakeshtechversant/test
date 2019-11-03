@@ -72,12 +72,16 @@ class PrayerGroup(models.Model):
 	name = models.CharField(max_length=255,null=True,blank=True)
 	notice = models.ForeignKey(Notice,on_delete=models.CASCADE,null=True,blank=True)
 
+
 class Images(models.Model):
-	image = models.FileField(upload_to = 'pan_folder/',null=True,blank=True)
+	image = models.FileField(upload_to='pan_folder/')
+	title = models.CharField(max_length=200)
+	date = models.DateField(default=timezone.now)
+
 
 class ChurchDetails(models.Model):
-	church_name = models.CharField(max_length = 200,null=True,blank=True)
-	description = models.TextField(max_length=5000,null=True,blank=True)
+	church_name = models.CharField(max_length = 200, null=True, blank=True)
+	description = models.TextField(max_length=5000, null=True, blank=True)
 	image = models.ManyToManyField(Images)
 	cover_image = models.FileField(upload_to = 'pan_folder/',null=True,blank=True)
 	address = models.CharField(max_length=200,null=True,blank=True)

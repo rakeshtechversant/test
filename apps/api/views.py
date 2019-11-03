@@ -142,7 +142,7 @@ class UserLoginMobileView(APIView):
                                 'primary_user_id': user_profile.primary_user_id.primary_user_id,
                                 'phone_no_primary' : user_profile.primary_user_id.phone_no_primary
                             }
-                            
+
                             otp_number = get_random_string(length=6, allowed_chars='1234567890')
                             try:
                                 OtpModels.objects.filter(mobile_number=user_profile.phone_no_secondary_user).delete()
@@ -432,7 +432,8 @@ class ChurchVicarView(RetrieveAPIView):
 class ChurchHistoryView(RetrieveAPIView):
     queryset = ChurchDetails.objects.all()
     serializer_class = ChurchHistorySerializer
-    permission_classes = [IsAdminUser]
+    permission_classes = [AllowAny]
+    
 
 class ChurchImagesView(RetrieveAPIView):
     queryset = ChurchDetails.objects.all()

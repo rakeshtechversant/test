@@ -82,18 +82,32 @@ class ChurchVicarSerializer(serializers.ModelSerializer):
         fields = ['vicar_inf']
 
 class ChurchHistorySerializer(serializers.ModelSerializer):
-    image=serializers.SerializerMethodField()
     class Meta:
         model = ChurchDetails
         fields = ['description','cover_image','church_name','address','image']
 
-    def get_image(self, obj):
-        images = obj.image.all()
-        url_lst = []
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+
         request = self.context['request']
+
+        images = instance.image.all()
+
+        data['image'] = []
+        
         for image in images:
-            url_lst.append(request.build_absolute_uri(image.image.url))
-        return url_lst
+            image_url = request.build_absolute_uri(image.image.url)
+
+            data['image'].append({
+                    'image_url': image_url,
+                    'title': image.title,
+                    'date': image.date
+                }
+            )
+
+        return data
+
+    
 
 class ChurchImagesSerializer(serializers.ModelSerializer):
 
@@ -155,6 +169,7 @@ class LoginSerializer(serializers.ModelSerializer):
         fields = ['username','password']
 
 class MembersSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = Members
         fields = '__all__'
