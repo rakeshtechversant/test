@@ -98,7 +98,7 @@ class UserLoginMobileView(APIView):
                             data = {}
                             return Response({'message': 'You are not in primary list', 'success': False},
                                             status=HTTP_400_BAD_REQUEST)
-                            
+
                 elif FileUpload.objects.filter(phone_no_secondary=mobile_number):
                     user_profiles = FileUpload.objects.filter(phone_no_secondary=mobile_number)
                     for user_profile in user_profiles:
@@ -138,7 +138,8 @@ class UserLoginMobileView(APIView):
                                 'user_type': 'SECONDARY',
                                 'name': user_profile.member_name,
                                 'token':token.key,
-                                'primary_user': user_profile.primary_user_id.name
+                                'primary_user_name': user_profile.primary_user_id.name,
+                                'primary_user_id': user_profile.primary_user_id.primary_user_id
                             }
                             otp_number = get_random_string(length=6, allowed_chars='1234567890')
                             try:
