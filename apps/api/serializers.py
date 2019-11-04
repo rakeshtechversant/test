@@ -64,7 +64,7 @@ class FamilyListSerializer(serializers.ModelSerializer):
 class UserRetrieveSerializer(serializers.ModelSerializer):
     class Meta:
         model = FileUpload
-        fields = ['name','address','phone_no_primary','phone_no_secondary','dob','dom','blood_group','email']
+        fields = ['primary_user_id','image','name','address','phone_no_primary','phone_no_secondary','dob','dom','blood_group','email']
 
 
 class UserListSerializer(serializers.ModelSerializer):
@@ -173,6 +173,7 @@ class MembersSerializer(serializers.ModelSerializer):
     class Meta:
         model = Members
         fields = '__all__'
+
 
 class NoticeSerializer(serializers.ModelSerializer):
     created_at = serializers.DateTimeField(format="%d/%m/%Y %I:%M %p", read_only=True)

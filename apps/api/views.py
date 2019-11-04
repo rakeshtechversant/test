@@ -635,9 +635,7 @@ class FamilyMemberList(ListAPIView):
             data.update(page_nated_data)
             data['response'] = data.pop('results')
 
-            primary_user_id = {
-                'primary_user_id': UserRetrieveSerializer(self.primary_user).data
-            }
+            primary_user_id =UserRetrieveSerializer(self.primary_user).data
 
             data['response'].insert(0, primary_user_id)
 
@@ -652,9 +650,7 @@ class FamilyMemberList(ListAPIView):
             'response': serializer.data
         }
 
-        primary_user_id = {
-            'primary_user_id': UserRetrieveSerializer(self.primary_user).data
-        }
+        primary_user_id = UserRetrieveSerializer(self.primary_user).data
 
         data['response'].insert(0, primary_user_id)
 
