@@ -169,11 +169,26 @@ class LoginSerializer(serializers.ModelSerializer):
         fields = ['username','password']
 
 class MembersSerializer(serializers.ModelSerializer):
+    primary_name = serializers.SerializerMethodField()
+    primary_number = serializers.SerializerMethodField()
 
     class Meta:
         model = Members
-        fields = '__all__'
+        fields = ['primary_number','primary_name','secondary_user_id','member_name','relation','dob','dom','image','phone_no_secondary_user','primary_user_id']
 
+    def get_primary_name(self, obj):
+        name = obj.primary_user_id.name
+        if name:
+            serializer = UserRetrieveSerializer(name)
+            return name
+        return None
+
+    def get_primary_number(self, obj):
+        primary_number = obj.primary_user_id.phone_no_primary
+        if primary_number:
+            serializer = UserRetrieveSerializer(primary_number)
+            return primary_number
+        return None
 
 class NoticeSerializer(serializers.ModelSerializer):
     created_at = serializers.DateTimeField(format="%d/%m/%Y %I:%M %p", read_only=True)
