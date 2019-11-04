@@ -170,11 +170,11 @@ class LoginSerializer(serializers.ModelSerializer):
 
 class MembersSerializer(serializers.ModelSerializer):
     primary_name = serializers.SerializerMethodField()
-    primary_number = serializers.SerializerMethodField()
+    phone_no_primary = serializers.SerializerMethodField()
 
     class Meta:
         model = Members
-        fields = ['primary_number','primary_name','secondary_user_id','member_name','relation','dob','dom','image','phone_no_secondary_user','primary_user_id']
+        fields = ['phone_no_primary','primary_name','secondary_user_id','member_name','relation','dob','dom','image','phone_no_secondary_user','primary_user_id']
 
     def get_primary_name(self, obj):
         name = obj.primary_user_id.name
@@ -183,7 +183,7 @@ class MembersSerializer(serializers.ModelSerializer):
             return name
         return None
 
-    def get_primary_number(self, obj):
+    def get_phone_no_primary(self, obj):
         primary_number = obj.primary_user_id.phone_no_primary
         if primary_number:
             serializer = UserRetrieveSerializer(primary_number)
