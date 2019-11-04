@@ -655,12 +655,48 @@ class NoticeModelViewSet(ModelViewSet):
     permission_classes = [IsAdminUser]
 
 class SendOtp(APIView):
+    queryset = FileUpload.objects.all()
+    serializer_class = UserRegistrationMobileSerializer
+    permission_classes = [AllowAny]
 
-    def get(self, request, format=None):
+    def post(self, request):
+        mobile_number = self.request.query_params.get('mobile_number')
         user_id = self.request.query_params.get('user_id')
         
         try:
-            user = Members.objects.get(secondary_user_id=user_id)
+            sec_user = Members.objects.get(secondary_user_id=user_id)
+            sec_user.phone_no_secondary_user=mobile_number
+            sec_user.save()
+
+            user,created=User.objects.get_or_create(username=mobile_number)
+            token, created = Token.objects.get_or_create(user=user)
+            otp_number = get_random_string(length=6, allowed_chars='1234567890')
+
+            try:
+                OtpModels.objects.filter(mobile_number=sec_user.primary_user_id.phone_no_primary).delete()
+            except:
+                pass
+
+            OtpModels.objects.create(mobile_number=mobile_number, otp=otp_number)
+
+            client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
+
+            message_body = sec_user.member_name + ' requested OTP for login: ' + otp_number
+
+            message = client.messages.create(to='+91' + sec_user.primary_user_id.phone_no_primary,
+                                             from_='+15036837180', body=message_body)
+
+            data = {
+                'mobile': mobile_number,
+                'user_type': 'SECONDARY',
+                'name': sec_user.member_name,
+                'token':token.key,
+                'primary_user_name':sec_user.primary_user_id.name,
+                'primary_mobile_number':sec_user.primary_user_id.phone_no_primary
+            }
+            return Response({'success': True, 'message': 'OTP Sent Successfully','user_details': data},
+                            status=HTTP_200_OK)
+
         except Members.DoesNotExist:
             raise exceptions.NotFound(detail="User does not exist")
         
