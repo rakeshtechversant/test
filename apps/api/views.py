@@ -177,7 +177,7 @@ class UserLoginMobileView(APIView):
                     }
                     return Response({
                                         'message': 'You are not in primary list,go to next section for update your number as secondary user',
-                                        'success': False, 'user_mobile': data}, status=HTTP_400_BAD_REQUEST)
+                                        'success': False, 'user_details': data}, status=HTTP_400_BAD_REQUEST)
 
 
 class OtpVerifyViewSet(CreateAPIView):
