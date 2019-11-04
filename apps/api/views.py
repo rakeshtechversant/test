@@ -614,6 +614,8 @@ class FamilyMemberList(ListAPIView):
         except Family.DoesNotExist:
             raise exceptions.NotFound(detail="Family does not exist")
 
+        self.primary_user = family.primary_user_id
+
         members = Members.objects.filter(primary_user_id=family.primary_user_id)
         return members
 
@@ -633,6 +635,12 @@ class FamilyMemberList(ListAPIView):
             data.update(page_nated_data)
             data['response'] = data.pop('results')
 
+            primary_user_id = {
+                'primary_user_id': UserRetrieveSerializer(self.primary_user).data
+            }
+
+            data['response'].insert(0, primary_user_id)
+
             return Response(data)
 
 
@@ -643,6 +651,12 @@ class FamilyMemberList(ListAPIView):
             'status': "OK",
             'response': serializer.data
         }
+
+        primary_user_id = {
+            'primary_user_id': UserRetrieveSerializer(self.primary_user).data
+        }
+
+        data['response'].insert(0, primary_user_id)
 
         return Response(data)
 
