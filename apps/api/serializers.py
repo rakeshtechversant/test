@@ -14,6 +14,9 @@ from django.urls import reverse_lazy
 from rest_framework import status
 from rest_framework.response import Response
 from datetime import datetime
+from apps.api.models import AdminProfile
+
+
 class LoginSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -190,6 +193,13 @@ class MembersSerializer(serializers.ModelSerializer):
             return primary_number
         return None
 
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+
+        data['user_type'] = 'SECONDARY'
+
+        return data
+
 class NoticeSerializer(serializers.ModelSerializer):
     created_at = serializers.DateTimeField(format="%d/%m/%Y %I:%M %p", read_only=True)
     updated_at = serializers.DateTimeField(format="%d/%m/%Y %I:%M %p", read_only=True)
@@ -198,3 +208,28 @@ class NoticeSerializer(serializers.ModelSerializer):
         model = Notice
         fields = '__all__'
 
+
+class AdminProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AdminProfile
+        fields = ['mobile_number']
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+
+        data['user_type'] = 'ADMIN'
+
+        return data
+
+
+class PrimaryUserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FileUpload
+        fields = '__all__'
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+
+        data['user_type'] = 'PRIMARY'
+
+        return data

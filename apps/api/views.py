@@ -18,13 +18,14 @@ from django.http import JsonResponse, HttpResponse
 from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
 from rest_framework import parsers
 from rest_framework import viewsets
+from rest_framework.authentication import TokenAuthentication
 
 from apps.api.permissions import IsOwnerOrReadOnly
 from apps.api.utils import MultipartJsonParser
 from apps.api.serializers import ChurchHistorySerializer,ChurchImagesSerializer,LoginSerializer, FamilyListSerializer, UserRegistrationMobileSerializer, \
     PrayerGroupAddMembersSerializer, PrayerGroupAddSerializer, UserListSerializer, UserRetrieveSerializer, \
     UserCreateSerializer, ChurchVicarSerializer, FileUploadSerializer, OTPVeifySerializer, SecondaryaddSerializer, \
-    MembersSerializer, NoticeSerializer
+    MembersSerializer, NoticeSerializer, AdminProfileSerializer, PrimaryUserProfileSerializer
 from apps.church.models import  Members, Family, UserProfile, ChurchDetails, FileUpload, OtpModels, \
     PrayerGroup, Notification, Notice
 from apps.api.models import AdminProfile
@@ -34,6 +35,7 @@ from django.utils.crypto import get_random_string
 from twilio.rest import Client
 from church_project import settings
 from datetime import datetime, timezone
+from django.contrib.auth.models import User
 
 
 class UserLoginMobileView(APIView):
@@ -714,4 +716,66 @@ class SendOtp(APIView):
         
         # if user.primary_user_id:
         #     return Response({'success': False,'message': superusers.}, status=HTTP_400_BAD_REQUEST)
+
+
+
+class Profile(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, format=None):
+        if hasattr(request.user, 'adminprofile'):
+            serializer = AdminProfileSerializer(request.user.adminprofile)
+
+            return Response(serializer.data)
+        
+        primary_user = FileUpload.objects.filter(phone_no_primary=request.user.username)
+
+        if primary_user.exists():
+            serializer = PrimaryUserProfileSerializer(primary_user.first())
+
+            return Response(serializer.data)
+
+        member = Members.objects.filter(phone_no_secondary_user=request.user.username)
+
+        if member.exists():
+            serializer = MembersSerializer(member.first())
+
+            return Response(serializer.data)
+
+        data = {
+            'status': 'Not Found'
+        }
+        return Response(data, status=status.HTTP_404_NOT_FOUND)
+
+    def post(self, request, format=None):
+        serializer = None
+
+        if hasattr(request.user, 'adminprofile'):
+            serializer = AdminProfileSerializer(request.user.adminprofile, data=request.data)
+        
+        primary_user = FileUpload.objects.filter(phone_no_primary=request.user.username)
+
+        if primary_user.exists():
+            serializer = PrimaryUserProfileSerializer(primary_user.first(), data=request.data)
+
+            return Response(serializer.data)
+
+        member = Members.objects.filter(phone_no_secondary_user=request.user.username)
+
+        if member.exists():
+            serializer = MembersSerializer(member.first(), data=request.data)
+
+        if serializer:
+            if serializer.is_valid():
+                serializer.save()
+
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        data = {
+            'status': 'Not Found'
+        }
+        return Response(data, status=status.HTTP_404_NOT_FOUND)
 
