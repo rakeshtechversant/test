@@ -3,7 +3,8 @@ from rest_framework.validators import UniqueValidator
 from django.contrib.auth.models import User
 import requests
 from apps.church.models import UserProfile, ChurchDetails, FileUpload, OtpModels, \
-    OtpVerify, PrayerGroup, Notification, Family, Members, Notice,NoticeBereavement
+    OtpVerify, PrayerGroup, Notification, Family, Members, Notice, NoticeBereavement, \
+    UnapprovedMember
 from rest_framework.serializers import CharField
 from apps.api.token_create import get_tokens_for_user
 from django.utils.crypto import get_random_string
@@ -320,3 +321,40 @@ class MembersDetailsSerializer(serializers.ModelSerializer):
         data['user_type'] = 'SECONDARY'
 
         return data
+
+
+class UnapprovedMemberSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = UnapprovedMember
+        exclude = ['primary_user_id', 'rejected']
+
+    def create(self, validated_data):
+
+        created_by = self.context['request'].user
+
+        primary_user = FileUpload.objects.get(phone_no_primary=created_by.username)
+
+        unapproved_member = UnapprovedMember(**validated_data)
+        unapproved_member.primary_user_id = primary_user
+        unapproved_member.save()
+
+        return unapproved_member
+
+    def update(self, instance, validated_data):
+
+        instance = super().update(instance, validated_data)
+        instance.rejected = False
+        instance.save()
+
+        return instance
+
+    def to_representation(self, obj):
+
+        data = super().to_representation(obj)
+
+        data['rejected'] = obj.rejected
+        data['primary_user_id'] = obj.primary_user_id.primary_user_id
+
+        return data
+

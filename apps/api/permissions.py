@@ -1,4 +1,5 @@
 from rest_framework.permissions import BasePermission,SAFE_METHODS
+from apps.church.models import FileUpload
 
 class IsOwnerOrReadOnly(BasePermission):
     message = 'You must be the owner of the object'
@@ -14,6 +15,20 @@ class IsOwnerOrReadOnly(BasePermission):
             return True
         return False
 
+
+class IsPrimaryUserOrReadOnly(BasePermission):
+
+    def has_permission(self,request,view):
+        
+        if request.method in ['POST', 'PUT', 'PATCH']:
+            if  FileUpload.objects.filter(
+                phone_no_primary=request.user.username).exists():
+
+                return True
+        else:
+            return True
+
+        return False
 
 
 
