@@ -81,7 +81,7 @@ class UserListSerializer(serializers.ModelSerializer):
 class ChurchVicarSerializer(serializers.ModelSerializer):
     class Meta:
         model = ChurchDetails
-        fields = ['vicar_inf','vicar_image']
+        fields = ['vicar_inf','vicar_image','vicar_name']
 
 class ChurchHistorySerializer(serializers.ModelSerializer):
     class Meta:
