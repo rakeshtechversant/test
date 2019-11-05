@@ -1000,12 +1000,13 @@ class FamilyMemberDetails(ListAPIView):
 
             page_nated_data = self.get_paginated_response(serializer.data).data
             data.update(page_nated_data)
-            data['response'] = data.pop('results')
+            # data['response'] = data.pop('results')
 
             primary_user_id =UserDetailsRetrieveSerializer(self.primary_user).data
 
-            data['response'].insert(0, primary_user_id)
-
+            
+            data['response'] = {'family_members':data}
+            data['response']['family_members'].insert(0, primary_user_id)
             return Response(data)
 
 
@@ -1014,12 +1015,16 @@ class FamilyMemberDetails(ListAPIView):
         data = {
             'code': 200,
             'status': "OK",
-            'response': serializer.data
+            
         }
 
         primary_user_id = UserDetailsRetrieveSerializer(self.primary_user).data
+        # family = Family.objects.get(primary_user_id=primary_user_id)
 
-        data['response'].insert(0, primary_user_id)
+        data['response'] = {'family_members':serializer.data,'family_name':self.primary_user.get_file_upload.first().name,'family_about':self.primary_user.get_file_upload.first().about,'family_image':self.primary_user.get_file_upload.first().image.url}
+        data['response']['family_members'].insert(0, primary_user_id)
         
+
+
         return Response(data)
 

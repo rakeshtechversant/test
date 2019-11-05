@@ -257,11 +257,11 @@ class MemberProfileSerializer(serializers.ModelSerializer):
 
 class UserDetailsRetrieveSerializer(serializers.ModelSerializer):
     in_memory_date = serializers.SerializerMethodField()
-    family_name = serializers.SerializerMethodField()
-    family_description = serializers.SerializerMethodField()
+    # family_name = serializers.SerializerMethodField()
+    # family_description = serializers.SerializerMethodField()
     class Meta:
         model = FileUpload
-        fields = ['primary_user_id','image','name','address','phone_no_primary','phone_no_secondary','dob','dom','blood_group','email','in_memory','in_memory_date','occupation','about','family_name','family_description']
+        fields = ['primary_user_id','image','name','address','phone_no_primary','phone_no_secondary','dob','dom','blood_group','email','in_memory','in_memory_date','occupation','about']
 
     def get_in_memory_date(self, obj):
         date = obj.in_memory_date
@@ -270,19 +270,19 @@ class UserDetailsRetrieveSerializer(serializers.ModelSerializer):
         else:
             return None
 
-    def get_family_name(self, obj):
-        try:
-            name = obj.get_file_upload.get().name
-        except:
-            name = None
-        return name
+    # def get_family_name(self, obj):
+    #     try:
+    #         name = obj.get_file_upload.get().name
+    #     except:
+    #         name = None
+    #     return name
 
-    def get_family_description(self, obj):
-        try:
-            about = obj.get_file_upload.get().about
-        except:
-            about = None
-        return about
+    # def get_family_description(self, obj):
+    #     try:
+    #         about = obj.get_file_upload.get().about
+    #     except:
+    #         about = None
+    #     return about
 
 class MembersDetailsSerializer(serializers.ModelSerializer):
     primary_name = serializers.SerializerMethodField()
