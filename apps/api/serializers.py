@@ -369,7 +369,10 @@ class MemberSerializer(serializers.ModelSerializer):
 
         data = super().to_representation(obj)
 
-        data['family_name'] = obj.primary_user_id.get_file_upload.first()
+        if obj.primary_user_id.get_file_upload.first():
+            data['family_name'] = obj.primary_user_id.get_file_upload.first().name
+        else:
+            data['family_name'] = ''
 
         return data
 
@@ -384,7 +387,10 @@ class PrimaryUserSerializer(serializers.ModelSerializer):
 
         data = super().to_representation(obj)
 
-        data['family_name'] = obj.get_file_upload.first()
+        if obj.get_file_upload.first():
+            data['family_name'] = obj.get_file_upload.first().name
+        else:
+            data['family_name'] = ''
 
         return data
 
