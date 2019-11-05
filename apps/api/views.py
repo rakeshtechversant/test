@@ -384,8 +384,13 @@ class UserListView(ListAPIView):
     permission_classes = [AllowAny]
 
     def list(self, request, *args, **kwargs):
-        queryset_primary = PrimaryUserSerializer(FileUpload.objects.all(), many=True).data
-        queryset_secondary = MemberSerializer(Members.objects.all(), many=True).data
+
+        context ={
+            'request': request
+        }
+        
+        queryset_primary = PrimaryUserSerializer(FileUpload.objects.all(), many=True, context=context).data
+        queryset_secondary = MemberSerializer(Members.objects.all(), many=True, context=context).data
 
         response = []
         for primary in queryset_primary:

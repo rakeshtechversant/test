@@ -369,10 +369,15 @@ class MemberSerializer(serializers.ModelSerializer):
 
         data = super().to_representation(obj)
 
+        request = self.context['request']
+
         if obj.primary_user_id.get_file_upload.first():
             data['family_name'] = obj.primary_user_id.get_file_upload.first().name
         else:
             data['family_name'] = ''
+
+        if obj.image:
+            data['image'] = request.build_absolute_uri(obj.image.url)
 
         data['user_type'] = 'secondary'
 
@@ -389,10 +394,15 @@ class PrimaryUserSerializer(serializers.ModelSerializer):
 
         data = super().to_representation(obj)
 
+        request = self.context['request']
+
         if obj.get_file_upload.first():
             data['family_name'] = obj.get_file_upload.first().name
         else:
             data['family_name'] = ''
+
+        if obj.image:
+            data['image'] = request.build_absolute_uri(obj.image.url)
 
         data['user_type'] = 'primary'
 
