@@ -107,6 +107,8 @@ class ChurchDetails(models.Model):
     cover_image = models.FileField(upload_to='pan_folder/', null=True, blank=True)
     address = models.CharField(max_length=200, null=True, blank=True)
     vicar_inf = models.TextField(max_length=1000, null=True, blank=True)
+    vicar_image=models.FileField(upload_to='pan_folder/', null=True, blank=True)
+    vicar_name=models.CharField(max_length=100,null=True,blank=True)
 
     class Meta:
         verbose_name_plural = "ChurchDetails"

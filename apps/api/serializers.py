@@ -71,26 +71,17 @@ class UserRetrieveSerializer(serializers.ModelSerializer):
 
 
 class UserListSerializer(serializers.ModelSerializer):
-    sec_member=serializers.SerializerMethodField()
-    group_name=serializers.SerializerMethodField()
-    occupation=serializers.SerializerMethodField()
+
     class Meta:
         model = FileUpload
-        fields = ['sec_member','primary_user_id','name','address','phone_no_primary','phone_no_secondary','dob','dom','blood_group','email']
+        fields = ['primary_user_id','name','address','phone_no_primary','phone_no_secondary','dob','dom','blood_group','email','occupation','about','marital_status']
 
-
-    def get_sec_member(self, obj):
-        name = obj.get_primary_user.member_name
-        if name:
-            serializer = UserRetrieveSerializer(name)
-            return name
-        return None
 
 
 class ChurchVicarSerializer(serializers.ModelSerializer):
     class Meta:
         model = ChurchDetails
-        fields = ['vicar_inf']
+        fields = ['vicar_inf','vicar_image','vicar_name']
 
 class ChurchHistorySerializer(serializers.ModelSerializer):
     class Meta:
