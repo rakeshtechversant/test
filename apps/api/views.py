@@ -382,43 +382,37 @@ class UserListView(ListAPIView):
     permission_classes = [AllowAny]
 
 
-    def get_queryset(self, *args, **kwargs):
-        user_list = FileUpload.objects.values()
-        self.primary_user = user_list
-        return user_list
+    # def get_queryset(self, *args, **kwargs):
+    #     user_list = FileUpload.objects.values()
+    #     self.primary_user = user_list
+    #     return user_list
 
     def list(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset())
-
-        page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-
-            data = {
-                'code': 200,
-                'status': "OK",
-            }
-
-            page_nated_data = self.get_paginated_response(serializer.data).data
-            data.update(page_nated_data)
-            data['response'] = data.pop('results')
-            primary_user_id =UserRetrieveSerializer(self.primary_user).data
-
-            return Response(data)
-
-
-        serializer = self.get_serializer(queryset, many=True)
-
-        data = {
+        queryset_primary = FileUpload.objects.values()
+        queryset_secondary = Members.objects.values()
+        data={
             'code': 200,
             'status': "OK",
-            'response': serializer.data
-        }
-        primary_user_id = UserRetrieveSerializer(self.primary_user).data
+            'response_primary': queryset_primary,
+            'response_secondary': queryset_secondary
 
-        data['response'].insert(0, primary_user_id)
+        }
 
         return Response(data)
+
+
+        # serializer = self.get_serializer(queryset, many=True)
+        #
+        # data = {
+        #     'code': 200,
+        #     'status': "OK",
+        #     'response': serializer.data
+        # }
+        # primary_user_id = UserRetrieveSerializer(self.primary_user).data
+        #
+        # data['response'].insert(0, primary_user_id)
+        #
+        # return Response(data)
 
 
 
