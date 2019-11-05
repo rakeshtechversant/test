@@ -387,11 +387,61 @@ class UserListView(ListAPIView):
         queryset_primary = PrimaryUserSerializer(FileUpload.objects.all(), many=True).data
         queryset_secondary = MemberSerializer(Members.objects.all(), many=True).data
 
+        response = []
+        for primary in queryset_primary:
+
+            new_data ={
+                'user_id' : primary['primary_user_id'],
+                'name': primary['name'],
+                'image': primary['image'],
+                'address': primary['address'],
+                'phone_no_primary': primary['phone_no_primary'],
+                'phone_no_secondary': primary['phone_no_secondary'],
+                'dob': primary['dob'],
+                'dom': primary['dom'],
+                'blood_group': primary['blood_group'],
+                'email': primary['email'],
+                'occupation': primary['occupation'],
+                'about': primary['about'],
+                'marital_status': primary['marital_status'],
+                'in_memory': primary['in_memory'],
+                'in_memory_date': primary['in_memory_date'],
+                'family_name': primary['family_name'],
+                'user_type': primary['user_type']
+            }
+
+            response.append(new_data)
+
+        for secondary in queryset_secondary:
+
+            new_data ={
+                'user_id' : secondary['secondary_user_id'],
+                'name': secondary['member_name'],
+                'image': secondary['image'],
+                'phone_no_primary': secondary['phone_no_secondary_user'],
+                'phone_no_secondary': secondary['phone_no_secondary_user_secondary'],
+                'dob': secondary['dob'],
+                'dom': secondary['dom'],
+                'blood_group': secondary['blood_group'],
+                'email': secondary['email'],
+                'occupation': secondary['occupation'],
+                'about': secondary['about'],
+                'marital_status': secondary['marital_status'],
+                'in_memory': secondary['in_memory'],
+                'in_memory_date': secondary['in_memory_date'],
+                'family_name': secondary['family_name'],
+                'user_type': secondary['user_type'],
+                'relation': secondary['relation'],
+                'primary_user_id': secondary['primary_user_id']
+            }
+
+            response.append(new_data)
+
+
         data={
             'code': 200,
             'status': "OK",
-            'response_primary': queryset_primary,
-            'response_secondary': queryset_secondary
+            'responsey': response
 
             }
 

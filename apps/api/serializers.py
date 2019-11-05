@@ -374,6 +374,8 @@ class MemberSerializer(serializers.ModelSerializer):
         else:
             data['family_name'] = ''
 
+        data['user_type'] = 'secondary'
+
         return data
 
 
@@ -391,6 +393,8 @@ class PrimaryUserSerializer(serializers.ModelSerializer):
             data['family_name'] = obj.get_file_upload.first().name
         else:
             data['family_name'] = ''
+
+        data['user_type'] = 'primary'
 
         return data
 
