@@ -479,7 +479,7 @@ class UserDetailView(RetrieveAPIView):
 class ChurchVicarView(RetrieveAPIView):
     queryset = ChurchDetails.objects.all()
     serializer_class = ChurchVicarSerializer
-    permission_classes = [IsAdminUser]
+    permission_classes = [AllowAny]
 
 
 class ChurchHistoryView(RetrieveAPIView):
