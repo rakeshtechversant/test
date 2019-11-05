@@ -388,11 +388,10 @@ class UserListView(ListAPIView):
         queryset_secondary = MemberSerializer(Members.objects.all(), many=True).data
 
         data={
+
             'code': 200,
             'status': "OK",
-            'response_primary': queryset_primary,
-            'response_secondary': queryset_secondary
-
+            'response': serializer.data
         }
 
         return Response(data)

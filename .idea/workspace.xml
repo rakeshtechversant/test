@@ -2,12 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="9dc1929e-c6c2-4976-bb2d-d18106f4d9c3" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/apps/api/serializers.py" beforeDir="false" afterPath="$PROJECT_DIR$/apps/api/serializers.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/apps/api/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/apps/api/views.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/apps/church/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/apps/church/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/church_project/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/church_project/settings.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -17,11 +13,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/apps/api/views.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-445">
-              <caret line="637" column="75" selection-start-line="637" selection-start-column="71" selection-end-line="637" selection-end-column="75" />
+            <state relative-caret-position="165">
+              <caret line="418" column="9" lean-forward="true" selection-start-line="418" selection-start-column="9" selection-end-line="418" selection-end-column="9" />
               <folding>
                 <element signature="e#0#35#0" expanded="true" />
               </folding>
@@ -30,22 +26,10 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/apps/church/models.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="348">
-              <caret line="130" column="20" selection-start-line="130" selection-start-column="4" selection-end-line="130" selection-end-column="20" />
-              <folding>
-                <element signature="e#0#28#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/apps/church/urls.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="136">
-              <caret line="11" column="39" selection-start-line="11" selection-start-column="39" selection-end-line="11" selection-end-column="39" />
+            <state relative-caret-position="282">
+              <caret line="33" column="46" selection-start-line="33" selection-start-column="46" selection-end-line="33" selection-end-column="46" />
               <folding>
                 <element signature="e#0#37#0" expanded="true" />
               </folding>
@@ -54,12 +38,12 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/church_project/settings.py">
+        <entry file="file://$PROJECT_DIR$/apps/church/models.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1305">
-              <caret line="89" column="59" selection-start-line="89" selection-start-column="59" selection-end-line="89" selection-end-column="59" />
+            <state relative-caret-position="169">
+              <caret line="42" column="107" selection-start-line="42" selection-start-column="92" selection-end-line="42" selection-end-column="107" />
               <folding>
-                <element signature="e#315#324#0" expanded="true" />
+                <element signature="e#0#28#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -68,7 +52,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/church_project/urls.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="405">
+            <state relative-caret-position="468">
               <caret line="34" column="76" selection-start-line="34" selection-start-column="76" selection-end-line="34" selection-end-column="76" />
               <folding>
                 <element signature="e#638#670#0" expanded="true" />
@@ -89,11 +73,11 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/apps/api/serializers.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="271">
-              <caret line="63" column="28" selection-start-line="63" selection-start-column="6" selection-end-line="63" selection-end-column="28" />
+            <state relative-caret-position="129">
+              <caret line="72" column="6" selection-start-line="72" selection-start-column="6" selection-end-line="72" selection-end-column="6" />
               <folding>
                 <element signature="e#0#38#0" expanded="true" />
               </folding>
@@ -104,8 +88,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/apps/api/urls.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="195">
-              <caret line="13" column="43" selection-start-line="13" selection-start-column="29" selection-end-line="13" selection-end-column="43" />
+            <state relative-caret-position="132">
+              <caret line="14" column="32" selection-start-line="14" selection-start-column="32" selection-end-line="14" selection-end-column="32" />
               <folding>
                 <element signature="e#0#37#0" expanded="true" />
               </folding>
@@ -131,10 +115,13 @@
       <find>PrayerGroupBasedFamilyView</find>
       <find>lista</find>
       <find>cards</find>
-      <find>pdb</find>
       <find>UserRetrieveSerializer</find>
       <find>def create</find>
       <find>none</find>
+      <find>pdb</find>
+      <find>UserListView</find>
+      <find>tokena</find>
+      <find>member</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -145,7 +132,6 @@
       <list>
         <option value="$PROJECT_DIR$/church_project/wsgi.py" />
         <option value="$PROJECT_DIR$/requirements.txt" />
-        <option value="$PROJECT_DIR$/apps/api/urls.py" />
         <option value="$PROJECT_DIR$/apps/church/admin.py" />
         <option value="$PROJECT_DIR$/apps/api/admin.py" />
         <option value="$PROJECT_DIR$/apps/api/models.py" />
@@ -154,6 +140,7 @@
         <option value="$PROJECT_DIR$/church_project/urls.py" />
         <option value="$PROJECT_DIR$/apps/church/models.py" />
         <option value="$PROJECT_DIR$/apps/api/serializers.py" />
+        <option value="$PROJECT_DIR$/apps/api/urls.py" />
         <option value="$PROJECT_DIR$/apps/api/views.py" />
       </list>
     </option>
@@ -204,6 +191,11 @@
               <item name="church-app" type="462c0819:PsiDirectoryNode" />
               <item name="church_project" type="462c0819:PsiDirectoryNode" />
             </path>
+            <path>
+              <item name="church-app" type="b2602c69:ProjectViewProjectNode" />
+              <item name="church-app" type="462c0819:PsiDirectoryNode" />
+              <item name="templates" type="462c0819:PsiDirectoryNode" />
+            </path>
           </expand>
           <select />
         </subPane>
@@ -231,7 +223,6 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="69" y="-4" width="1297" height="772" extended-state="6" />
-    <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" weight="0.24960753" />
       <window_info id="Structure" order="1" weight="0.25" />
@@ -244,7 +235,7 @@
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Version Control" order="7" weight="0.32998565" />
       <window_info anchor="bottom" id="Educational.CheckDetails" order="8" />
-      <window_info active="true" anchor="bottom" id="Terminal" order="9" visible="true" weight="0.21090387" />
+      <window_info active="true" anchor="bottom" id="Terminal" order="9" visible="true" weight="0.32855093" />
       <window_info anchor="bottom" id="Event Log" order="10" side_tool="true" />
       <window_info anchor="bottom" id="Python Console" order="11" weight="0.32998565" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
@@ -375,7 +366,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/church_project/urls.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="405">
+        <state relative-caret-position="468">
           <caret line="34" column="76" selection-start-line="34" selection-start-column="76" selection-end-line="34" selection-end-column="76" />
           <folding>
             <element signature="e#638#670#0" expanded="true" />
@@ -395,8 +386,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/apps/church/urls.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="136">
-          <caret line="11" column="39" selection-start-line="11" selection-start-column="39" selection-end-line="11" selection-end-column="39" />
+        <state relative-caret-position="282">
+          <caret line="33" column="46" selection-start-line="33" selection-start-column="46" selection-end-line="33" selection-end-column="46" />
           <folding>
             <element signature="e#0#37#0" expanded="true" />
           </folding>
@@ -405,8 +396,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/apps/api/urls.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="195">
-          <caret line="13" column="43" selection-start-line="13" selection-start-column="29" selection-end-line="13" selection-end-column="43" />
+        <state relative-caret-position="132">
+          <caret line="14" column="32" selection-start-line="14" selection-start-column="32" selection-end-line="14" selection-end-column="32" />
           <folding>
             <element signature="e#0#37#0" expanded="true" />
           </folding>
@@ -415,30 +406,30 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/apps/church/models.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="348">
-          <caret line="130" column="20" selection-start-line="130" selection-start-column="4" selection-end-line="130" selection-end-column="20" />
+        <state relative-caret-position="169">
+          <caret line="42" column="107" selection-start-line="42" selection-start-column="92" selection-end-line="42" selection-end-column="107" />
           <folding>
             <element signature="e#0#28#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/apps/api/views.py">
+    <entry file="file://$PROJECT_DIR$/apps/api/serializers.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-445">
-          <caret line="637" column="75" selection-start-line="637" selection-start-column="71" selection-end-line="637" selection-end-column="75" />
+        <state relative-caret-position="129">
+          <caret line="72" column="6" selection-start-line="72" selection-start-column="6" selection-end-line="72" selection-end-column="6" />
           <folding>
-            <element signature="e#0#35#0" expanded="true" />
+            <element signature="e#0#38#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/apps/api/serializers.py">
+    <entry file="file://$PROJECT_DIR$/apps/api/views.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="271">
-          <caret line="63" column="28" selection-start-line="63" selection-start-column="6" selection-end-line="63" selection-end-column="28" />
+        <state relative-caret-position="165">
+          <caret line="418" column="9" lean-forward="true" selection-start-line="418" selection-start-column="9" selection-end-line="418" selection-end-column="9" />
           <folding>
-            <element signature="e#0#38#0" expanded="true" />
+            <element signature="e#0#35#0" expanded="true" />
           </folding>
         </state>
       </provider>
