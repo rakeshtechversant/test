@@ -61,7 +61,7 @@ class Members(models.Model):
                                         null=True, blank=True)
     blood_group = models.CharField(max_length=20, null=True, blank=True)
     email = models.EmailField(max_length=254, null=True, blank=True)
-    occupation = models.CharField(max_length=200)
+    occupation = models.CharField(max_length=200, null=True, blank=True)
     about = models.TextField(max_length=1000, null=True, blank=True)
     marital_status = models.CharField(max_length=20,null=True,blank=True)
     in_memory = models.BooleanField(default=False)
@@ -71,12 +71,34 @@ class Members(models.Model):
         return self.member_name
 
 
+class UnapprovedMember(models.Model):
+    """hold details of unapproved members until admin approve
+    """
+    secondary_user_id = models.AutoField(max_length=5, primary_key=True)
+    member_name = models.CharField(max_length=255, null=True, blank=True)
+    relation = models.CharField(max_length=255, null=True, blank=True)
+    dob = models.CharField(max_length=20, null=True, blank=True)
+    dom = models.CharField(max_length=20, null=True, blank=True)
+    image = models.ImageField(upload_to='members/', null=True, blank=True)
+    phone_no_secondary_user = models.CharField(max_length=20, null=True, blank=True)
+    phone_no_secondary_user_secondary = models.CharField(max_length=20, null=True, blank=True)
+    primary_user_id = models.ForeignKey(FileUpload, on_delete=models.CASCADE, null=True, blank=True)
+    blood_group = models.CharField(max_length=20, null=True, blank=True)
+    email = models.EmailField(max_length=254, null=True, blank=True)
+    occupation = models.CharField(max_length=200, null=True, blank=True)
+    about = models.TextField(max_length=1000, null=True, blank=True)
+    marital_status = models.CharField(max_length=20,null=True,blank=True)
+    in_memory = models.BooleanField(default=False)
+    in_memory_date = models.CharField(max_length=20, null=True, blank=True)
+    rejected = models.BooleanField(default=False)
+
+
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='user_profile')
     family = models.ForeignKey(Family, on_delete=models.CASCADE, null=True, blank=True)
     dob = models.DateField(null=True, blank=True, default=timezone.now)
     address = models.TextField(max_length=500)
-    occupation = models.CharField(max_length=200)
+    occupation = models.CharField(max_length=200, null=True, blank=True)
     about = models.TextField(max_length=5000)
     profile_image = models.FileField(upload_to='cards/pan_folder/', null=True, blank=True)
     mobile_number = models.CharField(max_length=20, null=True, blank=True)

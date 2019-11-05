@@ -18,17 +18,19 @@ from django.http import JsonResponse, HttpResponse
 from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
 from rest_framework import parsers
 from rest_framework import viewsets
+from rest_framework import mixins
 from rest_framework.authentication import TokenAuthentication
+from rest_framework.decorators import action
 
-from apps.api.permissions import IsOwnerOrReadOnly
+from apps.api.permissions import IsOwnerOrReadOnly, IsPrimaryUserOrReadOnly
 from apps.api.utils import MultipartJsonParser
 from apps.api.serializers import ChurchHistorySerializer,ChurchImagesSerializer,LoginSerializer, FamilyListSerializer, UserRegistrationMobileSerializer, \
     PrayerGroupAddMembersSerializer, PrayerGroupAddSerializer, UserListSerializer, UserRetrieveSerializer, \
     UserCreateSerializer, ChurchVicarSerializer, FileUploadSerializer, OTPVeifySerializer, SecondaryaddSerializer, \
     MembersSerializer, NoticeSerializer, AdminProfileSerializer, PrimaryUserProfileSerializer, MemberProfileSerializer, NoticeBereavementSerializer, \
-    UserDetailsRetrieveSerializer, MembersDetailsSerializer
+    UserDetailsRetrieveSerializer, MembersDetailsSerializer, UnapprovedMemberSerializer
 from apps.church.models import  Members, Family, UserProfile, ChurchDetails, FileUpload, OtpModels, \
-    PrayerGroup, Notification, Notice,NoticeBereavement
+    PrayerGroup, Notification, Notice,NoticeBereavement, UnapprovedMember
 from apps.api.models import AdminProfile
 from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_400_BAD_REQUEST, HTTP_401_UNAUTHORIZED, \
 HTTP_404_NOT_FOUND
@@ -382,43 +384,37 @@ class UserListView(ListAPIView):
     permission_classes = [AllowAny]
 
 
-    def get_queryset(self, *args, **kwargs):
-        user_list = FileUpload.objects.values()
-        self.primary_user = user_list
-        return user_list
+    # def get_queryset(self, *args, **kwargs):
+    #     user_list = FileUpload.objects.values()
+    #     self.primary_user = user_list
+    #     return user_list
 
     def list(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset())
-
-        page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-
-            data = {
-                'code': 200,
-                'status': "OK",
-            }
-
-            page_nated_data = self.get_paginated_response(serializer.data).data
-            data.update(page_nated_data)
-            data['response'] = data.pop('results')
-            primary_user_id =UserRetrieveSerializer(self.primary_user).data
-
-            return Response(data)
-
-
-        serializer = self.get_serializer(queryset, many=True)
-
-        data = {
+        queryset_primary = FileUpload.objects.values()
+        queryset_secondary = Members.objects.values()
+        data={
             'code': 200,
             'status': "OK",
-            'response': serializer.data
-        }
-        primary_user_id = UserRetrieveSerializer(self.primary_user).data
+            'response_primary': queryset_primary,
+            'response_secondary': queryset_secondary
 
-        data['response'].insert(0, primary_user_id)
+        }
 
         return Response(data)
+
+
+        # serializer = self.get_serializer(queryset, many=True)
+        #
+        # data = {
+        #     'code': 200,
+        #     'status': "OK",
+        #     'response': serializer.data
+        # }
+        # primary_user_id = UserRetrieveSerializer(self.primary_user).data
+        #
+        # data['response'].insert(0, primary_user_id)
+        #
+        # return Response(data)
 
 
 
@@ -1027,4 +1023,43 @@ class FamilyMemberDetails(ListAPIView):
 
 
         return Response(data)
+
+
+class UnapprovedMember(mixins.CreateModelMixin,
+                        mixins.ListModelMixin,
+                        mixins.RetrieveModelMixin,
+                        mixins.UpdateModelMixin,
+                        viewsets.GenericViewSet):
+    lookup_field = 'pk'
+    queryset = UnapprovedMember.objects.all()
+    serializer_class = UnapprovedMemberSerializer
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated, IsPrimaryUserOrReadOnly]
+
+    @action(methods=['get'], detail=True, url_path='approve-member')
+    def approve_member(self, request, pk=None):
+
+        member = self.get_object()
+
+        data = UnapprovedMemberSerializer(member).data
+        data.pop('secondary_user_id')
+        data.pop('rejected')
+
+        primary_user = FileUpload.objects.get(pk=data.pop('primary_user_id'))
+
+        Members.objects.create(primary_user_id=primary_user, **data)
+
+        member.delete()
+
+        return Response({'success': True})
+
+    @action(methods=['get'], detail=True, url_path='reject-member')
+    def reject_member(self, request, pk=None):
+
+        member = self.get_object()
+        member.rejected = True
+        member.save()
+
+        return Response({'success': True})
+
 

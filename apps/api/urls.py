@@ -2,17 +2,18 @@ from django.urls import include, path
 from django.conf.urls import url
 
 from apps.api.views import UserLoginView,UserLoginMobileView,UserListView,UserDetailView,UserDeleteView,UserUpdateView,UserCreateView,PostsViewset,\
-OtpVerifyViewSet,SecondaryaddView, Profile
+OtpVerifyViewSet,SecondaryaddView, Profile, UnapprovedMember
 from rest_framework import routers
 
 router = routers.DefaultRouter()
 router.register(r'excel-import', PostsViewset, basename='excel_import')
+router.register(r'seconday-member-by-primary', UnapprovedMember, basename='seconday-member-by-primary')
 
 urlpatterns = [
     path('login-user/', UserLoginView.as_view(),name='login'),
     path('create/',UserCreateView.as_view(),name='create_user'),
     path('mobile-login/',UserLoginMobileView.as_view(),name='create_user_mobile'),
-    path('sec_member',UserListView.as_view(),name='user_list'),
+    path('sec_member/',UserListView.as_view(),name='user_list'),
     path('otp_verify/',OtpVerifyViewSet.as_view(),name='otp_verify'),
     path('profile/',Profile.as_view(), name='profile'),
     
