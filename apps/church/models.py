@@ -28,14 +28,17 @@ class FileUpload(models.Model):
     occupation = models.CharField(max_length=200)
     about = models.TextField(max_length=1000, null=True, blank=True)
     marital_status = models.CharField(max_length=20,null=True,blank=True)
+    in_memory = models.BooleanField(default=False)
+    in_memory_date = models.CharField(max_length=20, null=True, blank=True)
 
 
-def __str__(self):
-    return self.name
+    def __str__(self):
+        return self.name
 
 
 class Family(models.Model):
     name = models.CharField(max_length=255, null=True, blank=True)
+    about = models.TextField(max_length=500, null=True, blank=True)
     members_length = models.IntegerField(default=0)
     primary_user_id = models.ForeignKey(FileUpload, on_delete=models.CASCADE, related_name='get_file_upload', null=True,
                                         blank=True)
@@ -60,6 +63,8 @@ class Members(models.Model):
     occupation = models.CharField(max_length=200)
     about = models.TextField(max_length=1000, null=True, blank=True)
     marital_status = models.CharField(max_length=20,null=True,blank=True)
+    in_memory = models.BooleanField(default=False)
+    in_memory_date = models.CharField(max_length=20, null=True, blank=True)
 
     def __str__(self):
         return self.member_name

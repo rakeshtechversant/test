@@ -262,3 +262,70 @@ class MemberProfileSerializer(serializers.ModelSerializer):
         data['user_type'] = 'SECONDARY'
 
         return data
+
+
+class UserDetailsRetrieveSerializer(serializers.ModelSerializer):
+    in_memory_date = serializers.SerializerMethodField()
+    family_name = serializers.SerializerMethodField()
+    family_description = serializers.SerializerMethodField()
+    class Meta:
+        model = FileUpload
+        fields = ['primary_user_id','image','name','address','phone_no_primary','phone_no_secondary','dob','dom','blood_group','email','in_memory','in_memory_date','occupation','about','family_name','family_description']
+
+    def get_in_memory_date(self, obj):
+        date = obj.in_memory_date
+        if date:
+            return date
+        else:
+            return None
+
+    def get_family_name(self, obj):
+        try:
+            name = obj.get_file_upload.get().name
+        except:
+            name = None
+        return name
+
+    def get_family_description(self, obj):
+        try:
+            about = obj.get_file_upload.get().about
+        except:
+            about = None
+        return about
+
+class MembersDetailsSerializer(serializers.ModelSerializer):
+    primary_name = serializers.SerializerMethodField()
+    phone_no_primary = serializers.SerializerMethodField()
+    in_memory_date = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Members
+        fields = ['phone_no_primary','primary_name','secondary_user_id','member_name','relation','dob','dom','image','phone_no_secondary_user','primary_user_id','in_memory','in_memory_date','occupation','about']
+
+    def get_in_memory_date(self, obj):
+        date = obj.in_memory_date
+        if date:
+            return date
+        else:
+            return None
+
+    def get_primary_name(self, obj):
+        name = obj.primary_user_id.name
+        if name:
+            serializer = UserDetailsRetrieveSerializer(name)
+            return name
+        return None
+
+    def get_phone_no_primary(self, obj):
+        primary_number = obj.primary_user_id.phone_no_primary
+        if primary_number:
+            serializer = UserDetailsRetrieveSerializer(primary_number)
+            return primary_number
+        return None
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+
+        data['user_type'] = 'SECONDARY'
+
+        return data

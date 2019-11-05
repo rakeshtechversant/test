@@ -4,7 +4,7 @@ from . import views
 from rest_framework.routers import DefaultRouter
 from apps.api.views import PrayerGroupBasedFamilyView, PrayerGrouplistView, ChurchVicarView, \
     ChurchHistoryView, ChurchImagesView, PrayerGroupaddView, PrayerGroupMemberaddView, \
-    FamilyListView, FamilyMemberList, NoticeModelViewSet, SendOtp
+    FamilyListView, FamilyMemberList, NoticeModelViewSet, SendOtp, FamilyMemberDetails
 
 router = DefaultRouter()
 
@@ -31,6 +31,6 @@ urlpatterns = [
     # Generate OTP
     url(r'^get-otp/$',SendOtp.as_view(),name='send_otp'),
     
-
+     url(r'^family-member-details/(?P<pk>\d+)/$',FamilyMemberDetails.as_view(),name='family_member_details'),
 ]
 
