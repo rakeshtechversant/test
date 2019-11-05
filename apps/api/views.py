@@ -997,7 +997,17 @@ class FamilyMemberDetails(ListAPIView):
         primary_user_id = UserDetailsRetrieveSerializer(self.primary_user).data
         # family = Family.objects.get(primary_user_id=primary_user_id)
 
-        data['response'] = {'family_members':serializer.data,'family_name':self.primary_user.get_file_upload.first().name,'family_about':self.primary_user.get_file_upload.first().about,'family_image':self.primary_user.get_file_upload.first().image.url}
+        try:
+            family_image = self.primary_user.get_file_upload.first().image.url
+        except:
+            family_image = None
+
+        data['response'] = {
+            'family_members':serializer.data,
+            'family_name':self.primary_user.get_file_upload.first().name,
+            'family_about':self.primary_user.get_file_upload.first().about,
+            'family_image':family_image
+            }
         data['response']['family_members'].insert(0, primary_user_id)
         
 
