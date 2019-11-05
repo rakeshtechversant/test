@@ -25,7 +25,8 @@ from apps.api.utils import MultipartJsonParser
 from apps.api.serializers import ChurchHistorySerializer,ChurchImagesSerializer,LoginSerializer, FamilyListSerializer, UserRegistrationMobileSerializer, \
     PrayerGroupAddMembersSerializer, PrayerGroupAddSerializer, UserListSerializer, UserRetrieveSerializer, \
     UserCreateSerializer, ChurchVicarSerializer, FileUploadSerializer, OTPVeifySerializer, SecondaryaddSerializer, \
-    MembersSerializer, NoticeSerializer, AdminProfileSerializer, PrimaryUserProfileSerializer, MemberProfileSerializer, NoticeBereavementSerializer
+    MembersSerializer, NoticeSerializer, AdminProfileSerializer, PrimaryUserProfileSerializer, MemberProfileSerializer, NoticeBereavementSerializer, \
+    UserDetailsRetrieveSerializer, MembersDetailsSerializer
 from apps.church.models import  Members, Family, UserProfile, ChurchDetails, FileUpload, OtpModels, \
     PrayerGroup, Notification, Notice,NoticeBereavement
 from apps.api.models import AdminProfile
@@ -751,6 +752,60 @@ class FamilyMemberList(ListAPIView):
 
 
 
+class FamilyMemberList(ListAPIView):
+    lookup_field = 'pk'
+    queryset = Family.objects.all()
+    serializer_class = MembersSerializer
+    permission_classes = [AllowAny]
+
+    def get_queryset(self, *args, **kwargs):
+        family_id = self.kwargs['pk']
+        try:
+            family = Family.objects.get(id=family_id)
+        except Family.DoesNotExist:
+            raise exceptions.NotFound(detail="Family does not exist")
+
+        self.primary_user = family.primary_user_id
+
+        members = Members.objects.filter(primary_user_id=family.primary_user_id)
+        return members
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+
+            data = {
+                'code': 200,
+                'status': "OK",
+            }
+
+            page_nated_data = self.get_paginated_response(serializer.data).data
+            data.update(page_nated_data)
+            data['response'] = data.pop('results')
+
+            primary_user_id =UserRetrieveSerializer(self.primary_user).data
+
+            data['response'].insert(0, primary_user_id)
+
+            return Response(data)
+
+
+        serializer = self.get_serializer(queryset, many=True)
+
+        data = {
+            'code': 200,
+            'status': "OK",
+            'response': serializer.data
+        }
+
+        primary_user_id = UserRetrieveSerializer(self.primary_user).data
+
+        data['response'].insert(0, primary_user_id)
+        
+        return Response(data)
 
 class NoticeModelViewSet(ModelViewSet):
     queryset = Notice.objects.all()
@@ -850,8 +905,6 @@ class Profile(APIView):
         if primary_user.exists():
             serializer = PrimaryUserProfileSerializer(primary_user.first(), data=request.data)
 
-            return Response(serializer.data)
-
         member = Members.objects.filter(phone_no_secondary_user=request.user.username)
 
         if member.exists():
@@ -861,7 +914,19 @@ class Profile(APIView):
             if serializer.is_valid():
                 serializer.save()
 
-                return Response(serializer.data, status=status.HTTP_200_OK)
+                data = {
+                    'success': True,
+                    'message':'Profile found successfully',
+                    'user_details':serializer.data
+                }
+
+                return Response(data, status=status.HTTP_200_OK)
+
+            data = {
+                    'success': False,
+                    'message':'invalid input data',
+                    'user_details':serializer.data
+            }
             
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -869,6 +934,8 @@ class Profile(APIView):
             'status': 'Not Found'
         }
         return Response(data, status=status.HTTP_404_NOT_FOUND)
+
+        
 class NoticeBereavementView(ModelViewSet):
     queryset=NoticeBereavement.objects.all()
     serializer_class = NoticeBereavementSerializer
@@ -888,4 +955,62 @@ class NoticeBereavementView(ModelViewSet):
             secondary_id=Members.objects.filter(secondary_user_id=secondary_member)
 
 
+
+
+
+class FamilyMemberDetails(ListAPIView):
+    lookup_field = 'pk'
+    queryset = Family.objects.all()
+    serializer_class = MembersDetailsSerializer
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self, *args, **kwargs):
+        family_id = self.kwargs['pk']
+        try:
+            family = Family.objects.get(id=family_id)
+        except Family.DoesNotExist:
+            raise exceptions.NotFound(detail="Family does not exist")
+
+        self.primary_user = family.primary_user_id
+
+        members = Members.objects.filter(primary_user_id=family.primary_user_id)
+        return members
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+
+            data = {
+                'code': 200,
+                'status': "OK",
+            }
+
+            page_nated_data = self.get_paginated_response(serializer.data).data
+            data.update(page_nated_data)
+            data['response'] = data.pop('results')
+
+            primary_user_id =UserDetailsRetrieveSerializer(self.primary_user).data
+
+            data['response'].insert(0, primary_user_id)
+
+            return Response(data)
+
+
+        serializer = self.get_serializer(queryset, many=True)
+
+        data = {
+            'code': 200,
+            'status': "OK",
+            'response': serializer.data
+        }
+
+        primary_user_id = UserDetailsRetrieveSerializer(self.primary_user).data
+
+        data['response'].insert(0, primary_user_id)
+        
+        return Response(data)
 
