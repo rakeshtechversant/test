@@ -234,6 +234,7 @@ class PrimaryUserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = FileUpload
         fields = '__all__'
+        read_only_fields = ['phone_no_primary']
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
@@ -242,7 +243,22 @@ class PrimaryUserProfileSerializer(serializers.ModelSerializer):
 
         return data
 
+
 class NoticeBereavementSerializer(serializers.ModelSerializer):
     class Meta:
         model=NoticeBereavement
         fields = '__all__'
+
+
+class MemberProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Members
+        fields = '__all__'
+        read_only_fields = ['phone_no_secondary_user']
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+
+        data['user_type'] = 'SECONDARY'
+
+        return data

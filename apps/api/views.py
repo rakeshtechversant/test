@@ -25,7 +25,7 @@ from apps.api.utils import MultipartJsonParser
 from apps.api.serializers import ChurchHistorySerializer,ChurchImagesSerializer,LoginSerializer, FamilyListSerializer, UserRegistrationMobileSerializer, \
     PrayerGroupAddMembersSerializer, PrayerGroupAddSerializer, UserListSerializer, UserRetrieveSerializer, \
     UserCreateSerializer, ChurchVicarSerializer, FileUploadSerializer, OTPVeifySerializer, SecondaryaddSerializer, \
-    MembersSerializer, NoticeSerializer, AdminProfileSerializer, PrimaryUserProfileSerializer,NoticeBereavementSerializer
+    MembersSerializer, NoticeSerializer, AdminProfileSerializer, PrimaryUserProfileSerializer, MemberProfileSerializer, NoticeBereavementSerializer
 from apps.church.models import  Members, Family, UserProfile, ChurchDetails, FileUpload, OtpModels, \
     PrayerGroup, Notification, Notice,NoticeBereavement
 from apps.api.models import AdminProfile
@@ -786,7 +786,7 @@ class Profile(APIView):
         member = Members.objects.filter(phone_no_secondary_user=request.user.username)
 
         if member.exists():
-            serializer = MembersSerializer(member.first())
+            serializer = MemberProfileSerializer(member.first())
 
             return Response(serializer.data)
 
@@ -811,7 +811,7 @@ class Profile(APIView):
         member = Members.objects.filter(phone_no_secondary_user=request.user.username)
 
         if member.exists():
-            serializer = MembersSerializer(member.first(), data=request.data)
+            serializer = MemberProfileSerializer(member.first(), data=request.data)
 
         if serializer:
             if serializer.is_valid():
