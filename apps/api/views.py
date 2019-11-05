@@ -829,21 +829,21 @@ class Profile(APIView):
         if hasattr(request.user, 'adminprofile'):
             serializer = AdminProfileSerializer(request.user.adminprofile)
 
-            return Response(serializer.data)
+            return Response({'success': True,'message':'Profile found successfully','user_details':serializer.data}, status=HTTP_200_OK)
         
         primary_user = FileUpload.objects.filter(phone_no_primary=request.user.username)
 
         if primary_user.exists():
             serializer = PrimaryUserProfileSerializer(primary_user.first())
 
-            return Response(serializer.data)
+            return Response({'success': True,'message':'Profile found successfully','user_details':serializer.data}, status=HTTP_200_OK)
 
         member = Members.objects.filter(phone_no_secondary_user=request.user.username)
 
         if member.exists():
             serializer = MemberProfileSerializer(member.first())
 
-            return Response(serializer.data)
+            return Response({'success': True,'message':'Profile found successfully','user_details':serializer.data}, status=HTTP_200_OK)
 
         data = {
             'status': 'Not Found'
@@ -861,8 +861,6 @@ class Profile(APIView):
         if primary_user.exists():
             serializer = PrimaryUserProfileSerializer(primary_user.first(), data=request.data)
 
-            return Response(serializer.data)
-
         member = Members.objects.filter(phone_no_secondary_user=request.user.username)
 
         if member.exists():
@@ -872,7 +870,19 @@ class Profile(APIView):
             if serializer.is_valid():
                 serializer.save()
 
-                return Response(serializer.data, status=status.HTTP_200_OK)
+                data = {
+                    'success': True,
+                    'message':'Profile found successfully',
+                    'user_details':serializer.data
+                }
+
+                return Response(data, status=status.HTTP_200_OK)
+
+            data = {
+                    'success': False,
+                    'message':'invalid input data',
+                    'user_details':serializer.data
+            }
             
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -880,6 +890,8 @@ class Profile(APIView):
             'status': 'Not Found'
         }
         return Response(data, status=status.HTTP_404_NOT_FOUND)
+
+        
 class NoticeBereavementView(ModelViewSet):
     queryset=NoticeBereavement.objects.all()
     serializer_class = NoticeBereavementSerializer
