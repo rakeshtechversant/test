@@ -3,7 +3,7 @@ from rest_framework.validators import UniqueValidator
 from django.contrib.auth.models import User
 import requests
 from apps.church.models import UserProfile, ChurchDetails, FileUpload, OtpModels, \
-    OtpVerify, PrayerGroup, Notification, Family, Members, Notice
+    OtpVerify, PrayerGroup, Notification, Family, Members, Notice,NoticeBereavement
 from rest_framework.serializers import CharField
 from apps.api.token_create import get_tokens_for_user
 from django.utils.crypto import get_random_string
@@ -71,12 +71,20 @@ class UserRetrieveSerializer(serializers.ModelSerializer):
 
 
 class UserListSerializer(serializers.ModelSerializer):
+    sec_member=serializers.SerializerMethodField()
+    group_name=serializers.SerializerMethodField()
+    occupation=serializers.SerializerMethodField()
     class Meta:
         model = FileUpload
-        fields = ['primary_user_id','name','address','phone_no_primary','phone_no_secondary','dob','dom','blood_group','email']
+        fields = ['sec_member','primary_user_id','name','address','phone_no_primary','phone_no_secondary','dob','dom','blood_group','email']
 
 
-
+    def get_sec_member(self, obj):
+        name = obj.get_primary_user.member_name
+        if name:
+            serializer = UserRetrieveSerializer(name)
+            return name
+        return None
 
 
 class ChurchVicarSerializer(serializers.ModelSerializer):
@@ -233,3 +241,8 @@ class PrimaryUserProfileSerializer(serializers.ModelSerializer):
         data['user_type'] = 'PRIMARY'
 
         return data
+
+class NoticeBereavementSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=NoticeBereavement
+        fields = '__all__'

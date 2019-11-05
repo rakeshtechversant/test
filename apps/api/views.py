@@ -25,9 +25,9 @@ from apps.api.utils import MultipartJsonParser
 from apps.api.serializers import ChurchHistorySerializer,ChurchImagesSerializer,LoginSerializer, FamilyListSerializer, UserRegistrationMobileSerializer, \
     PrayerGroupAddMembersSerializer, PrayerGroupAddSerializer, UserListSerializer, UserRetrieveSerializer, \
     UserCreateSerializer, ChurchVicarSerializer, FileUploadSerializer, OTPVeifySerializer, SecondaryaddSerializer, \
-    MembersSerializer, NoticeSerializer, AdminProfileSerializer, PrimaryUserProfileSerializer
+    MembersSerializer, NoticeSerializer, AdminProfileSerializer, PrimaryUserProfileSerializer,NoticeBereavementSerializer
 from apps.church.models import  Members, Family, UserProfile, ChurchDetails, FileUpload, OtpModels, \
-    PrayerGroup, Notification, Notice
+    PrayerGroup, Notification, Notice,NoticeBereavement
 from apps.api.models import AdminProfile
 from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_400_BAD_REQUEST, HTTP_401_UNAUTHORIZED, \
 HTTP_404_NOT_FOUND
@@ -603,6 +603,53 @@ class PrayerGroupBasedFamilyView(ListAPIView):
         return Response(data)
 
 
+# class PrayerGroupBasedMembersView(ListAPIView):
+#     queryset = PrayerGroup.objects.all()
+#     serializer_class = MembersSerializer
+#     permission_classes = [AllowAny]
+#
+#     def get_queryset(self, *args, **kwargs):
+#         prayer_id = self.kwargs['pk']
+#
+#         try:
+#             prayer_group = PrayerGroup.objects.get(id=prayer_id)
+#         except PrayerGroup.DoesNotExist:
+#             raise exceptions.NotFound(detail="Prayer group does not exist")
+#
+#         member_list = Members.objects.filter(primary_user_id=prayer_group.primary_user_id)
+#         return member_list
+#
+#     def list(self, request, *args, **kwargs):
+#         queryset = self.filter_queryset(self.get_queryset())
+#
+#         page = self.paginate_queryset(queryset)
+#         if page is not None:
+#             serializer = self.get_serializer(page, many=True)
+#
+#             data = {
+#                 'code': 200,
+#                 'status': "OK",
+#             }
+#
+#             page_nated_data = self.get_paginated_response(serializer.data).data
+#             data.update(page_nated_data)
+#             data['response'] = data.pop('results')
+#
+#             return Response(data)
+#
+#
+#         serializer = self.get_serializer(queryset, many=True)
+#
+#         data = {
+#             'code': 200,
+#             'status': "OK",
+#             'response': serializer.data
+#         }
+#
+#         return Response(data)
+
+
+
 class FamilyMemberList(ListAPIView):
     lookup_field = 'pk'
     queryset = Family.objects.all()
@@ -778,4 +825,23 @@ class Profile(APIView):
             'status': 'Not Found'
         }
         return Response(data, status=status.HTTP_404_NOT_FOUND)
+class NoticeBereavementView(ModelViewSet):
+    queryset=NoticeBereavement.objects.all()
+    serializer_class = NoticeBereavementSerializer
+    permission_classes = [IsAdminUser]
+
+    def create(self, request):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        title = serializer.validated_data.get("title", None)
+        description = serializer.validated_data.get("description", None)
+        prayer_group = serializer.validated_data.get("prayer_group", None)
+        family = serializer.validated_data.get("family", None)
+        primary_member = serializer.validated_data.get("primary_member", None)
+        secondary_member = serializer.validated_data.get("secondary_member", None)
+        user_type=serializer.validated_data.get("user_type", None)
+        if user_type=='SECONDARY':
+            secondary_id=Members.objects.filter(secondary_user_id=secondary_member)
+
+
 

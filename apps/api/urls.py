@@ -12,7 +12,7 @@ urlpatterns = [
     path('login-user/', UserLoginView.as_view(),name='login'),
     path('create/',UserCreateView.as_view(),name='create_user'),
     path('mobile-login/',UserLoginMobileView.as_view(),name='create_user_mobile'),
-    path('lists/',UserListView.as_view(),name='user_list'),
+    path('sec_member',UserListView.as_view(),name='user_list'),
     path('otp_verify/',OtpVerifyViewSet.as_view(),name='otp_verify'),
     path('profile/',Profile.as_view(), name='profile'),
     
