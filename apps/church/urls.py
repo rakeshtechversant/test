@@ -31,6 +31,6 @@ urlpatterns = [
     # Generate OTP
     url(r'^get-otp/$',SendOtp.as_view(),name='send_otp'),
     
-     url(r'^family-member-details/(?P<pk>\d+)/$',FamilyMemberDetails.as_view(),name='family_member_details'),
+     url(r'^family-member-details/$',FamilyMemberDetails.as_view(),name='family_member_details'),
 ]
 

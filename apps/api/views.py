@@ -922,13 +922,22 @@ class FamilyMemberDetails(ListAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self, *args, **kwargs):
-        family_id = self.kwargs['pk']
-        try:
-            family = Family.objects.get(id=family_id)
-        except Family.DoesNotExist:
-            raise exceptions.NotFound(detail="Family does not exist")
 
-        self.primary_user = family.primary_user_id
+        primary_user = FileUpload.objects.filter(phone_no_primary=self.request.user.username)
+        
+        try:
+            if primary_user.exists():
+                family = Family.objects.get(primary_user_id=primary_user.first())
+
+            member = Members.objects.filter(phone_no_secondary_user=self.request.user.username)
+
+            if member.exists():
+                family = Family.objects.get(primary_user_id=member.first().primary_user_id)
+
+            self.primary_user = family.primary_user_id
+
+        except:
+            raise exceptions.NotFound(detail="Family does not exist")
 
         members = Members.objects.filter(primary_user_id=family.primary_user_id)
         return members
