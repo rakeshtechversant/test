@@ -774,21 +774,21 @@ class Profile(APIView):
         if hasattr(request.user, 'adminprofile'):
             serializer = AdminProfileSerializer(request.user.adminprofile)
 
-            return Response(serializer.data)
+            return Response({'success': True,'message':'Profile found successfully','user_details':serializer.data}, status=HTTP_200_OK)
         
         primary_user = FileUpload.objects.filter(phone_no_primary=request.user.username)
 
         if primary_user.exists():
             serializer = PrimaryUserProfileSerializer(primary_user.first())
 
-            return Response(serializer.data)
+            return Response({'success': True,'message':'Profile found successfully','user_details':serializer.data}, status=HTTP_200_OK)
 
         member = Members.objects.filter(phone_no_secondary_user=request.user.username)
 
         if member.exists():
             serializer = MemberProfileSerializer(member.first())
 
-            return Response(serializer.data)
+            return Response({'success': True,'message':'Profile found successfully','user_details':serializer.data}, status=HTTP_200_OK)
 
         data = {
             'status': 'Not Found'
