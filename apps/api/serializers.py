@@ -68,7 +68,7 @@ class FamilyListSerializer(serializers.ModelSerializer):
 class UserRetrieveSerializer(serializers.ModelSerializer):
     class Meta:
         model = FileUpload
-        fields = ['primary_user_id','image','name','address','phone_no_primary','phone_no_secondary','dob','dom','blood_group','email']
+        fields = '__all__'
 
 
 class UserListSerializer(serializers.ModelSerializer):
@@ -357,4 +357,35 @@ class UnapprovedMemberSerializer(serializers.ModelSerializer):
         data['primary_user_id'] = obj.primary_user_id.primary_user_id
 
         return data
+
+
+class MemberSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Members
+        fields = '__all__'
+        read_only_fields = ['secondary_user_id']
+
+    def to_representation(self, obj):
+
+        data = super().to_representation(obj)
+
+        data['family_name'] = obj.primary_user_id.get_file_upload.first()
+
+        return data
+
+
+class PrimaryUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FileUpload
+        fields = '__all__'
+        read_only_fields = ['primary_user_id']
+
+    def to_representation(self, obj):
+
+        data = super().to_representation(obj)
+
+        data['family_name'] = obj.get_file_upload.first()
+
+        return data
+
 

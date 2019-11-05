@@ -25,7 +25,7 @@ class FileUpload(models.Model):
     dom = models.CharField(max_length=20, null=True, blank=True)
     blood_group = models.CharField(max_length=20, null=True, blank=True)
     email = models.EmailField(max_length=254, null=True, blank=True)
-    occupation = models.CharField(max_length=200)
+    occupation = models.CharField(max_length=200, null=True, blank=True)
     about = models.TextField(max_length=1000, null=True, blank=True)
     marital_status = models.CharField(max_length=20,null=True,blank=True)
     in_memory = models.BooleanField(default=False)
@@ -91,6 +91,9 @@ class UnapprovedMember(models.Model):
     in_memory = models.BooleanField(default=False)
     in_memory_date = models.CharField(max_length=20, null=True, blank=True)
     rejected = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.member_name
 
 
 class UserProfile(models.Model):

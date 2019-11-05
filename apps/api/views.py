@@ -28,7 +28,7 @@ from apps.api.serializers import ChurchHistorySerializer,ChurchImagesSerializer,
     PrayerGroupAddMembersSerializer, PrayerGroupAddSerializer, UserListSerializer, UserRetrieveSerializer, \
     UserCreateSerializer, ChurchVicarSerializer, FileUploadSerializer, OTPVeifySerializer, SecondaryaddSerializer, \
     MembersSerializer, NoticeSerializer, AdminProfileSerializer, PrimaryUserProfileSerializer, MemberProfileSerializer, NoticeBereavementSerializer, \
-    UserDetailsRetrieveSerializer, MembersDetailsSerializer, UnapprovedMemberSerializer
+    UserDetailsRetrieveSerializer, MembersDetailsSerializer, UnapprovedMemberSerializer, MemberSerializer, PrimaryUserSerializer
 from apps.church.models import  Members, Family, UserProfile, ChurchDetails, FileUpload, OtpModels, \
     PrayerGroup, Notification, Notice,NoticeBereavement, UnapprovedMember
 from apps.api.models import AdminProfile
@@ -383,15 +383,10 @@ class UserListView(ListAPIView):
     serializer_class = UserListSerializer
     permission_classes = [AllowAny]
 
-
-    # def get_queryset(self, *args, **kwargs):
-    #     user_list = FileUpload.objects.values()
-    #     self.primary_user = user_list
-    #     return user_list
-
     def list(self, request, *args, **kwargs):
-        queryset_primary = FileUpload.objects.values()
-        queryset_secondary = Members.objects.values()
+        queryset_primary = PrimaryUserSerializer(FileUpload.objects.all(), many=True).data
+        queryset_secondary = MemberSerializer(Members.objects.all(), many=True).data
+
         data={
             'code': 200,
             'status': "OK",
@@ -401,21 +396,6 @@ class UserListView(ListAPIView):
         }
 
         return Response(data)
-
-
-        # serializer = self.get_serializer(queryset, many=True)
-        #
-        # data = {
-        #     'code': 200,
-        #     'status': "OK",
-        #     'response': serializer.data
-        # }
-        # primary_user_id = UserRetrieveSerializer(self.primary_user).data
-        #
-        # data['response'].insert(0, primary_user_id)
-        #
-        # return Response(data)
-
 
 
 class FamilyListView(ListAPIView):
