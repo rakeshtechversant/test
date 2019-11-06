@@ -1328,8 +1328,10 @@ class UserNoticeList(ListAPIView):
 
         response = []
         for notice in queryset_primary:
-
+            
             new_data ={
+                'id': notice['id'],
+                'type': 'notice',
                 'notice' : notice['notice'],
                 'description': notice['description'],
                 'image': notice['image'],
@@ -1349,6 +1351,8 @@ class UserNoticeList(ListAPIView):
                 member_name=Members.objects.get(secondary_user_id=bereavement['secondary_member'])
 
             new_data ={
+                'id': bereavement['id'],
+                'type': 'bereavement',
                 'title' : bereavement['title'],
                 'description': bereavement['description'],
                 'prayer_group': prayer.name,
