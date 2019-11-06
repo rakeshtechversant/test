@@ -6,12 +6,7 @@ from datetime import datetime
 from django.utils import timezone
 
 
-class Notice(models.Model):
-    notice = models.CharField(max_length=255, null=True, blank=True)
-    description = models.TextField(max_length=10000, null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
-    updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
-    image = models.ImageField(upload_to='members/', null=True, blank=True)
+
 
 
 class FileUpload(models.Model):
@@ -110,6 +105,14 @@ class UserProfile(models.Model):
     is_otp_verified = models.BooleanField(default=False)
     # secondary_user = models.ManyToManyField(Members)
     is_church_user = models.BooleanField(default=False)
+
+
+class Notice(models.Model):
+    notice = models.CharField(max_length=255, null=True, blank=True)
+    description = models.TextField(max_length=10000, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
+    image = models.ImageField(upload_to='members/', null=True, blank=True)
 
 
 class PrayerGroup(models.Model):
