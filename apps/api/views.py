@@ -38,6 +38,8 @@ from django.utils.crypto import get_random_string
 from twilio.rest import Client
 from church_project import settings
 from datetime import datetime, timezone
+from django.utils import timezone as tz
+
 from django.contrib.auth.models import User
 
 
@@ -1239,17 +1241,74 @@ class FamilyDetailView(ListAPIView):
 
         return Response(data)
 
-
+#
 # class ViewRequestNumberView(APIView):
-#     model=
+#     queryset=
 
 
-# class NoticeBereavementCreate(CreateAPIView):
-#     queryset = NoticeBereavement.objects.all()
-#     serializer_class = NoticeBereavementSerializer
-#
-#     def post(self, request):
-#         prayer_group_id = request.data['prayer_group_id']
-#         family_id = request.data['family_id']
-#         member_id=request.data['member_id']
-#
+class NoticeBereavementCreate(CreateAPIView):
+    queryset = NoticeBereavement.objects.all()
+    serializer_class = NoticeBereavementSerializer
+    permission_classes = [IsAdminUser]
+
+    def post(self, request):
+        prayer_group_id = request.POST.get('prayer_group_id', False)
+        family_id = request.POST.get('family_id', False)
+        member_id=request.POST.get('member_id', False)
+        user_type=request.POST.get('user_type', False)
+        description=request.POST.get('description', False)
+        title=request.POST.get('title', False)
+        if not prayer_group_id and not family_id and not member_id and not title and not description:
+            return Response({'success': False,'message': 'You should fill all the fields'}, status=HTTP_400_BAD_REQUEST)
+        else:
+            if not prayer_group_id:
+                return Response({'success': False,'message': 'Prayer group field shouldnot be blank'}, status=HTTP_400_BAD_REQUEST)
+            if not family_id:
+                return Response({'success': False,'message': 'Family field shouldnot be blank'}, status=HTTP_400_BAD_REQUEST)
+            if not member_id:
+                return Response({'success': False,'message': 'Member field shouldnot be blank'}, status=HTTP_400_BAD_REQUEST)
+            if not description:
+                return Response({'success': False,'message': 'Description field shouldnot be blank'}, status=HTTP_400_BAD_REQUEST)
+            if not title:
+                return Response({'success': False,'message': 'Title field shouldnot be blank'}, status=HTTP_400_BAD_REQUEST)
+            if prayer_group_id and member_id and family_id and description and title:
+                try:
+                    prayer_group_id=PrayerGroup.objects.get(id=prayer_group_id)
+                except:
+                    return Response({'success': False,'message': 'Prayer Group doesnot exist'}, status=HTTP_400_BAD_REQUEST)
+                try:
+                    family_id=Family.objects.get(id=family_id)
+                except:
+                    return Response({'success': False,'message': 'Family doesnot exist'}, status=HTTP_400_BAD_REQUEST)
+
+                if user_type=='SECONDARY':
+                    try:
+                        member_id=Members.objects.get(secondary_user_id=member_id)
+                    except:
+                        return Response({'success': False,'message': 'Member doesnot exist'}, status=HTTP_400_BAD_REQUEST)
+                    NoticeBereavement.objects.create(title=title,prayer_group=prayer_group_id,family=family_id,secondary_member=member_id)
+                    member_id.in_memory=True
+                    member_id.in_memory_date=tz.now()
+                    member_id.save()
+                    return Response({'success': True,'message':'Notice Created Successfully'}, status=HTTP_201_CREATED)
+                else:
+                    try:
+                        member_id=FileUpload.objects.get(primary_user_id=member_id)
+                    except:
+                        return Response({'success': False,'message': 'Member doesnot exist'}, status=HTTP_400_BAD_REQUEST)
+                    NoticeBereavement.objects.create(title=title,prayer_group=prayer_group_id,family=family_id,primary_member=member_id)
+                    member_id.in_memory=True
+                    member_id.in_memory_date=tz.now()
+                    member_id.save()
+                    return Response({'success': True,'message':'Notice Created Successfully'}, status=HTTP_201_CREATED)
+
+class NoticeBereavementEdit(RetrieveUpdateAPIView):
+    queryset = NoticeBereavement.objects.all()
+    serializer_class = NoticeBereavementSerializer
+    permission_classes = [IsAdminUser]
+
+
+class NoticeBereavementDelete(DestroyAPIView):
+    queryset = NoticeBereavement.objects.all()
+    serializer_class = NoticeBereavementSerializer
+    permission_classes = [IsAdminUser]

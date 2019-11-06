@@ -29,7 +29,7 @@ class FileUpload(models.Model):
     about = models.TextField(max_length=1000, null=True, blank=True)
     marital_status = models.CharField(max_length=20,null=True,blank=True)
     in_memory = models.BooleanField(default=False)
-    in_memory_date = models.CharField(max_length=20, null=True, blank=True)
+    in_memory_date =models.DateTimeField(null=True, blank=True)
 
 
     def __str__(self):
@@ -65,7 +65,7 @@ class Members(models.Model):
     about = models.TextField(max_length=1000, null=True, blank=True)
     marital_status = models.CharField(max_length=20,null=True,blank=True)
     in_memory = models.BooleanField(default=False)
-    in_memory_date = models.CharField(max_length=20, null=True, blank=True)
+    in_memory_date = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return self.member_name
@@ -184,3 +184,6 @@ class ViewRequestNumber(models.Model):
     is_rejected = models.BooleanField(default=False)
     is_accepted = models.BooleanField(default=False)
     date=models.DateTimeField(default=datetime.now, blank=True)
+
+
+
