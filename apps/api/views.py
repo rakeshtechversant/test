@@ -1170,3 +1170,16 @@ class UnapprovedMember(mixins.CreateModelMixin,
         return Response({'success': True})
 
 
+# class ViewRequestNumberView(APIView):
+#     model=
+
+
+# class NoticeBereavementCreate(CreateAPIView):
+#     queryset = NoticeBereavement.objects.all()
+#     serializer_class = NoticeBereavementSerializer
+#
+#     def post(self, request):
+#         prayer_group_id = request.data['prayer_group_id']
+#         family_id = request.data['family_id']
+#         member_id=request.data['member_id']
+#

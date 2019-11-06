@@ -177,3 +177,10 @@ class NoticeBereavement(models.Model):
     family = models.ForeignKey(Family, on_delete=models.CASCADE, null=True, blank=True)
     primary_member = models.ForeignKey(FileUpload, on_delete=models.CASCADE, null=True, blank=True)
     secondary_member = models.ForeignKey(Members, on_delete=models.CASCADE, null=True, blank=True)
+
+
+class ViewRequestNumber(models.Model):
+    user=models.ForeignKey(FileUpload,on_delete=models.CASCADE,null=True,blank=True)
+    is_rejected = models.BooleanField(default=False)
+    is_accepted = models.BooleanField(default=False)
+    date=models.DateTimeField(default=datetime.now, blank=True)
