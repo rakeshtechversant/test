@@ -630,8 +630,8 @@ class PrayerGrouplistView(ListAPIView):
 
 
 class PrayerGroupBasedFamilyView(ListAPIView):
-    queryset = PrayerGroup.objects.all()
-    serializer_class = PrayerGroupAddSerializer
+    queryset = Family.objects.all()
+    serializer_class = FamilyListSerializer
     permission_classes = [AllowAny]
 
     def get_queryset(self, *args, **kwargs):
@@ -1168,6 +1168,76 @@ class UnapprovedMember(mixins.CreateModelMixin,
         member.save()
 
         return Response({'success': True})
+
+class FamilyDetailView(ListAPIView):
+    queryset = Family.objects.all()
+    serializer_class = MembersSerializer
+    permission_classes = [AllowAny]
+
+    def get_queryset(self, *args, **kwargs):
+        family_id = self.kwargs['pk']
+        try:
+            family = Family.objects.get(id=family_id)
+        except Family.DoesNotExist:
+            raise exceptions.NotFound(detail="Family does not exist")
+
+        self.primary_user = family.primary_user_id
+
+        members = Members.objects.filter(primary_user_id=family.primary_user_id)
+        return members
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+
+            data = {
+                'code': 200,
+                'status': "OK",
+            }
+
+            page_nated_data = self.get_paginated_response(serializer.data).data
+            data.update(page_nated_data)
+            # data['response'] = data.pop('results')
+
+            primary_user_id =UserDetailsRetrieveSerializer(self.primary_user).data
+
+
+            data['response'] = {'family_members':data}
+            data['response']['family_members'].insert(0, primary_user_id)
+            return Response(data)
+
+
+        serializer = self.get_serializer(queryset, many=True)
+
+        data = {
+            'code': 200,
+            'status': "OK",
+
+        }
+
+        primary_user_id = UserDetailsRetrieveSerializer(self.primary_user).data
+        # family = Family.objects.get(primary_user_id=primary_user_id)
+
+        try:
+            family_image = self.primary_user.get_file_upload.first().image.url
+        except:
+            family_image = None
+
+        data['response'] = {
+            'family_members':serializer.data,
+            'family_name':self.primary_user.get_file_upload.first().name,
+            'family_about':self.primary_user.get_file_upload.first().about,
+            'family_image':family_image
+            }
+        data['response']['family_members'].insert(0, primary_user_id)
+
+
+
+
+        return Response(data)
 
 
 # class ViewRequestNumberView(APIView):

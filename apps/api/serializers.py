@@ -63,7 +63,12 @@ class UserCreateSerializer(serializers.ModelSerializer):
 class FamilyListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Family
-        fields = ['name','members_length']
+        fields = ['name','members_length','image','id']
+
+class FamilyDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=Family
+        fields = ['name','members_length','image','id']
 
 class UserRetrieveSerializer(serializers.ModelSerializer):
     class Meta:
