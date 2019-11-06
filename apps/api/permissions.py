@@ -31,6 +31,19 @@ class IsPrimaryUserOrReadOnly(BasePermission):
         return False
 
 
+class AdminPermission(BasePermission):
+
+    def has_permission(self,request,view):
+        
+        if request.user.is_superuser:
+
+            return True
+        else:
+            return False
+
+        return False
+
+
 
 
 

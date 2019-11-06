@@ -10,6 +10,8 @@ router = DefaultRouter()
 
 # Notice APIs
 router.register(r'notices', NoticeModelViewSet)
+router.register(r'occupations', views.OccupationView)
+router.register(r'member-types', views.MemberTypeView)
 
 urlpatterns = [
     path('', views.UserListView.as_view()),
@@ -35,6 +37,6 @@ urlpatterns = [
     # Generate OTP
     url(r'^get-otp/$',SendOtp.as_view(),name='send_otp'),
     
-     url(r'^family-member-details/$',FamilyMemberDetails.as_view(),name='family_member_details'),
+    url(r'^family-member-details/$',FamilyMemberDetails.as_view(),name='family_member_details'),
 ]
 

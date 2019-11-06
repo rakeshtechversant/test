@@ -27,9 +27,19 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ('user', 'is_primary','key' )
 
 
-
-
 class FamilySerializer(serializers.ModelSerializer):
-	class Meta:
-		model = models.Family
-		fields = ('name','members_length')
+    class Meta:
+        model = models.Family
+        fields = ('name','members_length')
+
+
+class OccupationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Occupation
+        fields = ['occupation']
+
+class MemberTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.MemberType
+        fields = ['member_type']
+

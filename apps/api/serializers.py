@@ -323,17 +323,21 @@ class MembersDetailsSerializer(serializers.ModelSerializer):
             return None
 
     def get_primary_name(self, obj):
-        name = obj.primary_user_id.name
-        if name:
-            serializer = UserDetailsRetrieveSerializer(name)
-            return name
+        primary_user = obj.primary_user_id
+        if primary_user:
+            if primary_user.name:
+                serializer = UserDetailsRetrieveSerializer(primary_user.name)
+                return primary_user.name
         return None
 
     def get_phone_no_primary(self, obj):
-        primary_number = obj.primary_user_id.phone_no_primary
-        if primary_number:
-            serializer = UserDetailsRetrieveSerializer(primary_number)
-            return primary_number
+        primary_user = obj.primary_user_id
+
+        if primary_user:
+            if primary_user.phone_no_primary:
+
+                serializer = UserDetailsRetrieveSerializer(primary_user.phone_no_primary)
+                return primary_user.phone_no_primary
         return None
 
     def to_representation(self, instance):
@@ -348,7 +352,7 @@ class UnapprovedMemberSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UnapprovedMember
-        exclude = ['primary_user_id', 'rejected']
+        exclude = ['primary_user_id', 'rejected', 'edit_user']
 
     def create(self, validated_data):
 
@@ -366,6 +370,7 @@ class UnapprovedMemberSerializer(serializers.ModelSerializer):
 
         instance = super().update(instance, validated_data)
         instance.rejected = False
+        instance.edit = True
         instance.save()
 
         return instance
@@ -376,6 +381,7 @@ class UnapprovedMemberSerializer(serializers.ModelSerializer):
 
         data['rejected'] = obj.rejected
         data['primary_user_id'] = obj.primary_user_id.primary_user_id
+        data['edit_user'] = obj.edit_user
 
         return data
 
@@ -392,7 +398,7 @@ class MemberSerializer(serializers.ModelSerializer):
 
         request = self.context['request']
 
-        if obj.primary_user_id.get_file_upload.first():
+        if obj.primary_user_id:
             data['family_name'] = obj.primary_user_id.get_file_upload.first().name
         else:
             data['family_name'] = ''
@@ -428,3 +434,25 @@ class PrimaryUserSerializer(serializers.ModelSerializer):
         data['user_type'] = 'primary'
 
         return data
+
+
+class UserByadminSerializer(serializers.Serializer):
+    prayer_group = serializers.PrimaryKeyRelatedField(queryset=PrayerGroup.objects.all())
+    family = serializers.PrimaryKeyRelatedField(queryset=Family.objects.all())
+    name = serializers.CharField()
+    blood_group = serializers.CharField()
+    dob = serializers.CharField()
+    email = serializers.EmailField()
+    primary_number = serializers.CharField()
+    secondary_number = serializers.CharField()
+    occupation = serializers.CharField()
+    marital_status = serializers.CharField()
+    marrige_date = serializers.CharField(allow_blank=True)
+    member_type = serializers.CharField()
+    member_status = serializers.ChoiceField(choices=['active', 'in_memory'])
+    about = serializers.CharField()
+
+
+class FamilyByadminSerializer(serializers.Serializer):
+    prayer_group = serializers.PrimaryKeyRelatedField(queryset=PrayerGroup.objects.all(), allow_null=True)
+    family_name = serializers.CharField()

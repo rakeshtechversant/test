@@ -22,13 +22,14 @@ from rest_framework import mixins
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.decorators import action
 
-from apps.api.permissions import IsOwnerOrReadOnly, IsPrimaryUserOrReadOnly
+from apps.api.permissions import IsOwnerOrReadOnly, IsPrimaryUserOrReadOnly, AdminPermission
 from apps.api.utils import MultipartJsonParser
 from apps.api.serializers import ChurchHistorySerializer,ChurchImagesSerializer,LoginSerializer, FamilyListSerializer, UserRegistrationMobileSerializer, \
     PrayerGroupAddMembersSerializer, PrayerGroupAddSerializer, UserListSerializer, UserRetrieveSerializer, \
     UserCreateSerializer, ChurchVicarSerializer, FileUploadSerializer, OTPVeifySerializer, SecondaryaddSerializer, \
     MembersSerializer, NoticeSerializer, AdminProfileSerializer, PrimaryUserProfileSerializer, MemberProfileSerializer, NoticeBereavementSerializer, \
-    UserDetailsRetrieveSerializer, MembersDetailsSerializer, UnapprovedMemberSerializer, MemberSerializer, PrimaryUserSerializer
+    UserDetailsRetrieveSerializer, MembersDetailsSerializer, UnapprovedMemberSerializer, MemberSerializer, PrimaryUserSerializer,\
+    UserByadminSerializer, FamilyByadminSerializer
 from apps.church.models import  Members, Family, UserProfile, ChurchDetails, FileUpload, OtpModels, \
     PrayerGroup, Notification, Notice,NoticeBereavement, UnapprovedMember
 from apps.api.models import AdminProfile
@@ -644,7 +645,7 @@ class PrayerGroupBasedFamilyView(ListAPIView):
         except PrayerGroup.DoesNotExist:
             raise exceptions.NotFound(detail="Prayer group does not exist")
         
-        family_list = Family.objects.filter(primary_user_id=prayer_group.primary_user_id)
+        family_list = Family.objects.filter(primary_user_id__in=prayer_group.primary_user_id.all())
         return family_list
 
     def list(self, request, *args, **kwargs):
@@ -690,7 +691,7 @@ class PrayerGroupBasedMembersView(ListAPIView):
         except PrayerGroup.DoesNotExist:
             raise exceptions.NotFound(detail="Prayer group does not exist")
         self.primary_user = prayer_group.primary_user_id
-        member_list = Members.objects.filter(primary_user_id=prayer_group.primary_user_id)
+        member_list = Members.objects.filter(primary_user_id__in=prayer_group.primary_user_id.all())
         return member_list
 
     def list(self, request, *args, **kwargs):
@@ -707,7 +708,6 @@ class PrayerGroupBasedMembersView(ListAPIView):
             page_nated_data = self.get_paginated_response(serializer.data).data
             data.update(page_nated_data)
             data['response'] = data.pop('results')
-            primary_user_id =UserRetrieveSerializer(self.primary_user).data
 
             return Response(data)
 
@@ -719,9 +719,11 @@ class PrayerGroupBasedMembersView(ListAPIView):
             'status': "OK",
             'response': serializer.data
         }
-        primary_user_id = UserRetrieveSerializer(self.primary_user).data
 
-        data['response'].insert(0, primary_user_id)
+        for primary_user in self.primary_user.all():
+            primary_user_id = UserRetrieveSerializer(primary_user).data
+
+            data['response'].insert(0, primary_user_id)
 
         return Response(data)
 
@@ -1061,23 +1063,15 @@ class FamilyMemberDetails(ListAPIView):
 
     def get_queryset(self, *args, **kwargs):
 
-        primary_user = FileUpload.objects.filter(phone_no_primary=self.request.user.username)
-        
         try:
-            if primary_user.exists():
-                family = Family.objects.get(primary_user_id=primary_user.first())
-
-            member = Members.objects.filter(phone_no_secondary_user=self.request.user.username)
-
-            if member.exists():
-                family = Family.objects.get(primary_user_id=member.first().primary_user_id)
-
-            self.primary_user = family.primary_user_id
-
+            primary_user = FileUpload.objects.get(phone_no_primary=self.request.user.username)
+            members = Members.objects.filter(primary_user_id=primary_user)
+            self.primary_user = primary_user
         except:
-            raise exceptions.NotFound(detail="Family does not exist")
+            secondary_user = Members.objects.get(phone_no_secondary_user=self.request.user.username)
+            members = Members.objects.filter(primary_user_id=secondary_user.primary_user_id)
+            self.primary_user = secondary_user.primary_user_id
 
-        members = Members.objects.filter(primary_user_id=family.primary_user_id)
         return members
 
     def list(self, request, *args, **kwargs):
@@ -1093,6 +1087,7 @@ class FamilyMemberDetails(ListAPIView):
             }
 
             page_nated_data = self.get_paginated_response(serializer.data).data
+            
             data.update(page_nated_data)
             # data['response'] = data.pop('results')
 
@@ -1113,19 +1108,28 @@ class FamilyMemberDetails(ListAPIView):
         }
 
         primary_user_id = UserDetailsRetrieveSerializer(self.primary_user).data
-        # family = Family.objects.get(primary_user_id=primary_user_id)
 
         try:
             family_image = self.primary_user.get_file_upload.first().image.url
         except:
             family_image = None
 
-        data['response'] = {
-            'family_members':serializer.data,
-            'family_name':self.primary_user.get_file_upload.first().name,
-            'family_about':self.primary_user.get_file_upload.first().about,
-            'family_image':family_image
+        
+        if self.primary_user.get_file_upload.first():
+            data['response'] = {
+                'family_members':serializer.data,
+                'family_name':self.primary_user.get_file_upload.first().name,
+                'family_about':self.primary_user.get_file_upload.first().about,
+                'family_image':family_image
             }
+        else:
+            data['response'] = {
+                'family_members':serializer.data,
+                'family_name':None,
+                'family_about':None,
+                'family_image':family_image
+            }
+
         data['response']['family_members'].insert(0, primary_user_id)
         
 
@@ -1133,7 +1137,7 @@ class FamilyMemberDetails(ListAPIView):
         return Response(data)
 
 
-class UnapprovedMember(mixins.CreateModelMixin,
+class UnapprovedMemberView(mixins.CreateModelMixin,
                         mixins.ListModelMixin,
                         mixins.RetrieveModelMixin,
                         mixins.UpdateModelMixin,
@@ -1144,7 +1148,75 @@ class UnapprovedMember(mixins.CreateModelMixin,
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated, IsPrimaryUserOrReadOnly]
 
-    @action(methods=['get'], detail=True, url_path='approve-member')
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+
+        data ={
+            "success": True,
+            'message': "Secondary user submitted successfully, wait for admin approval to reflect changes"
+        }
+        data['response'] = serializer.data
+
+        return Response(data, status=status.HTTP_201_CREATED, headers=headers)
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        data ={
+            "success": True,
+            "code": 200,
+        }
+
+        data['response'] = serializer.data
+
+        return Response(data)
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+
+        data ={
+            "success": True,
+            "code": 200,
+        }
+
+        data['response'] = serializer.data
+
+        return Response(data)
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        if getattr(instance, '_prefetched_objects_cache', None):
+            # If 'prefetch_related' has been applied to a queryset, we need to
+            # forcibly invalidate the prefetch cache on the instance.
+            instance._prefetched_objects_cache = {}
+
+        data ={
+            "success": True,
+            "code": 200,
+        }
+
+        data['response'] = serializer.data
+
+        return Response(data)
+
+    @action(methods=['get'], detail=True, url_path='approve-member',
+        permission_classes=[IsAuthenticated, AdminPermission])
     def approve_member(self, request, pk=None):
 
         member = self.get_object()
@@ -1152,6 +1224,11 @@ class UnapprovedMember(mixins.CreateModelMixin,
         data = UnapprovedMemberSerializer(member).data
         data.pop('secondary_user_id')
         data.pop('rejected')
+
+        edit_user = data.pop('edit_user')
+
+        if edit_user:
+            Members.objects.filter(secondary_user_id=edit_user).update(**data)
 
         primary_user = FileUpload.objects.get(pk=data.pop('primary_user_id'))
 
@@ -1161,7 +1238,8 @@ class UnapprovedMember(mixins.CreateModelMixin,
 
         return Response({'success': True})
 
-    @action(methods=['get'], detail=True, url_path='reject-member')
+    @action(methods=['get'], detail=True, url_path='reject-member',
+        permission_classes=[IsAuthenticated, AdminPermission])
     def reject_member(self, request, pk=None):
 
         member = self.get_object()
@@ -1378,3 +1456,298 @@ class UserNoticeList(ListAPIView):
 
 
 
+class UpdateMemberByPrimary(APIView):
+    lookup_field = 'pk'
+    queryset = Members.objects.all()
+    serializer_class = MemberSerializer
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated, IsPrimaryUserOrReadOnly]
+
+    def post(self, request, *args, **kwargs):
+        
+        instance = Members.objects.get(pk=kwargs.get('pk'))
+
+        if not instance.primary_user_id.phone_no_primary == request.user.username:
+            data ={
+                'status': False,
+                'message': 'You have no permissoin to update this member'
+            }
+            return Response(data, status=status.HTTP_400_BAD_REQUEST)
+
+
+        context = {
+            'request': request
+        }
+
+        serializer = MemberSerializer(instance, data=request.data, context=context)
+
+        if serializer.is_valid():
+            data = serializer.data
+            data.pop('primary_user_id')
+            data.pop('family_name')
+            data.pop('user_type')
+
+            primary_user = FileUpload.objects.get(phone_no_primary=request.user.username)
+
+            unapproved_member = UnapprovedMember.objects.filter(edit_user=instance.pk)
+            unapproved_member.delete()
+
+            unapproved_member = UnapprovedMember.objects.create(**data)
+            unapproved_member.primary_user_id = primary_user
+            unapproved_member.edit_user = instance.pk
+            unapproved_member.save()
+
+            success_data = {
+                'status': True,
+                "message": "Member Updated Successfully"
+            }
+            success_data['response'] = serializer.data
+
+            return Response(success_data, status=status.HTTP_201_CREATED)
+            
+        data = {
+            'status': False
+        }
+        data['response'] = serializer.errors
+
+        return Response(data, status=status.HTTP_400_BAD_REQUEST)
+
+
+class CreateUserByAdminView(APIView):
+    serializer_class = UserByadminSerializer
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated, AdminPermission]
+
+    def post(self, request, format=None):
+
+        serializer = UserByadminSerializer(data=request.data)
+
+        if serializer.is_valid():
+
+            family = Family.objects.get(pk=serializer.data['family'])
+            
+            if family.primary_user_id and not family.primary_user_id.in_memory and serializer.data['member_type'] in ['Primary', 'primary']:
+                data = {
+                    'status': False,
+                    'message': 'Primary user already exists for this family'
+                }
+                return Response(data, status=status.HTTP_400_BAD_REQUEST)
+
+            if serializer.data['member_type'] in ['Primary', 'primary']:
+                
+                instance = FileUpload(
+                    name=serializer.data['name'],
+                    dob=serializer.data['dob'],
+                    blood_group=serializer.data['blood_group'],
+                    email=serializer.data['email'],
+                    phone_no_primary=serializer.data['secondary_number'],
+                    phone_no_secondary=serializer.data['secondary_number'],
+                    occupation=serializer.data['occupation'],
+                    marital_status=serializer.data['marital_status'],
+                    marrige_date=serializer.data['marrige_date'],
+                    about=serializer.data['about'],
+                )
+            else:
+                if not family.primary_user_id:
+                    data = {
+                        'status': False,
+                        'message': 'Create a primary user to add secondary users'
+                    }
+                    return Response(data, status=status.HTTP_400_BAD_REQUEST)
+
+                instance = Members(
+                    member_name=serializer.data['name'],
+                    dob=serializer.data['dob'],
+                    blood_group=serializer.data['blood_group'],
+                    email=serializer.data['email'],
+                    phone_no_secondary_user=serializer.data['secondary_number'],
+                    phone_no_secondary_user_secondary=serializer.data['secondary_number'],
+                    occupation=serializer.data['occupation'],
+                    marital_status=serializer.data['marital_status'],
+                    marrige_date=serializer.data['marrige_date'],
+                    about=serializer.data['about'],
+                    relation=serializer.data['member_type']
+                )
+
+            if serializer.data['member_status'] == 'in_memory':
+                instance.in_memory = True
+
+            if request.FILES.get('image'):
+                instance.image = request.FILES['image']
+
+            instance.save()
+
+            if serializer.data['family']:
+
+                if serializer.data['member_type'] in ['Primary', 'primary']:
+                    family.primary_user_id = instance
+
+                else:
+                    instance.primary_user_id  = family.primary_user_id
+
+                family.save()
+
+
+            if serializer.data['prayer_group']:
+                prayer_group = PrayerGroup.objects.get(pk=serializer.data['prayer_group'])
+                
+                if serializer.data['member_type'] in ['Primary', 'primary']:
+                    prayer_group.primary_user_id.add(instance)
+                else:
+                    prayer_group.primary_user_id.add(instance.primary_user_id)
+                
+                data ={
+                    'id': instance.pk
+                }
+                data.update(serializer.data)
+
+                response={
+                    "status": True,
+                    "message": "User Created by admin"
+                }
+
+                response['response'] = data
+
+            return Response(response)
+
+        data={
+            'status': False,
+        }
+        data['response'] = serializer.errors
+
+        return Response(data, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UpdateUserByAdminView(APIView):
+    serializer_class = UserByadminSerializer
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated, AdminPermission]
+
+    def post(self, request, pk=None, format=None):
+
+
+        serializer = UserByadminSerializer(data=request.data)
+
+        if serializer.is_valid():
+
+            prayer_group = PrayerGroup.objects.get(pk=serializer.data['prayer_group'])
+            family = Family.objects.get(pk=serializer.data['family'])
+
+            if serializer.data['member_type'] in ['Primary', 'primary']:
+                instance = FileUpload.objects.get(pk=pk)
+
+                instance.name = serializer.data['name']
+                instance.dob = serializer.data['dob']
+                instance.blood_group = serializer.data['blood_group']
+                instance.email = serializer.data['email']
+                instance.phone_no_primary = serializer.data['secondary_number']
+                instance.phone_no_secondary = serializer.data['secondary_number']
+                instance.occupation = serializer.data['occupation']
+                instance.marital_status = serializer.data['marital_status']
+                instance.marrige_date = serializer.data['marrige_date']
+                instance.about = serializer.data['about']
+                instance.save()
+
+                previous_groups = instance.get_file_upload_prayergroup.all()
+                
+                for group in previous_groups:
+                    group.primary_user_id.remove(instance)
+                
+                prayer_group.primary_user_id.add(instance)
+
+                for pre_family in instance.get_file_upload.all():
+                    pre_family.primary_user_id = None
+                    pre_family.save()
+
+                family.primary_user_id = instance
+                family.save()
+
+            else:
+                if not family.primary_user_id in prayer_group.primary_user_id.all():
+                    data = {
+                        'status': False,
+                        'message': 'Invalid prayer group for family'
+                    }
+                    return Response(data, status=status.HTTP_400_BAD_REQUEST)
+
+                instance = Members.objects.get(pk=pk)
+                instance.member_name = serializer.data['name']
+                instance.dob = serializer.data['dob']
+                instance.blood_group = serializer.data['blood_group']
+                instance.email = serializer.data['email']
+                instance.phone_no_secondary_user = serializer.data['secondary_number']
+                instance.phone_no_secondary_user_secondary = serializer.data['secondary_number']
+                instance.occupation = serializer.data['occupation']
+                instance.marital_status = serializer.data['marital_status']
+                instance.marrige_date = serializer.data['marrige_date']
+                instance.about = serializer.data['about']
+                instance.save()
+
+                instance.primary_user_id = family.primary_user_id
+
+                if instance.primary_user_id:
+                    previous_groups = instance.primary_user_id.get_file_upload_prayergroup.all()
+                    
+                    for group in previous_groups:
+                        group.primary_user_id.remove(instance.primary_user_id)
+
+                    prayer_group = PrayerGroup.objects.get(pk=serializer.data['prayer_group'])
+                    prayer_group.primary_user_id.add(instance.primary_user_id)
+
+
+                instance.save()
+
+            if serializer.data['member_status'] == 'in_memory':
+                instance.in_memory = True
+
+            if request.FILES.get('image'):
+                instance.image = request.FILES['image']
+
+            instance.save()
+
+            data ={
+                'id': instance.pk
+            }
+            data.update(serializer.data)
+
+            response={
+                "status": True,
+                "message": "User Updated by admin"
+            }
+
+            response['response'] = data
+
+            return Response(response)
+
+        data={
+            'status': False,
+        }
+        data['response'] = serializer.errors
+
+        return Response(data, status=status.HTTP_400_BAD_REQUEST)
+
+
+class AddFamilyByAdminView(APIView):
+    serializer_class = FamilyByadminSerializer
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated, AdminPermission]
+
+    def post(self, request, pk=None, format=None):
+
+        serializer = FamilyByadminSerializer(data=request.data)
+
+        if serializer.is_valid():
+
+            # prayer_group = PrayerGroup.objects.get(pk=serializer.data['prayer_group'])
+            family_name = serializer.data['family_name']
+
+            instance = Family(name=family_name)
+
+            if request.FILES.get('image'):
+                instance.image = request.FILES['image']
+
+            instance.save()
+
+            return Response(serializer.data)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
