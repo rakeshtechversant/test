@@ -71,9 +71,24 @@ class FamilyDetailSerializer(serializers.ModelSerializer):
         fields = ['name','members_length','image','id']
 
 class UserRetrieveSerializer(serializers.ModelSerializer):
+    family_name = serializers.SerializerMethodField()
     class Meta:
         model = FileUpload
         fields = '__all__'
+
+    def get_family_name(self, obj):
+            try:
+                name = obj.get_file_upload.get().name
+            except:
+                name = None
+            return name
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+
+        data['user_type'] = 'PRIMARY'
+
+        return data
 
 
 class UserListSerializer(serializers.ModelSerializer):
@@ -412,5 +427,3 @@ class PrimaryUserSerializer(serializers.ModelSerializer):
         data['user_type'] = 'primary'
 
         return data
-
-
