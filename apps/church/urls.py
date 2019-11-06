@@ -2,7 +2,7 @@ from django.urls import include, path
 from django.conf.urls import url
 from . import views
 from rest_framework.routers import DefaultRouter
-from apps.api.views import NoticeBereavementDelete,NoticeBereavementEdit,NoticeBereavementCreate,FamilyDetailView,PrayerGroupBasedFamilyView, PrayerGrouplistView, ChurchVicarView, \
+from apps.api.views import UserNoticeList,NoticeBereavementDelete,NoticeBereavementEdit,NoticeBereavementCreate,FamilyDetailView,PrayerGroupBasedFamilyView, PrayerGrouplistView, ChurchVicarView, \
     ChurchHistoryView, ChurchImagesView, PrayerGroupaddView, PrayerGroupMemberaddView, \
     FamilyListView, FamilyMemberList, NoticeModelViewSet, SendOtp, PrayerGroupBasedMembersView,FamilyMemberDetails
 
@@ -19,7 +19,7 @@ urlpatterns = [
     url(r'^(?P<pk>[\w-]+)/edit-bereavementnotice/',NoticeBereavementEdit.as_view(),name='edit_bereavement'),
     url(r'^(?P<pk>[\w-]+)/delete-bereavementnotice/',NoticeBereavementDelete.as_view(),name='delete_bereavement'),
     path('prayer-group-list/',PrayerGrouplistView.as_view(),name='prayer_group_list'),
-    
+    path('notice-lists/',UserNoticeList.as_view(),name='notice_lists'),
     # Family APIs
     path('family-lists/',FamilyListView.as_view(),name='family_lists'),
     url(r'^family-member-list/(?P<pk>\d+)/$',FamilyMemberList.as_view(),name='family_member_list'),

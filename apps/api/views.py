@@ -695,7 +695,6 @@ class PrayerGroupBasedMembersView(ListAPIView):
 
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
-
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.get_serializer(page, many=True)
@@ -1312,3 +1311,66 @@ class NoticeBereavementDelete(DestroyAPIView):
     queryset = NoticeBereavement.objects.all()
     serializer_class = NoticeBereavementSerializer
     permission_classes = [IsAdminUser]
+
+
+class UserNoticeList(ListAPIView):
+    queryset=Notice.objects.all()
+    serializer_class = NoticeSerializer
+    permission_classes=[IsAuthenticated]
+
+    def list(self, request, *args, **kwargs):
+        context ={
+            'request': request
+        }
+
+        queryset_primary = NoticeSerializer(Notice.objects.all(), many=True, context=context).data
+        queryset_secondary = NoticeBereavementSerializer(NoticeBereavement.objects.all(), many=True, context=context).data
+
+        response = []
+        for notice in queryset_primary:
+
+            new_data ={
+                'notice' : notice['notice'],
+                'description': notice['description'],
+                'image': notice['image'],
+                'created_at': notice['created_at'],
+                'updated_at': notice['updated_at'],
+
+            }
+
+            response.append(new_data)
+
+        for bereavement in queryset_secondary:
+            prayer=PrayerGroup.objects.get(id=bereavement['prayer_group'])
+            family=Family.objects.get(id=bereavement['family'])
+            try:
+                member=FileUpload.objects.get(primary_user_id=bereavement['primary_member'])
+            except:
+                member_name=Members.objects.get(secondary_user_id=bereavement['secondary_member'])
+
+            new_data ={
+                'title' : bereavement['title'],
+                'description': bereavement['description'],
+                'prayer_group': prayer.name,
+                'family': bereavement['family'],
+                'primary_member': member.name,
+
+                # 'secondary_member': member_name.member_name,
+
+            }
+
+            response.append(new_data)
+
+
+        data={
+            'code': 200,
+            'status': "OK",
+            'response': response
+
+            }
+
+        return Response(data)
+
+
+
+
