@@ -1393,6 +1393,17 @@ class NoticeBereavementDelete(DestroyAPIView):
     permission_classes = [IsAdminUser]
 
 
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        data = {
+            'code': 200,
+            'status': "OK",
+        }
+        data['response'] = "Successfully deleted"
+        return Response(data)
+
+
 class UserNoticeList(ListAPIView):
     queryset=Notice.objects.all()
     serializer_class = NoticeSerializer
