@@ -1401,11 +1401,12 @@ class UserNoticeList(ListAPIView):
             'request': request
         }
 
-        queryset_primary = NoticeSerializer(Notice.objects.all(), many=True, context=context).data
-        queryset_secondary = NoticeBereavementSerializer(NoticeBereavement.objects.all(), many=True, context=context).data
+        queryset_normal_notice = NoticeSerializer(Notice.objects.all(), many=True, context=context).data
+        queryset_bereavement_notice = NoticeBereavementSerializer(NoticeBereavement.objects.all(), many=True, context=context).data
 
         response = []
-        for notice in queryset_primary:
+        response_bereavement = []
+        for notice in queryset_normal_notice:
             
             new_data ={
                 'id': notice['id'],
@@ -1420,7 +1421,7 @@ class UserNoticeList(ListAPIView):
 
             response.append(new_data)
 
-        for bereavement in queryset_secondary:
+        for bereavement in queryset_bereavement_notice:
             prayer=PrayerGroup.objects.get(id=bereavement['prayer_group'])
             family=Family.objects.get(id=bereavement['family'])
             try:
@@ -1435,8 +1436,8 @@ class UserNoticeList(ListAPIView):
                 'primary_member': member.name,
 
                 # 'secondary_member': member_name.member_name,
+                }
 
-            }
             except:
                 member_name=Members.objects.get(secondary_user_id=bereavement['secondary_member'])
                 new_data ={
@@ -1455,12 +1456,12 @@ class UserNoticeList(ListAPIView):
 
 
 
+            # response.append(new_data)
+
+
+
             response.append(new_data)
-            new_data={
-            'normal_notice_count':len(notice),
-            'berevement_notice_count':len(bereavement)
-            }
-            response.append(new_data)
+
 
 
         data={
@@ -1469,6 +1470,13 @@ class UserNoticeList(ListAPIView):
             'response': response
 
             }
+        data['response'] = {
+            'notices':response,
+            'normal notice count':len(queryset_normal_notice),
+            'bereavement notice count':len(queryset_bereavement_notice)
+
+            }
+        # data['response']['member_details'].insert(0)
 
         return Response(data)
 
