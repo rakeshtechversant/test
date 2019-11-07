@@ -2,9 +2,11 @@ from django.urls import include, path
 from django.conf.urls import url
 from . import views
 from rest_framework.routers import DefaultRouter
-from apps.api.views import UserNoticeList,NoticeBereavementDelete,NoticeBereavementEdit,NoticeBereavementCreate,FamilyDetailView,PrayerGroupBasedFamilyView, PrayerGrouplistView, ChurchVicarView, \
+from apps.api.views import UserNoticeList, NoticeBereavementDelete, NoticeBereavementEdit, NoticeBereavementCreate, \
+    FamilyDetailView, PrayerGroupBasedFamilyView, PrayerGrouplistView, ChurchVicarView, \
     ChurchHistoryView, ChurchImagesView, PrayerGroupaddView, PrayerGroupMemberaddView, \
-    FamilyListView, FamilyMemberList, NoticeModelViewSet, SendOtp, PrayerGroupBasedMembersView,FamilyMemberDetails
+    FamilyListView, FamilyMemberList, NoticeModelViewSet, SendOtp, PrayerGroupBasedMembersView, FamilyMemberDetails, \
+    EachUserNotification
 
 router = DefaultRouter()
 
@@ -38,5 +40,6 @@ urlpatterns = [
     url(r'^get-otp/$',SendOtp.as_view(),name='send_otp'),
     
     url(r'^family-member-details/$',FamilyMemberDetails.as_view(),name='family_member_details'),
+    url(r'^notification-status/$',EachUserNotification.as_view(),name='notification_detail'),
 ]
 

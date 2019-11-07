@@ -2,8 +2,9 @@ from django.contrib import admin
 # from import_export.signals import post_import, post_export
 
 # Register your models here.
-from apps.church.models import NoticeBereavement,Members,UserProfile,PrayerGroup,Notice,Family,ChurchDetails,\
-OtpModels,FileUpload,Notification,Images, Occupation, MemberType
+from apps.church.models import NoticeBereavement, Members, UserProfile, PrayerGroup, Notice, Family, ChurchDetails, \
+    OtpModels, FileUpload, Notification, Images, Occupation, MemberType, NoticeReadSecondary, NoticeReadPrimary, \
+    NoticeReadAdmin
 from import_export.admin import ImportExportModelAdmin
 from import_export import resources
 
@@ -21,3 +22,6 @@ admin.site.register(Members)
 admin.site.register(NoticeBereavement)
 admin.site.register(Occupation)
 admin.site.register(MemberType)
+admin.site.register(NoticeReadPrimary)
+admin.site.register(NoticeReadSecondary)
+admin.site.register(NoticeReadAdmin)

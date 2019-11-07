@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 import requests
 from apps.church.models import UserProfile, ChurchDetails, FileUpload, OtpModels, \
     OtpVerify, PrayerGroup, Notification, Family, Members, Notice, NoticeBereavement, \
-    UnapprovedMember
+    UnapprovedMember, NoticeReadPrimary, NoticeReadSecondary
 from rest_framework.serializers import CharField
 from apps.api.token_create import get_tokens_for_user
 from django.utils.crypto import get_random_string
@@ -16,6 +16,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from datetime import datetime
 from apps.api.models import AdminProfile
+from django.utils import timezone as tz
 
 
 class LoginSerializer(serializers.ModelSerializer):
@@ -228,6 +229,29 @@ class NoticeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Notice
         fields = '__all__'
+    #
+    def create(self, validated_data):
+        import pdb;pdb.set_trace()
+        body="Admin have one new notice"
+        notifications=Notification.objects.create(created_time=tz.now(),message=body)
+        primary_members=FileUpload.objects.all()
+        secondary_members=Members.objects.all()
+        for primary_member in primary_members:
+            NoticeReadPrimary.objects.create(notification=notifications,user_to=primary_member,is_read=False)
+        for secondary_member in secondary_members:
+            NoticeReadSecondary.objects.create(notification=notifications,user_to=secondary_member,is_read=False)
+        return validated_data
+
+    def update(self, request, *args, **kwargs):
+        body="Admin has edited"
+        notifications=Notification.objects.create(created_time=tz.now(),message=body)
+        primary_members=FileUpload.objects.all()
+        secondary_members=Members.objects.all()
+        for primary_member in primary_members:
+            NoticeReadPrimary.objects.create(notification=notifications,user_to=primary_member,is_read=False)
+        for secondary_member in secondary_members:
+            NoticeReadSecondary.objects.create(notification=notifications,user_to=secondary_member,is_read=False)
+        return request
 
 
 class AdminProfileSerializer(serializers.ModelSerializer):
@@ -460,3 +484,21 @@ class UserByadminSerializer(serializers.Serializer):
 class FamilyByadminSerializer(serializers.Serializer):
     prayer_group = serializers.PrimaryKeyRelatedField(queryset=PrayerGroup.objects.all(), allow_null=True)
     family_name = serializers.CharField()
+
+class PrimaryNotificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=NoticeReadPrimary
+        fields='__all__'
+    def to_representation(self, obj):
+        data={'message':obj.notification.message}
+
+        return data
+
+class SecondaryNotificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=NoticeReadSecondary
+        fields='__all__'
+    def to_representation(self, obj):
+        data={'message':obj.notification.message}
+
+        return data

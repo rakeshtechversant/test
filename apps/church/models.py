@@ -5,6 +5,8 @@ from datetime import datetime
 # Create your models here.
 from django.utils import timezone
 
+from apps.api.models import AdminProfile
+
 
 class Notice(models.Model):
     notice = models.CharField(max_length=255)
@@ -128,6 +130,7 @@ class PrayerGroup(models.Model):
     # user_profile = models.ManyToManyField(FileUpload)
     primary_user_id = models.ManyToManyField(FileUpload,
                     related_name='get_file_upload_prayergroup', null=True, blank=True)
+    sec_member = models.ManyToManyField(Members,null=True,blank=True)
     name = models.CharField(max_length=255)
     notice = models.ForeignKey(Notice, on_delete=models.CASCADE, null=True, blank=True)
 
@@ -176,11 +179,31 @@ class OtpVerify(models.Model):
 
 
 class Notification(models.Model):
-    user = models.ForeignKey(FileUpload, on_delete=models.CASCADE, null=True, blank=True)
-    is_new_register = models.BooleanField(default=False)
-    is_user_add_new_member = models.BooleanField(default=False)
-    created_time = models.DateTimeField(default=timezone.now, blank=True)
+    created_by_admin = models.ForeignKey(AdminProfile, on_delete=models.CASCADE, null=True, blank=True,related_name='created_by_admin')
+    created_by_primary = models.ForeignKey(FileUpload, on_delete=models.CASCADE, null=True, blank=True,related_name='created_by_primary')
+    created_by_secondary = models.ForeignKey(Members, on_delete=models.CASCADE, null=True, blank=True,related_name='created_by_secondary')
+    # is_new_register = models.BooleanField(default=False)
+    # is_user_add_new_member = models.BooleanField(default=False)
+    created_time = models.DateTimeField(default=timezone.now, null=True, blank=True)
+    message=models.TextField(max_length=1000)
+    notification_to_primary = models.ManyToManyField(FileUpload, through='NoticeReadPrimary')
+    notification_to_secondary = models.ManyToManyField(Members, through='NoticeReadSecondary')
+    notification_to_admin = models.ManyToManyField(AdminProfile, through='NoticeReadAdmin')
 
+class NoticeReadPrimary(models.Model):
+    notification=models.ForeignKey(Notification, on_delete=models.CASCADE, null=True, blank=True)
+    user_to=models.ForeignKey(FileUpload, on_delete=models.CASCADE, null=True, blank=True)
+    is_read=models.BooleanField(default=False)
+
+class NoticeReadSecondary(models.Model):
+    notification=models.ForeignKey(Notification, on_delete=models.CASCADE, null=True, blank=True)
+    user_to=models.ForeignKey(Members, on_delete=models.CASCADE, null=True, blank=True)
+    is_read=models.BooleanField(default=False)
+
+class NoticeReadAdmin(models.Model):
+    notification=models.ForeignKey(Notification, on_delete=models.CASCADE, null=True, blank=True)
+    user_to=models.ForeignKey(AdminProfile, on_delete=models.CASCADE, null=True, blank=True)
+    is_read=models.BooleanField(default=False)
 
 class NoticeBereavement(models.Model):
     # title = models.CharField(max_length=200, null=True, blank=True)

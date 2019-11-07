@@ -24,14 +24,17 @@ from rest_framework.decorators import action
 
 from apps.api.permissions import IsOwnerOrReadOnly, IsPrimaryUserOrReadOnly, AdminPermission
 from apps.api.utils import MultipartJsonParser
-from apps.api.serializers import ChurchHistorySerializer,ChurchImagesSerializer,LoginSerializer, FamilyListSerializer, UserRegistrationMobileSerializer, \
+from apps.api.serializers import ChurchHistorySerializer, ChurchImagesSerializer, LoginSerializer, FamilyListSerializer, \
+    UserRegistrationMobileSerializer, \
     PrayerGroupAddMembersSerializer, PrayerGroupAddSerializer, UserListSerializer, UserRetrieveSerializer, \
     UserCreateSerializer, ChurchVicarSerializer, FileUploadSerializer, OTPVeifySerializer, SecondaryaddSerializer, \
-    MembersSerializer, NoticeSerializer, AdminProfileSerializer, PrimaryUserProfileSerializer, MemberProfileSerializer, NoticeBereavementSerializer, \
-    UserDetailsRetrieveSerializer, MembersDetailsSerializer, UnapprovedMemberSerializer, MemberSerializer, PrimaryUserSerializer,\
-    UserByadminSerializer, FamilyByadminSerializer
-from apps.church.models import  Members, Family, UserProfile, ChurchDetails, FileUpload, OtpModels, \
-    PrayerGroup, Notification, Notice,NoticeBereavement, UnapprovedMember
+    MembersSerializer, NoticeSerializer, AdminProfileSerializer, PrimaryUserProfileSerializer, MemberProfileSerializer, \
+    NoticeBereavementSerializer, \
+    UserDetailsRetrieveSerializer, MembersDetailsSerializer, UnapprovedMemberSerializer, MemberSerializer, \
+    PrimaryUserSerializer, \
+    UserByadminSerializer, FamilyByadminSerializer, PrimaryNotificationSerializer, SecondaryNotificationSerializer
+from apps.church.models import Members, Family, UserProfile, ChurchDetails, FileUpload, OtpModels, \
+    PrayerGroup, Notification, Notice, NoticeBereavement, UnapprovedMember, NoticeReadPrimary, NoticeReadSecondary
 from apps.api.models import AdminProfile
 from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_400_BAD_REQUEST, HTTP_401_UNAUTHORIZED, \
 HTTP_404_NOT_FOUND
@@ -1791,3 +1794,34 @@ class AddFamilyByAdminView(APIView):
             return Response(serializer.data)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class EachUserNotification(APIView):
+    serializer_class = NoticeSerializer
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, format=None):
+        user=request.user.username
+        try:
+            member=FileUpload.objects.get(phone_no_primary=user)
+            notice_section=NoticeReadPrimary.objects.filter(user_to=member)
+            notice_section.update(is_read=True)
+            messages=PrimaryNotificationSerializer(notice_section, many=True)
+        except:
+            member=Members.objects.filter(phone_no_secondary_user=user)
+            notice_section=NoticeReadSecondary.objects.filter(user_to=member)
+            notice_section.update(is_read=True)
+            messages=SecondaryNotificationSerializer(notice_section, many=True)
+        # msg=notice_section.values('notification__message')
+
+
+        data={
+            'notification':messages.data,
+            'status': True,
+        }
+        return Response(data,status=HTTP_200_OK)
+
+
+
+
