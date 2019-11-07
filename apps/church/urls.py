@@ -5,7 +5,6 @@ from rest_framework.routers import DefaultRouter
 from apps.api.views import UserNoticeList, NoticeBereavementDelete, NoticeBereavementEdit, NoticeBereavementCreate, \
     FamilyDetailView, PrayerGroupBasedFamilyView, PrayerGrouplistView, ChurchVicarView, \
     ChurchHistoryView, ChurchImagesView, PrayerGroupaddView, PrayerGroupMemberaddView, \
-
     FamilyListView, FamilyMemberList, NoticeModelViewSet, SendOtp, PrayerGroupBasedMembersView,FamilyMemberDetails, \
     ViewRequestNumberViewset, AcceptViewRequestNumberViewset, EachUserNotification
 
