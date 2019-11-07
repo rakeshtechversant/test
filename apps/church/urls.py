@@ -4,7 +4,8 @@ from . import views
 from rest_framework.routers import DefaultRouter
 from apps.api.views import UserNoticeList,NoticeBereavementDelete,NoticeBereavementEdit,NoticeBereavementCreate,FamilyDetailView,PrayerGroupBasedFamilyView, PrayerGrouplistView, ChurchVicarView, \
     ChurchHistoryView, ChurchImagesView, PrayerGroupaddView, PrayerGroupMemberaddView, \
-    FamilyListView, FamilyMemberList, NoticeModelViewSet, SendOtp, PrayerGroupBasedMembersView,FamilyMemberDetails
+    FamilyListView, FamilyMemberList, NoticeModelViewSet, SendOtp, PrayerGroupBasedMembersView,FamilyMemberDetails, \
+    ViewRequestNumberViewset, AcceptViewRequestNumberViewset
 
 router = DefaultRouter()
 
@@ -38,5 +39,9 @@ urlpatterns = [
     url(r'^get-otp/$',SendOtp.as_view(),name='send_otp'),
     
     url(r'^family-member-details/$',FamilyMemberDetails.as_view(),name='family_member_details'),
+    url(r'^number-request/$',ViewRequestNumberViewset.as_view(),name='number_request'),
+     url(r'^number-request-accept/$',AcceptViewRequestNumberViewset.as_view(),name='number_request_accept'),
+
+
 ]
 

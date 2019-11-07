@@ -177,6 +177,8 @@ class OtpVerify(models.Model):
 
 class Notification(models.Model):
     user = models.ForeignKey(FileUpload, on_delete=models.CASCADE, null=True, blank=True)
+    user_secondary = models.ForeignKey(Members, on_delete=models.CASCADE, null=True, blank=True)
+    messages = models.TextField(max_length=100, null=True, blank=True)
     is_new_register = models.BooleanField(default=False)
     is_user_add_new_member = models.BooleanField(default=False)
     created_time = models.DateTimeField(default=timezone.now, blank=True)
@@ -192,8 +194,11 @@ class NoticeBereavement(models.Model):
 
 
 class ViewRequestNumber(models.Model):
-    user=models.ForeignKey(FileUpload,on_delete=models.CASCADE,null=True,blank=True)
-    is_rejected = models.BooleanField(default=False)
+    request_from = models.CharField(max_length=200, null=True, blank=True)
+    usertype_from = models.CharField(max_length=200, null=True, blank=True)
+    request_to = models.CharField(max_length=200, null=True, blank=True)
+    usertype_to = models.CharField(max_length=200, null=True, blank=True)
+    request_mobile = models.CharField(max_length=12, null=True, blank=True)
     is_accepted = models.BooleanField(default=False)
     date=models.DateTimeField(default=datetime.now, blank=True)
 

@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 import requests
 from apps.church.models import UserProfile, ChurchDetails, FileUpload, OtpModels, \
     OtpVerify, PrayerGroup, Notification, Family, Members, Notice, NoticeBereavement, \
-    UnapprovedMember
+    UnapprovedMember, ViewRequestNumber
 from rest_framework.serializers import CharField
 from apps.api.token_create import get_tokens_for_user
 from django.utils.crypto import get_random_string
@@ -405,7 +405,7 @@ class MemberSerializer(serializers.ModelSerializer):
                 data['family_name'] = ''
 
         else:
-            data['family_name'] = ''
+            data['family_name' ] = ''
 
         if obj.image:
             data['image'] = request.build_absolute_uri(obj.image.url)
@@ -460,3 +460,16 @@ class UserByadminSerializer(serializers.Serializer):
 class FamilyByadminSerializer(serializers.Serializer):
     prayer_group = serializers.PrimaryKeyRelatedField(queryset=PrayerGroup.objects.all(), allow_null=True)
     family_name = serializers.CharField()
+
+
+class ViewRequestNumberSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = ViewRequestNumber
+        fields = ['request_from', 'request_to','userttype_to','userttype_from']
+
+class RequestAcceptNumberSerializer(serializers.ModelSerializer):
+    is_acceped = serializers.BooleanField(read_only=True)
+    class Meta:
+        model = ViewRequestNumber
+        fields = ['request_from', 'request_to','userttype_to','userttype_from','is_acceped']
