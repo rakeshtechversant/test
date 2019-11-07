@@ -32,9 +32,11 @@ from apps.api.serializers import ChurchHistorySerializer, ChurchImagesSerializer
     NoticeBereavementSerializer, \
     UserDetailsRetrieveSerializer, MembersDetailsSerializer, UnapprovedMemberSerializer, MemberSerializer, \
     PrimaryUserSerializer, \
-    UserByadminSerializer, FamilyByadminSerializer, PrimaryNotificationSerializer, SecondaryNotificationSerializer
+    UserByadminSerializer, FamilyByadminSerializer, PrimaryNotificationSerializer, SecondaryNotificationSerializer, \
+    ViewRequestNumberSerializer, RequestAcceptNumberSerializer
 from apps.church.models import Members, Family, UserProfile, ChurchDetails, FileUpload, OtpModels, \
-    PrayerGroup, Notification, Notice, NoticeBereavement, UnapprovedMember, NoticeReadPrimary, NoticeReadSecondary
+    PrayerGroup, Notification, Notice, NoticeBereavement, UnapprovedMember, NoticeReadPrimary, NoticeReadSecondary, ViewRequestNumber
+
 from apps.api.models import AdminProfile
 from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_400_BAD_REQUEST, HTTP_401_UNAUTHORIZED, \
 HTTP_404_NOT_FOUND
@@ -1823,5 +1825,105 @@ class EachUserNotification(APIView):
         return Response(data,status=HTTP_200_OK)
 
 
+class ViewRequestNumberViewset(CreateAPIView):
+    queryset = ViewRequestNumber.objects.all()
+    serializer_class = ViewRequestNumberSerializer
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        request_from = request.POST.get('request_from', False)
+        request_to = request.POST.get('request_to', False)
+
+        usertype_from = request.POST.get('usertype_from', False)
+        usertype_to = request.POST.get('usertype_to', False)
+
+        if not request_from and not request_to and not  usertype_from and not usertype_to:
+            return Response({'success': False,'message': 'You should fill all the fields'}, status=HTTP_400_BAD_REQUEST)
+        else :
+            try:
+
+                if usertype_from == 'PRIMARY' :
+                    if FileUpload.objects.filter(primary_user_id=request_from).exists():
+                        if usertype_to == 'PRIMARY':
+                            primary_user = FileUpload.objects.get(primary_user_id=request_to)
+                            if primary_user:
+                                ViewRequestNumber.objects.get_or_create(request_from=request_from,request_to=primary_user.primary_user_id,usertype_from='PRIMARY',usertype_to='PRIMARY',request_mobile=primary_user.phone_no_primary)
+                                Notification.objects.create(user=primary_user,messages="User %s of usertype PRIMARY requested for number"%(request_from),created_time=datetime.strptime('2018-02-16 11:00 AM', "%Y-%m-%d %I:%M %p"))
+                                return Response({'success': True,'message':'Notification send Successfully'}, status=HTTP_201_CREATED)
+                        elif usertype_to == 'SECONDARY':
+                            sec_user = Members.objects.get(secondary_user_id=request_to)
+                            if sec_user:
+                                ViewRequestNumber.objects.get_or_create(request_from=request_from,request_to=sec_user.secondary_user_id,usertype_from='PRIMARY',usertype_to='SECONDARY',request_mobile=sec_user.phone_no_secondary_user)
+                                Notification.objects.create(user_secondary=sec_user,messages="User %s of usertype PRIMARY requested for number"%(request_from),created_time=datetime.strptime('2018-02-16 11:00 AM', "%Y-%m-%d %I:%M %p"))
+                                return Response({'success': True,'message':'Notification send Successfully'}, status=HTTP_201_CREATED)
+                
+                elif usertype_from == 'SECONDARY':
+                    if Members.objects.filter(secondary_user_id=request_from).exists():
+                        if usertype_to == 'PRIMARY':
+                            primary_user = FileUpload.objects.get(primary_user_id=request_to)
+                            if primary_user:
+                                ViewRequestNumber.objects.get_or_create(request_from=request_from,request_to=primary_user.primary_user_id,usertype_from='SECONDARY',usertype_to='PRIMARY',request_mobile=primary_user.phone_no_primary)
+                                Notification.objects.create(user=primary_user,messages="User %s of usertype SECONDARY requested for number"%(request_from),created_time=datetime.strptime('2018-02-16 11:00 AM', "%Y-%m-%d %I:%M %p"))
+                                return Response({'success': True,'message':'Notification send Successfully'}, status=HTTP_201_CREATED)
+                        elif usertype_to == 'SECONDARY':
+                            sec_user = Members.objects.get(secondary_user_id=request_to)
+                            if sec_user:
+                                ViewRequestNumber.objects.get_or_create(request_from=request_from,request_to=sec_user.secondary_user_id,usertype_from='SECONDARY',usertype_to='SECONDARY',request_mobile=sec_user.phone_no_secondary_user)
+                                Notification.objects.create(user_secondary=sec_user,messages="User %s of usertype SECONDARY requested for number"%(request_from),created_time=datetime.strptime('2018-02-16 11:00 AM', "%Y-%m-%d %I:%M %p"))
+                                return Response({'success': True,'message':'Notification send Successfully'}, status=HTTP_201_CREATED)
+
+               
+            except:
+                return Response({'success': False}, status=status.HTTP_400_BAD_REQUEST)
+                
+
+class AcceptViewRequestNumberViewset(CreateAPIView):
+    queryset = ViewRequestNumber.objects.all()
+    serializer_class = RequestAcceptNumberSerializer
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+
+        request_from = request.POST.get('request_from', False)
+        request_to = request.POST.get('request_to', False)
+
+        usertype_from = request.POST.get('usertype_from', False)
+        usertype_to = request.POST.get('usertype_to', False)
+
+        is_accepted = request.POST.get('is_accepted', False)
+
+        if not request_from and not request_to and not  usertype_from and not usertype_to and not is_accepted:
+            return Response({'success': False,'message': 'You should fill all the fields'}, status=HTTP_400_BAD_REQUEST)
+        else :
+            try:
+                if is_accepted == 'True':
+                    try:
+                        obj = ViewRequestNumber.objects.get(request_from=request_from,request_to=request_to,usertype_from=usertype_from,usertype_to=usertype_to)
+                    except:
+                        obj = None
+                    if obj:
+                        obj.is_accepted=True
+                        obj.save()
+                    
+                    return Response({'success': True,'message':'Phone number access accepted'}, status=HTTP_201_CREATED)
+
+                else :
+                    try:
+                        obj = ViewRequestNumber.objects.get(request_from=request_from,request_to=request_to,usertype_from=usertype_from,usertype_to=usertype_to)
+                    except:
+                        obj = None
+                    if obj:
+                        obj.is_accepted=False
+                        obj.request_mobile = ''
+                        obj.save()
+                    return Response({'success': True,'message':'Phone number access rejected'}, status=HTTP_201_CREATED)
 
 
+               
+
+
+               
+            except:
+                return Response({'success': False}, status=status.HTTP_400_BAD_REQUEST)
