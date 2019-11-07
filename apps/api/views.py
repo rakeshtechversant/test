@@ -35,7 +35,7 @@ from apps.api.serializers import ChurchHistorySerializer, ChurchImagesSerializer
     UserByadminSerializer, FamilyByadminSerializer, PrimaryNotificationSerializer, SecondaryNotificationSerializer, \
     ViewRequestNumberSerializer, RequestAcceptNumberSerializer, AdminNotificationSerializer
 from apps.church.models import Members, Family, UserProfile, ChurchDetails, FileUpload, OtpModels, \
-    PrayerGroup, Notification, Notice, NoticeBereavement, UnapprovedMember, NoticeReadPrimary, NoticeReadSecondary, ViewRequestNumber
+    PrayerGroup, Notification, Notice, NoticeBereavement, UnapprovedMember, NoticeReadPrimary, NoticeReadSecondary, ViewRequestNumber, NoticeReadAdmin
 
 from apps.api.models import AdminProfile
 from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_400_BAD_REQUEST, HTTP_401_UNAUTHORIZED, \
@@ -1818,11 +1818,11 @@ class EachUserNotification(APIView):
                 notice_section.update(is_read=True)
                 messages=SecondaryNotificationSerializer(notice_section, many=True)
             except:
-                admin_profile = AdminProfile.objects.get(user=user)
-                notice_section=NoticeReadSecondary.objects.filter(user_to=admin_profile)
+                admin_profile = AdminProfile.objects.get(user=request.user)
+                notice_section=NoticeReadAdmin.objects.filter(user_to=admin_profile)
                 notice_section.update(is_read=True)
 
-                messages=AdminNotificationSerializer(notice_section, many=True)
+                messages = AdminNotificationSerializer(notice_section, many=True)
 
 
 
