@@ -33,7 +33,7 @@ from apps.api.serializers import ChurchHistorySerializer, ChurchImagesSerializer
     UserDetailsRetrieveSerializer, MembersDetailsSerializer, UnapprovedMemberSerializer, MemberSerializer, \
     PrimaryUserSerializer, \
     UserByadminSerializer, FamilyByadminSerializer, PrimaryNotificationSerializer, SecondaryNotificationSerializer, \
-    ViewRequestNumberSerializer, RequestAcceptNumberSerializer
+    ViewRequestNumberSerializer, RequestAcceptNumberSerializer, AdminNotificationSerializer
 from apps.church.models import Members, Family, UserProfile, ChurchDetails, FileUpload, OtpModels, \
     PrayerGroup, Notification, Notice, NoticeBereavement, UnapprovedMember, NoticeReadPrimary, NoticeReadSecondary, ViewRequestNumber
 
@@ -1811,11 +1811,19 @@ class EachUserNotification(APIView):
             notice_section.update(is_read=True)
             messages=PrimaryNotificationSerializer(notice_section, many=True)
         except:
-            member=Members.objects.filter(phone_no_secondary_user=user)
-            notice_section=NoticeReadSecondary.objects.filter(user_to=member)
-            notice_section.update(is_read=True)
-            messages=SecondaryNotificationSerializer(notice_section, many=True)
-        # msg=notice_section.values('notification__message')
+
+            try:
+                member=Members.objects.filter(phone_no_secondary_user=user)
+                notice_section=NoticeReadSecondary.objects.filter(user_to=member)
+                notice_section.update(is_read=True)
+                messages=SecondaryNotificationSerializer(notice_section, many=True)
+            except:
+                admin_profile = AdminProfile.objects.get(user=user)
+                notice_section=NoticeReadSecondary.objects.filter(user_to=admin_profile)
+                notice_section.update(is_read=True)
+
+                messages=AdminNotificationSerializer(notice_section, many=True)
+
 
 
         data={

@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 import requests
 from apps.church.models import UserProfile, ChurchDetails, FileUpload, OtpModels, \
     OtpVerify, PrayerGroup, Notification, Family, Members, Notice, NoticeBereavement, \
-    UnapprovedMember, NoticeReadPrimary, NoticeReadSecondary, ViewRequestNumber
+    UnapprovedMember, NoticeReadPrimary, NoticeReadSecondary, NoticeReadAdmin, ViewRequestNumber
 from rest_framework.serializers import CharField
 from apps.api.token_create import get_tokens_for_user
 from django.utils.crypto import get_random_string
@@ -504,6 +504,16 @@ class SecondaryNotificationSerializer(serializers.ModelSerializer):
 
         return data
 
+class AdminNotificationSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model=NoticeReadAdmin
+        fields='__all__'
+
+    def to_representation(self, obj):
+        data={'message':obj.notification.message}
+
+        return data
 
 class ViewRequestNumberSerializer(serializers.ModelSerializer):
 
