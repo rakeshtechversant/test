@@ -1334,8 +1334,8 @@ class NoticeBereavementCreate(CreateAPIView):
         member_id=request.POST.get('member_id', False)
         user_type=request.POST.get('user_type', False)
         description=request.POST.get('description', False)
-        title=request.POST.get('title', False)
-        if not prayer_group_id and not family_id and not member_id and not title and not description:
+        # title=request.POST.get('title', False)
+        if not prayer_group_id and not family_id and not member_id and not description:
             return Response({'success': False,'message': 'You should fill all the fields'}, status=HTTP_400_BAD_REQUEST)
         else:
             if not prayer_group_id:
@@ -1346,9 +1346,9 @@ class NoticeBereavementCreate(CreateAPIView):
                 return Response({'success': False,'message': 'Member field shouldnot be blank'}, status=HTTP_400_BAD_REQUEST)
             if not description:
                 return Response({'success': False,'message': 'Description field shouldnot be blank'}, status=HTTP_400_BAD_REQUEST)
-            if not title:
-                return Response({'success': False,'message': 'Title field shouldnot be blank'}, status=HTTP_400_BAD_REQUEST)
-            if prayer_group_id and member_id and family_id and description and title:
+            # if not title:
+            #     return Response({'success': False,'message': 'Title field shouldnot be blank'}, status=HTTP_400_BAD_REQUEST)
+            if prayer_group_id and member_id and family_id and description:
                 try:
                     prayer_group_id=PrayerGroup.objects.get(id=prayer_group_id)
                 except:
@@ -1363,7 +1363,7 @@ class NoticeBereavementCreate(CreateAPIView):
                         member_id=Members.objects.get(secondary_user_id=member_id)
                     except:
                         return Response({'success': False,'message': 'Member doesnot exist'}, status=HTTP_400_BAD_REQUEST)
-                    NoticeBereavement.objects.create(title=title,prayer_group=prayer_group_id,family=family_id,secondary_member=member_id)
+                    NoticeBereavement.objects.create(prayer_group=prayer_group_id,family=family_id,secondary_member=member_id)
                     member_id.in_memory=True
                     member_id.in_memory_date=tz.now()
                     member_id.save()
@@ -1373,7 +1373,7 @@ class NoticeBereavementCreate(CreateAPIView):
                         member_id=FileUpload.objects.get(primary_user_id=member_id)
                     except:
                         return Response({'success': False,'message': 'Member doesnot exist'}, status=HTTP_400_BAD_REQUEST)
-                    NoticeBereavement.objects.create(title=title,prayer_group=prayer_group_id,family=family_id,primary_member=member_id)
+                    NoticeBereavement.objects.create(prayer_group=prayer_group_id,family=family_id,primary_member=member_id)
                     member_id.in_memory=True
                     member_id.in_memory_date=tz.now()
                     member_id.save()
@@ -1425,13 +1425,10 @@ class UserNoticeList(ListAPIView):
             family=Family.objects.get(id=bereavement['family'])
             try:
                 member=FileUpload.objects.get(primary_user_id=bereavement['primary_member'])
-            except:
-                member_name=Members.objects.get(secondary_user_id=bereavement['secondary_member'])
-
-            new_data ={
+                new_data ={
                 'id': bereavement['id'],
                 'type': 'bereavement',
-                'title' : bereavement['title'],
+                # 'title' : bereavement['title'],
                 'description': bereavement['description'],
                 'prayer_group': prayer.name,
                 'family': bereavement['family'],
@@ -1440,7 +1437,29 @@ class UserNoticeList(ListAPIView):
                 # 'secondary_member': member_name.member_name,
 
             }
+            except:
+                member_name=Members.objects.get(secondary_user_id=bereavement['secondary_member'])
+                new_data ={
+                'id': bereavement['id'],
+                'type': 'bereavement',
+                # 'title' : bereavement['title'],
+                'description': bereavement['description'],
+                'prayer_group': prayer.name,
+                'family': bereavement['family'],
+                # 'primary_member': member.name,
 
+                'secondary_member': member_name.member_name,
+
+            }
+
+
+
+
+            response.append(new_data)
+            new_data={
+            'normal_notice_count':len(notice),
+            'berevement_notice_count':len(bereavement)
+            }
             response.append(new_data)
 
 
