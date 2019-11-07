@@ -94,7 +94,7 @@ class UnapprovedMember(models.Model):
     marital_status = models.CharField(max_length=20,null=True,blank=True)
     marrige_date = models.CharField(max_length=20,null=True,blank=True)
     in_memory = models.BooleanField(default=False)
-    in_memory_date = models.CharField(max_length=20, null=True, blank=True)
+    in_memory_date = models.DateTimeField(null=True, blank=True)
     rejected = models.BooleanField(default=False)
     edit_user = models.IntegerField(null=True, blank=True)
 
