@@ -574,10 +574,12 @@ class PrayerGroupaddView(CreateAPIView):
     permission_classes = [IsAdminUser]
 
 
-class PrayerGroupMemberaddView(CreateAPIView):
+class PrayerGroupMemberaddView(RetrieveUpdateAPIView):
     queryset = PrayerGroup.objects.all()
     serializer_class = PrayerGroupAddMembersSerializer
     permission_classes = [IsAdminUser]
+
+
 
     # def create(self, request, *args, **kwargs):
     #     serializer = self.get_serializer(data=request.data)
@@ -1032,23 +1034,23 @@ class Profile(APIView):
         return Response(data, status=status.HTTP_404_NOT_FOUND)
 
         
-class NoticeBereavementView(ModelViewSet):
-    queryset=NoticeBereavement.objects.all()
-    serializer_class = NoticeBereavementSerializer
-    permission_classes = [IsAdminUser]
-
-    def create(self, request):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        title = serializer.validated_data.get("title", None)
-        description = serializer.validated_data.get("description", None)
-        prayer_group = serializer.validated_data.get("prayer_group", None)
-        family = serializer.validated_data.get("family", None)
-        primary_member = serializer.validated_data.get("primary_member", None)
-        secondary_member = serializer.validated_data.get("secondary_member", None)
-        user_type=serializer.validated_data.get("user_type", None)
-        if user_type=='SECONDARY':
-            secondary_id=Members.objects.filter(secondary_user_id=secondary_member)
+# class NoticeBereavementView(ModelViewSet):
+#     queryset=NoticeBereavement.objects.all()
+#     serializer_class = NoticeBereavementSerializer
+#     permission_classes = [IsAdminUser]
+#
+#     def create(self, request):
+#         serializer = self.get_serializer(data=request.data)
+#         serializer.is_valid(raise_exception=True)
+#         title = serializer.validated_data.get("title", None)
+#         description = serializer.validated_data.get("description", None)
+#         prayer_group = serializer.validated_data.get("prayer_group", None)
+#         family = serializer.validated_data.get("family", None)
+#         primary_member = serializer.validated_data.get("primary_member", None)
+#         secondary_member = serializer.validated_data.get("secondary_member", None)
+#         user_type=serializer.validated_data.get("user_type", None)
+#         if user_type=='SECONDARY':
+#             secondary_id=Members.objects.filter(secondary_user_id=secondary_member)
 
 
 
@@ -1363,7 +1365,7 @@ class NoticeBereavementCreate(CreateAPIView):
                         member_id=Members.objects.get(secondary_user_id=member_id)
                     except:
                         return Response({'success': False,'message': 'Member doesnot exist'}, status=HTTP_400_BAD_REQUEST)
-                    NoticeBereavement.objects.create(prayer_group=prayer_group_id,family=family_id,secondary_member=member_id)
+                    NoticeBereavement.objects.create(prayer_group=prayer_group_id,family=family_id,secondary_member=member_id,description=description)
                     member_id.in_memory=True
                     member_id.in_memory_date=tz.now()
                     member_id.save()
@@ -1373,7 +1375,7 @@ class NoticeBereavementCreate(CreateAPIView):
                         member_id=FileUpload.objects.get(primary_user_id=member_id)
                     except:
                         return Response({'success': False,'message': 'Member doesnot exist'}, status=HTTP_400_BAD_REQUEST)
-                    NoticeBereavement.objects.create(prayer_group=prayer_group_id,family=family_id,primary_member=member_id)
+                    NoticeBereavement.objects.create(prayer_group=prayer_group_id,family=family_id,primary_member=member_id,description=description)
                     member_id.in_memory=True
                     member_id.in_memory_date=tz.now()
                     member_id.save()
