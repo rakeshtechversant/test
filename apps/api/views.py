@@ -1958,19 +1958,83 @@ class ViewRequestNumberViewset(CreateAPIView):
                 if usertype_from == 'PRIMARY' :
                     if FileUpload.objects.filter(primary_user_id=request_from).exists():
                         if usertype_to == 'PRIMARY':
+
                             primary_user = FileUpload.objects.get(primary_user_id=request_to)
                             if primary_user:
                                 ViewRequestNumber.objects.get_or_create(request_from=request_from,request_to=primary_user.primary_user_id,usertype_from='PRIMARY',usertype_to='PRIMARY',request_mobile=primary_user.phone_no_primary)
                                 not_obj=Notification.objects.create(created_by_primary=primary_user,message="User %s of usertype PRIMARY requested for number"%(request_from))
                                 NoticeReadPrimary.objects.create(notification=not_obj,user_to=primary_user)
-                                return Response({'success': True,'message':'Notification send Successfully'}, status=HTTP_201_CREATED)
+                                if usertype_from=='PRIMARY':
+                                    try:
+                                        from_user = FileUpload.objects.get(phone_no_primary=request.user.username)
+                                    except:
+                                        from_user = FileUpload.objects.get(phone_no_secondary=request.user.username)
+                                    user_details={
+
+                                        'from_number':request.user.username,
+                                        'from_id':from_user.primary_user_id,
+                                        'from_user':from_user.name,
+                                        'to_user':primary_user.name,
+                                        'to_number':primary_user.phone_no_primary,
+                                        'to_id':primary_user.primary_user_id,
+                                        'send_time':tz.now()
+                                    }
+                                else:
+                                    try:
+                                        from_user = Members.objects.get(phone_no_secondary_user=request.user.username)
+                                    except:
+                                        from_user = Members.objects.get(phone_no_secondary_user_secondary=request.user.username)
+                                    user_details = {
+
+                                        'from_number': request.user.username,
+                                        'from_id': from_user.secondary_user_id,
+                                        'from_user': from_user.member_name,
+                                        'to_user': primary_user.name,
+                                        'to_number': primary_user.phone_no_primary,
+                                        'to_id': primary_user.primary_user_id,
+                                        'send_time': tz.now()
+                                    }
+
+                                return Response({'success': True,'message':'Notification send Successfully','user_details':user_details}, status=HTTP_201_CREATED)
                         elif usertype_to == 'SECONDARY':
                             sec_user = Members.objects.get(secondary_user_id=request_to)
                             if sec_user:
                                 ViewRequestNumber.objects.get_or_create(request_from=request_from,request_to=sec_user.secondary_user_id,usertype_from='PRIMARY',usertype_to='SECONDARY',request_mobile=sec_user.phone_no_secondary_user)
                                 not_obj=Notification.objects.create(created_by_secondary=sec_user,message="User %s of usertype PRIMARY requested for number"%(request_from))
                                 NoticeReadSecondary.objects.create(notification=not_obj,user_to=sec_user)
-                                return Response({'success': True,'message':'Notification send Successfully'}, status=HTTP_201_CREATED)
+                                if usertype_from == 'PRIMARY':
+                                    try:
+                                        from_user = FileUpload.objects.get(phone_no_primary=request.user.username)
+                                    except:
+                                        from_user = FileUpload.objects.get(phone_no_secondary=request.user.username)
+                                    user_details = {
+
+                                        'from_number': request.user.username,
+                                        'from_id': from_user.primary_user_id,
+                                        'from_user': from_user.name,
+                                        'to_user': primary_user.name,
+                                        'to_number': primary_user.phone_no_primary,
+                                        'to_id': primary_user.primary_user_id,
+                                        'send_time': tz.now()
+                                    }
+                                else:
+                                    try:
+                                        from_user = Members.objects.get(phone_no_secondary_user=request.user.username)
+                                    except:
+                                        from_user = Members.objects.get(
+                                            phone_no_secondary_user_secondary=request.user.username)
+                                    user_details = {
+
+                                        'from_number': request.user.username,
+                                        'from_id': from_user.secondary_user_id,
+                                        'from_user': from_user.member_name,
+                                        'to_user': primary_user.name,
+                                        'to_number': primary_user.phone_no_primary,
+                                        'to_id': primary_user.primary_user_id,
+                                        'send_time': tz.now()
+                                    }
+
+                                return Response({'success': True,'message':'Notification send Successfully','user_details':user_details}, status=HTTP_201_CREATED)
                         else:
                             return Response({'success': False}, status=status.HTTP_400_BAD_REQUEST)
                     else:
@@ -1983,16 +2047,77 @@ class ViewRequestNumberViewset(CreateAPIView):
                                 ViewRequestNumber.objects.get_or_create(request_from=request_from,request_to=primary_user.primary_user_id,usertype_from='SECONDARY',usertype_to='PRIMARY',request_mobile=primary_user.phone_no_primary)
                                 not_obj = Notification.objects.create(created_by_primary=primary_user,message="User %s of usertype SECONDARY requested for number"%(request_from))
                                 NoticeReadPrimary.objects.create(notification=not_obj,user_to=primary_user)
+                                if usertype_from == 'PRIMARY':
+                                    try:
+                                        from_user = FileUpload.objects.get(phone_no_primary=request.user.username)
+                                    except:
+                                        from_user = FileUpload.objects.get(phone_no_secondary=request.user.username)
+                                    user_details = {
 
+                                        'from_number': request.user.username,
+                                        'from_id': from_user.primary_user_id,
+                                        'from_user': from_user.name,
+                                        'to_user': primary_user.name,
+                                        'to_number': primary_user.phone_no_primary,
+                                        'to_id': primary_user.primary_user_id,
+                                        'send_time': tz.now()
+                                    }
+                                else:
+                                    try:
+                                        from_user = Members.objects.get(phone_no_secondary_user=request.user.username)
+                                    except:
+                                        from_user = Members.objects.get(
+                                            phone_no_secondary_user_secondary=request.user.username)
+                                    user_details = {
 
-                                return Response({'success': True,'message':'Notification send Successfully'}, status=HTTP_201_CREATED)
+                                        'from_number': request.user.username,
+                                        'from_id': from_user.secondary_user_id,
+                                        'from_user': from_user.member_name,
+                                        'to_user': primary_user.name,
+                                        'to_number': primary_user.phone_no_primary,
+                                        'to_id': primary_user.primary_user_id,
+                                        'send_time': tz.now()
+                                    }
+
+                                return Response({'success': True,'message':'Notification send Successfully','user_details':user_details}, status=HTTP_201_CREATED)
                         elif usertype_to == 'SECONDARY':
                             sec_user = Members.objects.get(secondary_user_id=request_to)
                             if sec_user:
                                 ViewRequestNumber.objects.get_or_create(request_from=request_from,request_to=sec_user.secondary_user_id,usertype_from='SECONDARY',usertype_to='SECONDARY',request_mobile=sec_user.phone_no_secondary_user)
                                 not_obj=Notification.objects.create(created_by_secondary=sec_user,message="User %s of usertype SECONDARY requested for number"%(request_from))
                                 NoticeReadSecondary.objects.create(notification=not_obj,user_to=sec_user)
-                                return Response({'success': True,'message':'Notification send Successfully'}, status=HTTP_201_CREATED)
+                                if usertype_from == 'PRIMARY':
+                                    try:
+                                        from_user = FileUpload.objects.get(phone_no_primary=request.user.username)
+                                    except:
+                                        from_user = FileUpload.objects.get(phone_no_secondary=request.user.username)
+                                    user_details = {
+
+                                        'from_number': request.user.username,
+                                        'from_id': from_user.primary_user_id,
+                                        'from_user': from_user.name,
+                                        'to_user': primary_user.name,
+                                        'to_number': primary_user.phone_no_primary,
+                                        'to_id': primary_user.primary_user_id,
+                                        'send_time': tz.now()
+                                    }
+                                else:
+                                    try:
+                                        from_user = Members.objects.get(phone_no_secondary_user=request.user.username)
+                                    except:
+                                        from_user = Members.objects.get(
+                                            phone_no_secondary_user_secondary=request.user.username)
+                                    user_details = {
+
+                                        'from_number': request.user.username,
+                                        'from_id': from_user.secondary_user_id,
+                                        'from_user': from_user.member_name,
+                                        'to_user': primary_user.name,
+                                        'to_number': primary_user.phone_no_primary,
+                                        'to_id': primary_user.primary_user_id,
+                                        'send_time': tz.now()
+                                    }
+                                return Response({'success': True,'message':'Notification send Successfully','user_details':user_details}, status=HTTP_201_CREATED)
                         else:
                             return Response({'success': False}, status=status.HTTP_400_BAD_REQUEST)
                     else:
