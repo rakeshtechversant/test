@@ -155,6 +155,13 @@ class ChurchDetails(models.Model):
         verbose_name_plural = "ChurchDetails"
 
 
+class ChurchVikar(models.Model):
+    church = models.ForeignKey(ChurchDetails, on_delete=models.CASCADE)
+    vicar_name = models.CharField(max_length=100)
+    vicar_info = models.TextField(max_length=1000, null=True, blank=True)
+    vicar_image = models.FileField(upload_to='pan_folder/', null=True, blank=True)
+
+
 PRIMARY = 'PRIMARY'
 SECONDARY = 'SECONDARY'
 CHURCH = 'CHURCH'

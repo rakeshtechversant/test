@@ -231,6 +231,10 @@ class NoticeSerializer(serializers.ModelSerializer):
         fields = '__all__'
     #
     def create(self, validated_data):
+
+        notice = Notice(**validated_data)
+        notice.save()
+
         body="Admin have one new notice"
         notifications=Notification.objects.create(created_time=tz.now(),message=body)
         primary_members=FileUpload.objects.all()
@@ -239,9 +243,14 @@ class NoticeSerializer(serializers.ModelSerializer):
             NoticeReadPrimary.objects.create(notification=notifications,user_to=primary_member,is_read=False)
         for secondary_member in secondary_members:
             NoticeReadSecondary.objects.create(notification=notifications,user_to=secondary_member,is_read=False)
-        return validated_data
+        
+        return notice
 
     def update(self, request, *args, **kwargs):
+
+        instance = super().update(instance, validated_data)
+        instance.save()
+        
         body="Admin has edited"
         notifications=Notification.objects.create(created_time=tz.now(),message=body)
         primary_members=FileUpload.objects.all()
@@ -250,7 +259,8 @@ class NoticeSerializer(serializers.ModelSerializer):
             NoticeReadPrimary.objects.create(notification=notifications,user_to=primary_member,is_read=False)
         for secondary_member in secondary_members:
             NoticeReadSecondary.objects.create(notification=notifications,user_to=secondary_member,is_read=False)
-        return request
+        
+        return instance
 
 
 class AdminProfileSerializer(serializers.ModelSerializer):
@@ -387,14 +397,37 @@ class UnapprovedMemberSerializer(serializers.ModelSerializer):
         unapproved_member.primary_user_id = primary_user
         unapproved_member.save()
 
+        notification = Notification.objects.create(
+            created_by_primary=primary_user, 
+            message="User %s added a family member %s. Verify and approve to reflect changes"%(primary_user, unapproved_member)
+        )
+
+        admin_profiles = UserProfile.objects.all()
+
+        for admin_profile in admin_profiles:
+            NoticeReadAdmin.objects.create(notification=notification, user_to=admin_profile)
+
         return unapproved_member
 
     def update(self, instance, validated_data):
+
+        created_by = self.context['request'].user
+        primary_user = FileUpload.objects.get(phone_no_primary=created_by.username)
 
         instance = super().update(instance, validated_data)
         instance.rejected = False
         instance.edit = True
         instance.save()
+
+        notification = Notification.objects.create(
+            created_by_primary=primary_user, 
+            message="User %s updated a family member %s. Verify and approve to reflect changes"%(primary_user, instance)
+        )
+
+        admin_profiles = UserProfile.objects.all()
+        
+        for admin_profile in admin_profiles:
+            NoticeReadAdmin.objects.create(notification=notification, user_to=admin_profile)
 
         return instance
 
