@@ -515,58 +515,103 @@ class UserDetailView(APIView):
     # lookup_url_kwarg = "abc"
 
     def get(self, request,*args,**kwargs):
+        import pdb;pdb.set_trace()
+        usertype_to = None
+        usertype_from = None
+        request_from = None
+        request_to = None
+        is_accepted = False
+        member = None
         user_type=request.GET['user_type']
-        if user_type=='SECONDARY':
-            user_details=Members.objects.get(secondary_user_id=self.kwargs['pk'])
-            data={
-                'member_name':user_details.member_name,
-                'relation':user_details.relation,
-                'dob':user_details.dob,
-                'dom':user_details.dom,
-                # 'image':user_details.image,
-                'phone_no_secondary_user':user_details.phone_no_secondary_user,
-                'phone_no_secondary_user_secondary':user_details.phone_no_secondary_user_secondary,
-                'primary_user':user_details.primary_user_id.name,
-                'primary_user_id':user_details.primary_user_id.primary_user_id,
-                'blood_group':user_details.blood_group,
-                'email':user_details.email,
-                'occupation':user_details.occupation,
-                'about':user_details.about,
-                'marital_status':user_details.marital_status,
-                'marrige_date':user_details.marrige_date,
-                'in_memory':user_details.in_memory,
-                'in_memory_date':user_details.in_memory_date
-            }
-            return Response({'success': True,'message':'Profile found successfully','user_details':data}, status=HTTP_200_OK)
-        else:
-            try:
-                user_details=FileUpload.objects.get(primary_user_id=self.kwargs['pk'])
-                data={
-                   'member_name':user_details.primary_user_id,
-                   'name':user_details.name,
-                   'address':user_details.address,
-                   'phone_no_primary':user_details.phone_no_primary,
-                   'phone_no_secondary':user_details.phone_no_secondary,
-                   'dob':user_details.dob,
-                   'dom':user_details.dom,
-                   'blood_group':user_details.blood_group,
-                   'email':user_details.email,
-                   'occupation':user_details.occupation,
-                   'about':user_details.about,
-                   'marital_status':user_details.marital_status,
-                   'marrige_date':user_details.marrige_date,
-                   'in_memory':user_details.in_memory,
-                   'in_memory_date':user_details.in_memory_date,
-                }
-                return Response({'success': True,'message':'Profile found successfully','user_details':data}, status=HTTP_200_OK)
-            except:
-                user_details=AdminProfile.objects.get(id=self.kwargs['pk'])
-                data={
-                    'id':user_details.user,
-                    'mobile_number':user_details.mobile_number
-                }
-                return Response({'success': True,'message':'Profile found successfully','user_details':data}, status=HTTP_200_OK)
+        if not user_type:
+            return Response({'success': False,'message':'Please provide user type'}, status=HTTP_400_BAD_REQUEST)
 
+        try:
+            member=FileUpload.objects.get(phone_no_primary=self.request.user.username)
+
+            if member:
+                request_from = member
+                usertype_from = 'PRIMARY'
+        except:
+            member=Members.objects.filter(phone_no_secondary_user=self.request.user.username)
+
+            if member:
+                request_from = member
+                usertype_from = 'SECONDARY'
+
+        try:
+            if user_type=='SECONDARY':
+                user_details=Members.objects.get(secondary_user_id=self.kwargs['pk'])
+                request_to = user_details
+                usertype_to = 'SECONDARY'
+                try:
+                    phoneobj=ViewRequestNumber.objects.filter(request_from=member,usertype_from=usertype_from,request_to=request_to,usertype_to=usertype_to)
+                    is_accepted = phoneobj.is_accepted
+                except:
+                    is_accepted = False
+                data={
+                    'member_name':user_details.member_name,
+                    'relation':user_details.relation,
+                    'dob':user_details.dob,
+                    'dom':user_details.dom,
+                    # 'image':user_details.image,
+                    'is_accepted':is_accepted,
+                    'phone_no_secondary_user':user_details.phone_no_secondary_user,
+                    'phone_no_secondary_user_secondary':user_details.phone_no_secondary_user_secondary,
+                    'primary_user':user_details.primary_user_id.name,
+                    'primary_user_id':user_details.primary_user_id.primary_user_id,
+                    'blood_group':user_details.blood_group,
+                    'email':user_details.email,
+                    'occupation':user_details.occupation,
+                    'about':user_details.about,
+                    'marital_status':user_details.marital_status,
+                    'marrige_date':user_details.marrige_date,
+                    'in_memory':user_details.in_memory,
+                    'in_memory_date':user_details.in_memory_date
+
+                }
+                return Response({'success': True,'message':'Profile found successfully','user_details':data}, status=HTTP_200_OK)
+            else:
+                try:
+                    user_details=FileUpload.objects.get(primary_user_id=self.kwargs['pk'])
+
+                    request_to = user_details
+                    usertype_to = 'PRIMARY'
+                    try:
+                        phoneobj=ViewRequestNumber.objects.filter(request_from=member,usertype_from=usertype_from,\
+                            request_to=request_to,usertype_to=usertype_to)
+                        is_accepted = phoneobj.is_accepted
+                    except:
+                        is_accepted = False
+
+                    data={
+                       'member_name':user_details.primary_user_id,
+                       'name':user_details.name,
+                       'address':user_details.address,
+                       'is_accepted':is_accepted,
+                       'phone_no_primary':user_details.phone_no_primary,
+                       'phone_no_secondary':user_details.phone_no_secondary,
+                       'dob':user_details.dob,
+                       'dom':user_details.dom,
+                       'blood_group':user_details.blood_group,
+                       'email':user_details.email,
+                       'occupation':user_details.occupation,
+                       'about':user_details.about,
+                       'marital_status':user_details.marital_status,
+                       'marrige_date':user_details.marrige_date,
+                       'in_memory':user_details.in_memory,
+                       'in_memory_date':user_details.in_memory_date,
+                    }
+                    return Response({'success': True,'message':'Profile found successfully','user_details':data}, status=HTTP_200_OK)
+                except:
+                    user_details=AdminProfile.objects.get(id=self.kwargs['pk'])
+                    data={
+                        'id':user_details.user,
+                        'mobile_number':user_details.mobile_number
+                    }
+                    return Response({'success': True,'message':'Profile found successfully','user_details':data}, status=HTTP_200_OK)
+        except:
+            return Response({'success': False,'message':'Something Went Wrong'}, status=HTTP_400_BAD_REQUEST)
 
 
 class ChurchVicarView(RetrieveAPIView):
@@ -1911,40 +1956,52 @@ class ViewRequestNumberViewset(CreateAPIView):
             return Response({'success': False,'message': 'You should fill all the fields'}, status=HTTP_400_BAD_REQUEST)
         else :
             try:
-
                 if usertype_from == 'PRIMARY' :
                     if FileUpload.objects.filter(primary_user_id=request_from).exists():
                         if usertype_to == 'PRIMARY':
                             primary_user = FileUpload.objects.get(primary_user_id=request_to)
                             if primary_user:
                                 ViewRequestNumber.objects.get_or_create(request_from=request_from,request_to=primary_user.primary_user_id,usertype_from='PRIMARY',usertype_to='PRIMARY',request_mobile=primary_user.phone_no_primary)
-                                Notification.objects.create(user=primary_user,messages="User %s of usertype PRIMARY requested for number"%(request_from),created_time=datetime.strptime('2018-02-16 11:00 AM', "%Y-%m-%d %I:%M %p"))
+                                not_obj=Notification.objects.create(created_by_primary=primary_user,message="User %s of usertype PRIMARY requested for number"%(request_from))
+                                NoticeReadPrimary.objects.create(notification=not_obj,user_to=primary_user)
                                 return Response({'success': True,'message':'Notification send Successfully'}, status=HTTP_201_CREATED)
                         elif usertype_to == 'SECONDARY':
                             sec_user = Members.objects.get(secondary_user_id=request_to)
                             if sec_user:
                                 ViewRequestNumber.objects.get_or_create(request_from=request_from,request_to=sec_user.secondary_user_id,usertype_from='PRIMARY',usertype_to='SECONDARY',request_mobile=sec_user.phone_no_secondary_user)
-                                Notification.objects.create(user_secondary=sec_user,messages="User %s of usertype PRIMARY requested for number"%(request_from),created_time=datetime.strptime('2018-02-16 11:00 AM', "%Y-%m-%d %I:%M %p"))
+                                not_obj=Notification.objects.create(created_by_secondary=sec_user,message="User %s of usertype PRIMARY requested for number"%(request_from))
+                                NoticeReadSecondary.objects.create(notification=not_obj,user_to=sec_user)
                                 return Response({'success': True,'message':'Notification send Successfully'}, status=HTTP_201_CREATED)
-                
+                        else:
+                            return Response({'success': False}, status=status.HTTP_400_BAD_REQUEST)
+                    else:
+                        return Response({'success': False}, status=status.HTTP_400_BAD_REQUEST)
                 elif usertype_from == 'SECONDARY':
                     if Members.objects.filter(secondary_user_id=request_from).exists():
                         if usertype_to == 'PRIMARY':
                             primary_user = FileUpload.objects.get(primary_user_id=request_to)
                             if primary_user:
                                 ViewRequestNumber.objects.get_or_create(request_from=request_from,request_to=primary_user.primary_user_id,usertype_from='SECONDARY',usertype_to='PRIMARY',request_mobile=primary_user.phone_no_primary)
-                                Notification.objects.create(user=primary_user,messages="User %s of usertype SECONDARY requested for number"%(request_from),created_time=datetime.strptime('2018-02-16 11:00 AM', "%Y-%m-%d %I:%M %p"))
+                                not_obj = Notification.objects.create(created_by_primary=primary_user,message="User %s of usertype SECONDARY requested for number"%(request_from))
+                                NoticeReadPrimary.objects.create(notification=not_obj,user_to=primary_user)
+
+
                                 return Response({'success': True,'message':'Notification send Successfully'}, status=HTTP_201_CREATED)
                         elif usertype_to == 'SECONDARY':
                             sec_user = Members.objects.get(secondary_user_id=request_to)
                             if sec_user:
                                 ViewRequestNumber.objects.get_or_create(request_from=request_from,request_to=sec_user.secondary_user_id,usertype_from='SECONDARY',usertype_to='SECONDARY',request_mobile=sec_user.phone_no_secondary_user)
-                                Notification.objects.create(user_secondary=sec_user,messages="User %s of usertype SECONDARY requested for number"%(request_from),created_time=datetime.strptime('2018-02-16 11:00 AM', "%Y-%m-%d %I:%M %p"))
+                                not_obj=Notification.objects.create(created_by_secondary=sec_user,message="User %s of usertype SECONDARY requested for number"%(request_from))
+                                NoticeReadSecondary.objects.create(notification=not_obj,user_to=sec_user)
                                 return Response({'success': True,'message':'Notification send Successfully'}, status=HTTP_201_CREATED)
-
-               
+                        else:
+                            return Response({'success': False}, status=status.HTTP_400_BAD_REQUEST)
+                    else:
+                        return Response({'success': False}, status=status.HTTP_400_BAD_REQUEST)
+                else:
+                    return Response({'success': False}, status=status.HTTP_400_BAD_REQUEST)
             except:
-                return Response({'success': False}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'success': False,'message': 'Something Went Wrong'}, status=status.HTTP_400_BAD_REQUEST)
                 
 
 class AcceptViewRequestNumberViewset(CreateAPIView):
@@ -1988,14 +2045,10 @@ class AcceptViewRequestNumberViewset(CreateAPIView):
                         obj.request_mobile = ''
                         obj.save()
                     return Response({'success': True,'message':'Phone number access rejected'}, status=HTTP_201_CREATED)
-
-
-               
-
-
-               
+  
             except:
                 return Response({'success': False}, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 class EachUserUnreadCount(APIView):
