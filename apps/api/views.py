@@ -511,8 +511,7 @@ class UserDetailView(APIView):
     queryset = FileUpload.objects.all()
     serializer_class = UserRetrieveSerializer
     permission_classes = [IsAuthenticated]
-    # lookup_field = 'user'
-    # lookup_url_kwarg = "abc"
+    authentication_classes = [TokenAuthentication]
 
     def get(self, request,*args,**kwargs):
         usertype_to = None
@@ -521,6 +520,7 @@ class UserDetailView(APIView):
         request_to = None
         is_accepted = False
         member = None
+
         user_type=request.GET['user_type']
         if not user_type:
             return Response({'success': False,'message':'Please provide user type'}, status=HTTP_400_BAD_REQUEST)
@@ -544,8 +544,8 @@ class UserDetailView(APIView):
                 request_to = user_details
                 usertype_to = 'SECONDARY'
                 try:
-                    phoneobj=ViewRequestNumber.objects.filter(request_from=member,usertype_from=usertype_from,request_to=request_to,usertype_to=usertype_to)
-                    is_accepted = phoneobj.is_accepted
+                    phoneobj=ViewRequestNumber.objects.filter(request_from=member.pk,usertype_from=usertype_from,request_to=request_to.pk,usertype_to=usertype_to)
+                    is_accepted = phoneobj.first().is_accepted
                 except:
                     is_accepted = False
                 data={
@@ -577,9 +577,9 @@ class UserDetailView(APIView):
                     request_to = user_details
                     usertype_to = 'PRIMARY'
                     try:
-                        phoneobj=ViewRequestNumber.objects.filter(request_from=member,usertype_from=usertype_from,\
-                            request_to=request_to,usertype_to=usertype_to)
-                        is_accepted = phoneobj.is_accepted
+                        phoneobj=ViewRequestNumber.objects.filter(request_from=member.pk, usertype_from=usertype_from,\
+                            request_to=request_to.pk, usertype_to=usertype_to)
+                        is_accepted = phoneobj.first().is_accepted
                     except:
                         is_accepted = False
 
