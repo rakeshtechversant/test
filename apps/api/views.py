@@ -515,7 +515,6 @@ class UserDetailView(APIView):
     # lookup_url_kwarg = "abc"
 
     def get(self, request,*args,**kwargs):
-        import pdb;pdb.set_trace()
         usertype_to = None
         usertype_from = None
         request_from = None
