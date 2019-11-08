@@ -1669,6 +1669,8 @@ class UpdateUserByAdminView(APIView):
     permission_classes = [IsAuthenticated, AdminPermission]
 
     def post(self, request, pk=None, format=None):
+        response_data = []
+
 
 
         serializer = UserByadminSerializer(data=request.data)
@@ -1754,13 +1756,18 @@ class UpdateUserByAdminView(APIView):
                 'id': instance.pk
             }
             data.update(serializer.data)
+            response_data.append(data)
+
+
+
 
             response={
                 "status": True,
-                "message": "User Updated by admin"
+                "message": "User Updated by admin",
+                "response":response_data
             }
 
-            response['response'] = data
+            # response['response'] = data
 
             return Response(response)
 
