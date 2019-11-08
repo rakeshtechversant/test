@@ -507,12 +507,66 @@ class UserDeleteView(DestroyAPIView):
     permission_classes = [IsAuthenticated]
 
 
-class UserDetailView(RetrieveAPIView):
+class UserDetailView(APIView):
     queryset = FileUpload.objects.all()
     serializer_class = UserRetrieveSerializer
     permission_classes = [IsAuthenticated]
     # lookup_field = 'user'
     # lookup_url_kwarg = "abc"
+
+    def get(self, request,*args,**kwargs):
+        user_type=request.GET['user_type']
+        if user_type=='SECONDARY':
+            user_details=Members.objects.get(secondary_user_id=self.kwargs['pk'])
+            data={
+                'member_name':user_details.member_name,
+                'relation':user_details.relation,
+                'dob':user_details.dob,
+                'dom':user_details.dom,
+                # 'image':user_details.image,
+                'phone_no_secondary_user':user_details.phone_no_secondary_user,
+                'phone_no_secondary_user_secondary':user_details.phone_no_secondary_user_secondary,
+                'primary_user':user_details.primary_user_id.name,
+                'primary_user_id':user_details.primary_user_id.primary_user_id,
+                'blood_group':user_details.blood_group,
+                'email':user_details.email,
+                'occupation':user_details.occupation,
+                'about':user_details.about,
+                'marital_status':user_details.marital_status,
+                'marrige_date':user_details.marrige_date,
+                'in_memory':user_details.in_memory,
+                'in_memory_date':user_details.in_memory_date
+            }
+            return Response({'success': True,'message':'Profile found successfully','user_details':data}, status=HTTP_200_OK)
+        else:
+            try:
+                user_details=FileUpload.objects.get(primary_user_id=self.kwargs['pk'])
+                data={
+                   'member_name':user_details.primary_user_id,
+                   'name':user_details.name,
+                   'address':user_details.address,
+                   'phone_no_primary':user_details.phone_no_primary,
+                   'phone_no_secondary':user_details.phone_no_secondary,
+                   'dob':user_details.dob,
+                   'dom':user_details.dom,
+                   'blood_group':user_details.blood_group,
+                   'email':user_details.email,
+                   'occupation':user_details.occupation,
+                   'about':user_details.about,
+                   'marital_status':user_details.marital_status,
+                   'marrige_date':user_details.marrige_date,
+                   'in_memory':user_details.in_memory,
+                   'in_memory_date':user_details.in_memory_date,
+                }
+                return Response({'success': True,'message':'Profile found successfully','user_details':data}, status=HTTP_200_OK)
+            except:
+                user_details=AdminProfile.objects.get(id=self.kwargs['pk'])
+                data={
+                    'id':user_details.user,
+                    'mobile_number':user_details.mobile_number
+                }
+                return Response({'success': True,'message':'Profile found successfully','user_details':data}, status=HTTP_200_OK)
+
 
 
 class ChurchVicarView(RetrieveAPIView):
