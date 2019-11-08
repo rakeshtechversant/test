@@ -1935,3 +1935,40 @@ class AcceptViewRequestNumberViewset(CreateAPIView):
                
             except:
                 return Response({'success': False}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class EachUserUnreadCount(APIView):
+    serializer_class = NoticeSerializer
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, format=None):
+        user=request.user.username
+        try:
+            member=FileUpload.objects.get(phone_no_primary=user)
+            notice_read_section=NoticeReadPrimary.objects.filter(user_to=member,is_read=True)
+            notice_unread_section=NoticeReadPrimary.objects.filter(user_to=member,is_read=False)
+            count_read=len(notice_read_section)
+            count_unread=len(notice_unread_section)
+        except:
+            try:
+                member=Members.objects.filter(phone_no_secondary_user=user)
+                notice_read_section=NoticeReadSecondary.objects.filter(user_to=member,is_read=True)
+                notice_unread_section=NoticeReadSecondary.objects.filter(user_to=member,is_read=False)
+                count_read=len(notice_read_section)
+                count_unread=len(notice_unread_section)
+            except:
+                admin_profile = AdminProfile.objects.get(user=request.user)
+                notice_read_section=NoticeReadAdmin.objects.filter(user_to=admin_profile,is_read=True)
+                notice_unread_section=NoticeReadAdmin.objects.filter(user_to=admin_profile,is_read=False)
+                count_read=len(notice_read_section)
+                count_unread=len(notice_unread_section)
+
+
+
+        data={
+            'Unreadcount':count_unread,
+            'Readcount':count_read,
+            'status': True,
+        }
+        return Response(data,status=HTTP_200_OK)

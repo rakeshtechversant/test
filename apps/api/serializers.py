@@ -231,7 +231,6 @@ class NoticeSerializer(serializers.ModelSerializer):
         fields = '__all__'
     #
     def create(self, validated_data):
-        import pdb;pdb.set_trace()
         body="Admin have one new notice"
         notifications=Notification.objects.create(created_time=tz.now(),message=body)
         primary_members=FileUpload.objects.all()

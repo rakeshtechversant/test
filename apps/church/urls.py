@@ -6,7 +6,7 @@ from apps.api.views import UserNoticeList, NoticeBereavementDelete, NoticeBereav
     FamilyDetailView, PrayerGroupBasedFamilyView, PrayerGrouplistView, ChurchVicarView, \
     ChurchHistoryView, ChurchImagesView, PrayerGroupaddView, PrayerGroupMemberaddView, \
     FamilyListView, FamilyMemberList, NoticeModelViewSet, SendOtp, PrayerGroupBasedMembersView,FamilyMemberDetails, \
-    ViewRequestNumberViewset, AcceptViewRequestNumberViewset, EachUserNotification
+    ViewRequestNumberViewset, AcceptViewRequestNumberViewset, EachUserNotification,EachUserUnreadCount
 
 router = DefaultRouter()
 
@@ -41,6 +41,7 @@ urlpatterns = [
     
     url(r'^family-member-details/$',FamilyMemberDetails.as_view(),name='family_member_details'),
     url(r'^notification-status/$',EachUserNotification.as_view(),name='notification_detail'),
+    url(r'^notification-unread-count/$',EachUserUnreadCount.as_view(),name='notification_unread_detail'),
     url(r'^number-request/$',ViewRequestNumberViewset.as_view(),name='number_request'),
      url(r'^number-request-accept/$',AcceptViewRequestNumberViewset.as_view(),name='number_request_accept'),
 ]
