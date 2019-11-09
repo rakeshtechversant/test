@@ -196,6 +196,7 @@ class Notification(models.Model):
     notification_to_primary = models.ManyToManyField(FileUpload, through='NoticeReadPrimary')
     notification_to_secondary = models.ManyToManyField(Members, through='NoticeReadSecondary')
     notification_to_admin = models.ManyToManyField(AdminProfile, through='NoticeReadAdmin')
+    is_json=models.BooleanField(default=False)
 
 class NoticeReadPrimary(models.Model):
     notification=models.ForeignKey(Notification, on_delete=models.CASCADE, null=True, blank=True)

@@ -1801,7 +1801,7 @@ class UpdateUserByAdminView(APIView):
                 prayer_group.primary_user_id.add(instance)
 
                 for pre_family in instance.get_file_upload.all():
-                    pre_family.primary_user_id = None
+                    pre_family.primary_EachUserNotificationuser_id = None
                     pre_family.save()
 
                 family.primary_user_id = instance
@@ -1928,9 +1928,6 @@ class EachUserNotification(APIView):
                 notice_section.update(is_read=True)
 
                 messages = AdminNotificationSerializer(notice_section, many=True)
-
-
-
         data={
             'notification':messages.data,
             'status': True,
@@ -1962,13 +1959,13 @@ class ViewRequestNumberViewset(CreateAPIView):
                             primary_user = FileUpload.objects.get(primary_user_id=request_to)
                             if primary_user:
                                 ViewRequestNumber.objects.get_or_create(request_from=request_from,request_to=primary_user.primary_user_id,usertype_from='PRIMARY',usertype_to='PRIMARY',request_mobile=primary_user.phone_no_primary)
-                                not_obj=Notification.objects.create(created_by_primary=primary_user,message="User %s of usertype PRIMARY requested for number"%(request_from))
-                                NoticeReadPrimary.objects.create(notification=not_obj,user_to=primary_user)
+
                                 if usertype_from=='PRIMARY':
                                     try:
                                         from_user = FileUpload.objects.get(phone_no_primary=request.user.username)
                                     except:
                                         from_user = FileUpload.objects.get(phone_no_secondary=request.user.username)
+
                                     user_details={
 
                                         'from_number':request.user.username,
@@ -1979,6 +1976,10 @@ class ViewRequestNumberViewset(CreateAPIView):
                                         'to_id':primary_user.primary_user_id,
                                         'send_time':tz.now()
                                     }
+                                    user_details_str=str(user_details)
+                                    not_obj = Notification.objects.create(created_by_primary=primary_user,
+                                                                          message=user_details_str,is_json=True)
+                                    NoticeReadPrimary.objects.create(notification=not_obj, user_to=primary_user)
                                 else:
                                     try:
                                         from_user = Members.objects.get(phone_no_secondary_user=request.user.username)
@@ -2000,8 +2001,7 @@ class ViewRequestNumberViewset(CreateAPIView):
                             sec_user = Members.objects.get(secondary_user_id=request_to)
                             if sec_user:
                                 ViewRequestNumber.objects.get_or_create(request_from=request_from,request_to=sec_user.secondary_user_id,usertype_from='PRIMARY',usertype_to='SECONDARY',request_mobile=sec_user.phone_no_secondary_user)
-                                not_obj=Notification.objects.create(created_by_secondary=sec_user,message="User %s of usertype PRIMARY requested for number"%(request_from))
-                                NoticeReadSecondary.objects.create(notification=not_obj,user_to=sec_user)
+
                                 if usertype_from == 'PRIMARY':
                                     try:
                                         from_user = FileUpload.objects.get(phone_no_primary=request.user.username)
@@ -2017,6 +2017,10 @@ class ViewRequestNumberViewset(CreateAPIView):
                                         'to_id': primary_user.primary_user_id,
                                         'send_time': tz.now()
                                     }
+                                    user_details=str(user_details)
+                                    not_obj = Notification.objects.create(created_by_secondary=sec_user,
+                                                                          message=user_details,is_json=True)
+                                    NoticeReadSecondary.objects.create(notification=not_obj, user_to=sec_user)
                                 else:
                                     try:
                                         from_user = Members.objects.get(phone_no_secondary_user=request.user.username)
@@ -2045,8 +2049,7 @@ class ViewRequestNumberViewset(CreateAPIView):
                             primary_user = FileUpload.objects.get(primary_user_id=request_to)
                             if primary_user:
                                 ViewRequestNumber.objects.get_or_create(request_from=request_from,request_to=primary_user.primary_user_id,usertype_from='SECONDARY',usertype_to='PRIMARY',request_mobile=primary_user.phone_no_primary)
-                                not_obj = Notification.objects.create(created_by_primary=primary_user,message="User %s of usertype SECONDARY requested for number"%(request_from))
-                                NoticeReadPrimary.objects.create(notification=not_obj,user_to=primary_user)
+
                                 if usertype_from == 'PRIMARY':
                                     try:
                                         from_user = FileUpload.objects.get(phone_no_primary=request.user.username)
@@ -2078,14 +2081,18 @@ class ViewRequestNumberViewset(CreateAPIView):
                                         'to_id': primary_user.primary_user_id,
                                         'send_time': tz.now()
                                     }
+                                    user_details_str = str(user_details)
+                                    not_obj = Notification.objects.create(created_by_primary=primary_user,
+                                                                          message=user_details_str,is_json=True)
+                                    NoticeReadPrimary.objects.create(notification=not_obj, user_to=primary_user)
+
 
                                 return Response({'success': True,'message':'Notification send Successfully','user_details':user_details}, status=HTTP_201_CREATED)
                         elif usertype_to == 'SECONDARY':
                             sec_user = Members.objects.get(secondary_user_id=request_to)
                             if sec_user:
                                 ViewRequestNumber.objects.get_or_create(request_from=request_from,request_to=sec_user.secondary_user_id,usertype_from='SECONDARY',usertype_to='SECONDARY',request_mobile=sec_user.phone_no_secondary_user)
-                                not_obj=Notification.objects.create(created_by_secondary=sec_user,message="User %s of usertype SECONDARY requested for number"%(request_from))
-                                NoticeReadSecondary.objects.create(notification=not_obj,user_to=sec_user)
+
                                 if usertype_from == 'PRIMARY':
                                     try:
                                         from_user = FileUpload.objects.get(phone_no_primary=request.user.username)
@@ -2102,6 +2109,7 @@ class ViewRequestNumberViewset(CreateAPIView):
                                         'send_time': tz.now()
                                     }
                                 else:
+
                                     try:
                                         from_user = Members.objects.get(phone_no_secondary_user=request.user.username)
                                     except:
@@ -2117,6 +2125,10 @@ class ViewRequestNumberViewset(CreateAPIView):
                                         'to_id': primary_user.primary_user_id,
                                         'send_time': tz.now()
                                     }
+                                    user_details_str=str(user_details)
+                                    not_obj = Notification.objects.create(created_by_secondary=sec_user,
+                                                                          message=user_details_str,is_json=True)
+                                    NoticeReadSecondary.objects.create(notification=not_obj, user_to=sec_user)
                                 return Response({'success': True,'message':'Notification send Successfully','user_details':user_details}, status=HTTP_201_CREATED)
                         else:
                             return Response({'success': False}, status=status.HTTP_400_BAD_REQUEST)
