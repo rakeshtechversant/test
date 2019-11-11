@@ -506,6 +506,9 @@ class UserUpdateView(RetrieveUpdateAPIView):
     queryset = FileUpload.objects.all()
     serializer_class = UserListSerializer
     permission_classes = [IsAuthenticated]
+    # authentication_classes = [TokenAuthentication]
+
+    # def
 
 
 class UserDeleteView(DestroyAPIView):
@@ -1048,7 +1051,6 @@ class SendOtp(APIView):
 
             message_body = sec_user.member_name + ' requested OTP for login: ' + otp_number
 
-            message = "OTP for login is %s" % (otp,)
             requests.get(
                 "http://unifiedbuzz.com/api/insms/format/json/?mobile=" + mobile_number + "&text=" + message_body +
                 "&flash=0&type=1&sender=MARCHR",
@@ -2009,6 +2011,7 @@ class ViewRequestNumberViewset(CreateAPIView):
                         elif usertype_to == 'SECONDARY':
                             sec_user = Members.objects.get(secondary_user_id=request_to)
                             if sec_user:
+                                primary_user = FileUpload.objects.get(primary_user_id=request_to)
                                 ViewRequestNumber.objects.get_or_create(request_from=request_from,request_to=sec_user.secondary_user_id,usertype_from='PRIMARY',usertype_to='SECONDARY',request_mobile=sec_user.phone_no_secondary_user)
 
                                 if usertype_from == 'PRIMARY':
@@ -2101,7 +2104,7 @@ class ViewRequestNumberViewset(CreateAPIView):
                             sec_user = Members.objects.get(secondary_user_id=request_to)
                             if sec_user:
                                 ViewRequestNumber.objects.get_or_create(request_from=request_from,request_to=sec_user.secondary_user_id,usertype_from='SECONDARY',usertype_to='SECONDARY',request_mobile=sec_user.phone_no_secondary_user)
-
+                                primary_user = FileUpload.objects.get(primary_user_id=request_to)
                                 if usertype_from == 'PRIMARY':
                                     try:
                                         from_user = FileUpload.objects.get(phone_no_primary=request.user.username)

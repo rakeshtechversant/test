@@ -21,7 +21,7 @@ urlpatterns = [
     path('add-family-by-admin/', AddFamilyByAdminView.as_view(), name='add_family_by_admin'),
     
     url(r'^(?P<pk>[\w-]+)/$',UserDetailView.as_view(),name='ind_user'),
-    url(r'^(?P<pk>[\w-]+)/edit/$',UserUpdateView.as_view(),name='update_user'),
+    url(r'^update-member-own/$',UserUpdateView.as_view(),name='update_user'),
     url(r'^(?P<pk>[\w-]+)/add-users/$',SecondaryaddView.as_view(),name='add_user'),
     url(r'^(?P<pk>[\w-]+)/delete/$',UserDeleteView.as_view(),name='delete_user'),
 
