@@ -134,6 +134,8 @@ class PrayerGroup(models.Model):
     name = models.CharField(max_length=255)
     notice = models.ForeignKey(Notice, on_delete=models.CASCADE, null=True, blank=True)
 
+    def __str__(self):
+        return self.name
 
 class Images(models.Model):
     image = models.FileField(upload_to='pan_folder/')
