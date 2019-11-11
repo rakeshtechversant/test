@@ -9,7 +9,7 @@ from apps.church.models import FileUpload , Family, Members , PrayerGroup
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        f = open('apps/api/csv_tables/38818-tp.csv', 'r')
+        f = open('apps/api/csv_tables/38818-kp.csv', 'r')
         data = csv.reader(f)
         church = None
         for index, row in enumerate(data):
