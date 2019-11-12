@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'rest_auth',
     'import_export',
+    'ckeditor',
     #project app
     'apps.church',
     'apps.api'
@@ -212,3 +213,4 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 MEDIA_ROOT = os.path.join (BASE_DIR, 'cards')
 MEDIA_URL = os.path.join(BASE_DIR, 'cards/')
 
+# CKEDITOR_BASEPATH =STATIC_ROOT + "/ckeditor/ckeditor/"
