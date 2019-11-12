@@ -35,7 +35,8 @@ from apps.api.serializers import ChurchHistorySerializer, ChurchImagesSerializer
     UserByadminSerializer, FamilyByadminSerializer, PrimaryNotificationSerializer, SecondaryNotificationSerializer, \
     ViewRequestNumberSerializer, RequestAcceptNumberSerializer, AdminNotificationSerializer
 from apps.church.models import Members, Family, UserProfile, ChurchDetails, FileUpload, OtpModels, \
-    PrayerGroup, Notification, Notice, NoticeBereavement, UnapprovedMember, NoticeReadPrimary, NoticeReadSecondary, ViewRequestNumber, NoticeReadAdmin
+    PrayerGroup, Notification, Notice, NoticeBereavement, UnapprovedMember, NoticeReadPrimary, NoticeReadSecondary, \
+    ViewRequestNumber, NoticeReadAdmin, PrivacyPolicy
 
 from apps.api.models import AdminProfile
 from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_400_BAD_REQUEST, HTTP_401_UNAUTHORIZED, \
@@ -47,7 +48,7 @@ from datetime import datetime, timezone
 from django.utils import timezone as tz
 
 from django.contrib.auth.models import User
-
+from django.views.generic import TemplateView
 
 class UserLoginMobileView(APIView):
     queryset = UserProfile.objects.all()
@@ -2243,3 +2244,12 @@ class EachUserUnreadCount(APIView):
             'status': True,
         }
         return Response(data,status=HTTP_200_OK)
+
+class PrivacyView(TemplateView):
+    template_name = 'Privacy/privacy.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(PrivacyView, self).get_context_data(**kwargs)
+        context['privacy']= PrivacyPolicy.objects.first().policy
+        return context
+

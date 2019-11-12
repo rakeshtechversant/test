@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 import requests
 from apps.church.models import UserProfile, ChurchDetails, FileUpload, OtpModels, \
     OtpVerify, PrayerGroup, Notification, Family, Members, Notice, NoticeBereavement, \
-    UnapprovedMember, NoticeReadPrimary, NoticeReadSecondary, NoticeReadAdmin, ViewRequestNumber
+    UnapprovedMember, NoticeReadPrimary, NoticeReadSecondary, NoticeReadAdmin, ViewRequestNumber,PrivacyPolicy
 from rest_framework.serializers import CharField
 from apps.api.token_create import get_tokens_for_user
 from django.utils.crypto import get_random_string
@@ -559,3 +559,9 @@ class RequestAcceptNumberSerializer(serializers.ModelSerializer):
     class Meta:
         model = ViewRequestNumber
         fields = ['request_from', 'request_to','userttype_to','userttype_from','is_acceped']
+
+
+class PrivacyPolicy(serializers.ModelSerializer):
+    class Meta:
+        model = PrivacyPolicy
+        fields = '__all__'

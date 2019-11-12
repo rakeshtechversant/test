@@ -6,6 +6,7 @@ from datetime import datetime
 from django.utils import timezone
 
 from apps.api.models import AdminProfile
+from ckeditor.fields import RichTextField
 
 
 class Notice(models.Model):
@@ -241,6 +242,9 @@ class Occupation(models.Model):
 class MemberType(models.Model):
     member_type =  models.CharField(max_length=200, unique=True)
 
+
+class PrivacyPolicy(models.Model):
+    policy=RichTextField(null=True,blank=True)
 
 
 
