@@ -33,6 +33,7 @@ class FileUpload(models.Model):
     marrige_date = models.CharField(max_length=20,null=True,blank=True)
     in_memory = models.BooleanField(default=False)
     in_memory_date =models.DateTimeField(null=True, blank=True)
+    relation = models.CharField(max_length=255, null=True, blank=True)
 
 
     def __str__(self):
