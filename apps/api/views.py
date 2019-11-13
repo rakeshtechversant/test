@@ -1950,10 +1950,17 @@ class EachUserNotification(APIView):
                 notice_section.update(is_read=True)
 
                 messages = AdminNotificationSerializer(notice_section, many=True)
-        data={
-            'notification':messages.data,
-            'status': True,
+        # data={
+        #     'notification':messages.data,
+        #     'status': True,
+        # }
+        
+        data ={
+            "success": True,
+            "code": 200,
         }
+
+        data['response'] = messages.data
         return Response(data,status=HTTP_200_OK)
 
 
