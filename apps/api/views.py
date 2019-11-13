@@ -539,6 +539,7 @@ class UserDetailView(APIView):
         is_accepted = False
         member = None
 
+
         user_type=request.GET['user_type']
         if not user_type:
             return Response({'success': False,'message':'Please provide user type'}, status=HTTP_400_BAD_REQUEST)
@@ -584,7 +585,8 @@ class UserDetailView(APIView):
                     'marital_status':user_details.marital_status,
                     'marrige_date':user_details.marrige_date,
                     'in_memory':user_details.in_memory,
-                    'in_memory_date':user_details.in_memory_date
+                    'in_memory_date':user_details.in_memory_date,
+                    'image':request.build_absolute_uri(user_details.image.url)
 
                 }
                 return Response({'success': True,'message':'Profile found successfully','user_details':data}, status=HTTP_200_OK)
@@ -600,7 +602,6 @@ class UserDetailView(APIView):
                         is_accepted = phoneobj.first().is_accepted
                     except:
                         is_accepted = False
-
                     data={
                        'member_name':user_details.primary_user_id,
                        'name':user_details.name,
@@ -618,6 +619,7 @@ class UserDetailView(APIView):
                        'marrige_date':user_details.marrige_date,
                        'in_memory':user_details.in_memory,
                        'in_memory_date':user_details.in_memory_date,
+                       'image':request.build_absolute_uri(user_details.image.url)
                     }
                     return Response({'success': True,'message':'Profile found successfully','user_details':data}, status=HTTP_200_OK)
                 except:
@@ -1121,7 +1123,6 @@ class Profile(APIView):
 
         if hasattr(request.user, 'adminprofile'):
             serializer = AdminProfileSerializer(request.user.adminprofile, data=request.data)
-        
         primary_user = FileUpload.objects.filter(phone_no_primary=request.user.username)
 
         if primary_user.exists():
@@ -1157,7 +1158,7 @@ class Profile(APIView):
         }
         return Response(data, status=status.HTTP_404_NOT_FOUND)
 
-        
+       
 # class NoticeBereavementView(ModelViewSet):
 #     queryset=NoticeBereavement.objects.all()
 #     serializer_class = NoticeBereavementSerializer
