@@ -3,7 +3,8 @@ from django.contrib.auth import password_validation, authenticate
 from django.db.models import Q
 from django.http import Http404
 # Create your views here.
-
+import ast
+import json
 from rest_framework import mixins
 from rest_framework import exceptions
 from rest_framework.views import APIView
@@ -1954,13 +1955,28 @@ class EachUserNotification(APIView):
         #     'notification':messages.data,
         #     'status': True,
         # }
-        
+
         data ={
             "success": True,
             "code": 200,
         }
+        data_obj = []
+        for notif in notice_section:
+            if notif.notification.is_json == True :
+                dump_value = json.dumps(messages.data[0])
+                v1 = json.loads(dump_value)
+                data_str =v1['message']
+                json_val = ast.literal_eval(data_str)
+                json_load_obj = json.dumps(json_val)
+                data_final=json.loads(json_load_obj)
 
-        data['response'] = messages.data
+
+                # data_obj = data_final
+                data_obj.append(data_final)
+
+            else:
+                data_obj.append(messages.data)
+        data['response'] = data_obj
         return Response(data,status=HTTP_200_OK)
 
 
@@ -1997,13 +2013,13 @@ class ViewRequestNumberViewset(CreateAPIView):
 
                                     user_details={
 
-                                        'from_number':request.user.username,
-                                        'from_id':from_user.primary_user_id,
-                                        'from_user':from_user.name,
-                                        'to_user':primary_user.name,
-                                        'to_number':primary_user.phone_no_primary,
-                                        'to_id':primary_user.primary_user_id,
-                                        'send_time':tz.now()
+                                        "from_number":request.user.username,
+                                        "from_id":from_user.primary_user_id,
+                                        "from_user":from_user.name,
+                                        "to_user":primary_user.name,
+                                        "to_number":primary_user.phone_no_primary,
+                                        "to_id":primary_user.primary_user_id,
+                                        "send_time":str(tz.now())
                                     }
                                     user_details_str=str(user_details)
                                     not_obj = Notification.objects.create(created_by_primary=primary_user,
@@ -2016,13 +2032,13 @@ class ViewRequestNumberViewset(CreateAPIView):
                                         from_user = Members.objects.get(phone_no_secondary_user_secondary=request.user.username)
                                     user_details = {
 
-                                        'from_number': request.user.username,
-                                        'from_id': from_user.secondary_user_id,
-                                        'from_user': from_user.member_name,
-                                        'to_user': primary_user.name,
-                                        'to_number': primary_user.phone_no_primary,
-                                        'to_id': primary_user.primary_user_id,
-                                        'send_time': tz.now()
+                                        "from_number": request.user.username,
+                                        "from_id": from_user.secondary_user_id,
+                                        "from_user": from_user.member_name,
+                                        "to_user": primary_user.name,
+                                        "to_number": primary_user.phone_no_primary,
+                                        "to_id": primary_user.primary_user_id,
+                                        "send_time":str(tz.now())
                                     }
 
                                 return Response({'success': True,'message':'Notification send Successfully','user_details':user_details}, status=HTTP_201_CREATED)
@@ -2039,13 +2055,13 @@ class ViewRequestNumberViewset(CreateAPIView):
                                         from_user = FileUpload.objects.get(phone_no_secondary=request.user.username)
                                     user_details = {
 
-                                        'from_number': request.user.username,
-                                        'from_id': from_user.primary_user_id,
-                                        'from_user': from_user.name,
-                                        'to_user': primary_user.name,
-                                        'to_number': primary_user.phone_no_primary,
-                                        'to_id': primary_user.primary_user_id,
-                                        'send_time': tz.now()
+                                        "from_number": request.user.username,
+                                        "from_id": from_user.primary_user_id,
+                                        "from_user": from_user.name,
+                                        "to_user": primar_user.name,
+                                        "to_number": primary_user.phone_no_primary,
+                                        "to_id": primary_user.primary_user_id,
+                                        "send_time":str(tz.now())
                                     }
                                     user_details=str(user_details)
                                     not_obj = Notification.objects.create(created_by_secondary=sec_user,
@@ -2059,13 +2075,13 @@ class ViewRequestNumberViewset(CreateAPIView):
                                             phone_no_secondary_user_secondary=request.user.username)
                                     user_details = {
 
-                                        'from_number': request.user.username,
-                                        'from_id': from_user.secondary_user_id,
-                                        'from_user': from_user.member_name,
-                                        'to_user': primary_user.name,
-                                        'to_number': primary_user.phone_no_primary,
-                                        'to_id': primary_user.primary_user_id,
-                                        'send_time': tz.now()
+                                        "from_number": request.user.username,
+                                        "from_id": from_user.secondary_user_id,
+                                        "from_user": from_user.member_name,
+                                        "to_user": primary_user.name,
+                                        "to_number": primary_user.phone_no_primary,
+                                        "to_id": primary_user.primary_user_id,
+                                        "send_time":str(tz.now())
                                     }
 
                                 return Response({'success': True,'message':'Notification send Successfully','user_details':user_details}, status=HTTP_201_CREATED)
@@ -2087,13 +2103,13 @@ class ViewRequestNumberViewset(CreateAPIView):
                                         from_user = FileUpload.objects.get(phone_no_secondary=request.user.username)
                                     user_details = {
 
-                                        'from_number': request.user.username,
-                                        'from_id': from_user.primary_user_id,
-                                        'from_user': from_user.name,
-                                        'to_user': primary_user.name,
-                                        'to_number': primary_user.phone_no_primary,
-                                        'to_id': primary_user.primary_user_id,
-                                        'send_time': tz.now()
+                                        "from_number": request.user.username,
+                                        "from_id": from_user.primary_user_id,
+                                        "from_user": from_user.name,
+                                        "to_user": primary_user.name,
+                                        "to_number": primary_user.phone_no_primary,
+                                        "to_id": primary_user.primary_user_id,
+                                        "send_time":str(tz.now())
                                     }
                                 else:
                                     try:
@@ -2103,13 +2119,13 @@ class ViewRequestNumberViewset(CreateAPIView):
                                             phone_no_secondary_user_secondary=request.user.username)
                                     user_details = {
 
-                                        'from_number': request.user.username,
-                                        'from_id': from_user.secondary_user_id,
-                                        'from_user': from_user.member_name,
-                                        'to_user': primary_user.name,
-                                        'to_number': primary_user.phone_no_primary,
-                                        'to_id': primary_user.primary_user_id,
-                                        'send_time': tz.now()
+                                        "from_number": request.user.username,
+                                        "from_id": from_user.secondary_user_id,
+                                        "from_user": from_user.member_name,
+                                        "to_user": primary_user.name,
+                                        "to_number": primary_user.phone_no_primary,
+                                        "to_id": primary_user.primary_user_id,
+                                        "send_time":str(tz.now())
                                     }
                                     user_details_str = str(user_details)
                                     not_obj = Notification.objects.create(created_by_primary=primary_user,
@@ -2130,13 +2146,13 @@ class ViewRequestNumberViewset(CreateAPIView):
                                         from_user = FileUpload.objects.get(phone_no_secondary=request.user.username)
                                     user_details = {
 
-                                        'from_number': request.user.username,
-                                        'from_id': from_user.primary_user_id,
-                                        'from_user': from_user.name,
-                                        'to_user': primary_user.name,
-                                        'to_number': primary_user.phone_no_primary,
-                                        'to_id': primary_user.primary_user_id,
-                                        'send_time': tz.now()
+                                        "from_number": request.user.username,
+                                        "from_id": from_user.primary_user_id,
+                                        "from_user": from_user.name,
+                                        "to_user": primary_user.name,
+                                        "to_number": primary_user.phone_no_primary,
+                                        "to_id": primary_user.primary_user_id,
+                                        "send_time":str(tz.now())
                                     }
                                 else:
 
@@ -2147,13 +2163,13 @@ class ViewRequestNumberViewset(CreateAPIView):
                                             phone_no_secondary_user_secondary=request.user.username)
                                     user_details = {
 
-                                        'from_number': request.user.username,
-                                        'from_id': from_user.secondary_user_id,
-                                        'from_user': from_user.member_name,
-                                        'to_user': primary_user.name,
-                                        'to_number': primary_user.phone_no_primary,
-                                        'to_id': primary_user.primary_user_id,
-                                        'send_time': tz.now()
+                                        "from_number": request.user.username,
+                                        "from_id": from_user.secondary_user_id,
+                                        "from_user": from_user.member_name,
+                                        "to_user": primary_user.name,
+                                        "to_number": primary_user.phone_no_primary,
+                                        "to_id": primary_user.primary_user_id,
+                                        "send_time":str(tz.now())
                                     }
                                     user_details_str=str(user_details)
                                     not_obj = Notification.objects.create(created_by_secondary=sec_user,
