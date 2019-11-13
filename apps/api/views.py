@@ -1103,14 +1103,14 @@ class Profile(APIView):
         primary_user = FileUpload.objects.filter(phone_no_primary=request.user.username)
 
         if primary_user.exists():
-            serializer = PrimaryUserProfileSerializer(primary_user.first())
+            serializer = PrimaryUserProfileSerializer(primary_user.first(), context = {'request':request})
 
             return Response({'success': True,'message':'Profile found successfully','user_details':serializer.data}, status=HTTP_200_OK)
 
         member = Members.objects.filter(phone_no_secondary_user=request.user.username)
 
         if member.exists():
-            serializer = MemberProfileSerializer(member.first())
+            serializer = MemberProfileSerializer(member.first(), context = {'request':request})
 
             return Response({'success': True,'message':'Profile found successfully','user_details':serializer.data}, status=HTTP_200_OK)
 
@@ -1127,12 +1127,12 @@ class Profile(APIView):
         primary_user = FileUpload.objects.filter(phone_no_primary=request.user.username)
 
         if primary_user.exists():
-            serializer = PrimaryUserProfileSerializer(primary_user.first(), data=request.data)
+            serializer = PrimaryUserProfileSerializer(primary_user.first(), data=request.data, context = {'request':request})
 
         member = Members.objects.filter(phone_no_secondary_user=request.user.username)
 
         if member.exists():
-            serializer = MemberProfileSerializer(member.first(), data=request.data)
+            serializer = MemberProfileSerializer(member.first(), data=request.data, context = {'request':request})
 
         if serializer:
             if serializer.is_valid():

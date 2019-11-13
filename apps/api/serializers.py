@@ -287,6 +287,10 @@ class PrimaryUserProfileSerializer(serializers.ModelSerializer):
 
         data['user_type'] = 'PRIMARY'
 
+        request = self.context['request']
+
+        data['image'] = request.build_absolute_uri(instance.image.url)
+        
         return data
 
 
@@ -307,6 +311,9 @@ class MemberProfileSerializer(serializers.ModelSerializer):
 
         data['user_type'] = 'SECONDARY'
 
+        request = self.context['request']
+
+        data['image'] = request.build_absolute_uri(instance.image.url)
         return data
 
 
