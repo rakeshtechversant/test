@@ -540,7 +540,6 @@ class UserDetailView(APIView):
         is_accepted = False
         member = None
 
-
         user_type=request.GET['user_type']
         if not user_type:
             return Response({'success': False,'message':'Please provide user type'}, status=HTTP_400_BAD_REQUEST)
@@ -587,7 +586,7 @@ class UserDetailView(APIView):
                     'marrige_date':user_details.marrige_date,
                     'in_memory':user_details.in_memory,
                     'in_memory_date':user_details.in_memory_date,
-                    'image':request.build_absolute_uri(user_details.image.url)
+                    # 'image':request.build_absolute_uri(user_details.image.url)
 
                 }
                 return Response({'success': True,'message':'Profile found successfully','user_details':data}, status=HTTP_200_OK)
@@ -620,7 +619,7 @@ class UserDetailView(APIView):
                        'marrige_date':user_details.marrige_date,
                        'in_memory':user_details.in_memory,
                        'in_memory_date':user_details.in_memory_date,
-                       'image':request.build_absolute_uri(user_details.image.url)
+                       # 'image':request.build_absolute_uri(user_details.image.url)
                     }
                     return Response({'success': True,'message':'Profile found successfully','user_details':data}, status=HTTP_200_OK)
                 except:
