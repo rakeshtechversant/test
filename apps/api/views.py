@@ -220,17 +220,27 @@ class OtpVerifyViewSet(CreateAPIView):
         user_type = serializer.validated_data.get("user_type", None)
         try:
             otp_obj = OtpModels.objects.get(otp=otp)
-            if (datetime.now(timezone.utc) - otp_obj.created_time).total_seconds() >= 1800:
-                otp_obj.is_expired = True
-                otp_obj.save()
-                return Response({'success': False, 'message': 'Otp Expired'}, status=HTTP_400_BAD_REQUEST)
-            if otp_obj.is_expired:
-                return Response({'success': False, 'message': 'Otp Already Used'}, status=HTTP_400_BAD_REQUEST)
+            if user_type == 'PRIMARY' or user_type == 'SECONDARY' :
+                # otp_obj = OtpModels.objects.get(otp=otp)
+                if (datetime.now(timezone.utc) - otp_obj.created_time).total_seconds() >= 1800:
+                    otp_obj.is_expired = True
+                    otp_obj.save()
+                    return Response({'success': False, 'message': 'Otp Expired'}, status=HTTP_400_BAD_REQUEST)
+                if otp_obj.is_expired:
+                    return Response({'success': False, 'message': 'Otp Already Used'}, status=HTTP_400_BAD_REQUEST)
+            else:
+                pass
         except:
             return Response({'success': False, 'message': 'Invalid Otp'}, status=HTTP_400_BAD_REQUEST)
         else:
-            otp_obj.is_expired = True
-            otp_obj.save()
+            if user_type == 'PRIMARY' or user_type == 'SECONDARY' :
+                if otp_obj:
+                    otp_obj.is_expired = True
+                    otp_obj.save()
+                else:
+                    pass
+            else:
+                pass
             
             if user_type == "ADMIN":
                 try:
