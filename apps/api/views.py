@@ -218,7 +218,7 @@ class OtpVerifyViewSet(CreateAPIView):
         serializer.is_valid(raise_exception=True)
         otp = serializer.validated_data.get("otp", None)
         user_type = serializer.validated_data.get("user_type", None)
-        
+
         try:
             otp_obj = OtpModels.objects.get(otp=otp)
             if user_type == 'PRIMARY' or user_type == 'SECONDARY' :
@@ -2033,6 +2033,7 @@ class ViewRequestNumberViewset(CreateAPIView):
 
                                         "from_number":request.user.username,
                                         "from_id":from_user.primary_user_id,
+                                        "from_usertype":'PRIMARY',
                                         "from_user":from_user.name,
                                         "to_user":primary_user.name,
                                         "to_number":primary_user.phone_no_primary,
@@ -2053,6 +2054,7 @@ class ViewRequestNumberViewset(CreateAPIView):
                                         "from_number": request.user.username,
                                         "from_id": from_user.secondary_user_id,
                                         "from_user": from_user.member_name,
+                                        "from_usertype":'SECONDARY',
                                         "to_user": primary_user.name,
                                         "to_number": primary_user.phone_no_primary,
                                         "to_id": primary_user.primary_user_id,
@@ -2076,6 +2078,7 @@ class ViewRequestNumberViewset(CreateAPIView):
                                         "from_number": request.user.username,
                                         "from_id": from_user.primary_user_id,
                                         "from_user": from_user.name,
+                                        "from_usertype":'PRIMARY',
                                         "to_user": primar_user.name,
                                         "to_number": primary_user.phone_no_primary,
                                         "to_id": primary_user.primary_user_id,
@@ -2096,6 +2099,7 @@ class ViewRequestNumberViewset(CreateAPIView):
                                         "from_number": request.user.username,
                                         "from_id": from_user.secondary_user_id,
                                         "from_user": from_user.member_name,
+                                        "from_usertype":'SECONDARY',
                                         "to_user": primary_user.name,
                                         "to_number": primary_user.phone_no_primary,
                                         "to_id": primary_user.primary_user_id,
@@ -2124,6 +2128,7 @@ class ViewRequestNumberViewset(CreateAPIView):
                                         "from_number": request.user.username,
                                         "from_id": from_user.primary_user_id,
                                         "from_user": from_user.name,
+                                        "from_usertype":'PRIMARY',
                                         "to_user": primary_user.name,
                                         "to_number": primary_user.phone_no_primary,
                                         "to_id": primary_user.primary_user_id,
@@ -2140,6 +2145,7 @@ class ViewRequestNumberViewset(CreateAPIView):
                                         "from_number": request.user.username,
                                         "from_id": from_user.secondary_user_id,
                                         "from_user": from_user.member_name,
+                                        "from_usertype":'SECONDARY',
                                         "to_user": primary_user.name,
                                         "to_number": primary_user.phone_no_primary,
                                         "to_id": primary_user.primary_user_id,
@@ -2167,6 +2173,7 @@ class ViewRequestNumberViewset(CreateAPIView):
                                         "from_number": request.user.username,
                                         "from_id": from_user.primary_user_id,
                                         "from_user": from_user.name,
+                                        "from_usertype":'PRIMARY',
                                         "to_user": primary_user.name,
                                         "to_number": primary_user.phone_no_primary,
                                         "to_id": primary_user.primary_user_id,
@@ -2184,6 +2191,7 @@ class ViewRequestNumberViewset(CreateAPIView):
                                         "from_number": request.user.username,
                                         "from_id": from_user.secondary_user_id,
                                         "from_user": from_user.member_name,
+                                        "from_usertype":'SECONDARY',
                                         "to_user": primary_user.name,
                                         "to_number": primary_user.phone_no_primary,
                                         "to_id": primary_user.primary_user_id,
