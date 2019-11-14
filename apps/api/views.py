@@ -218,6 +218,7 @@ class OtpVerifyViewSet(CreateAPIView):
         serializer.is_valid(raise_exception=True)
         otp = serializer.validated_data.get("otp", None)
         user_type = serializer.validated_data.get("user_type", None)
+        
         try:
             otp_obj = OtpModels.objects.get(otp=otp)
             if user_type == 'PRIMARY' or user_type == 'SECONDARY' :
@@ -263,6 +264,7 @@ class OtpVerifyViewSet(CreateAPIView):
                         'mobile': mobile,
                         'user_type': 'PRIMARY',
                         'name': user_profile.name,
+                        'primary_user_id': user_profile.primary_user_id
                     }
                 except FileUpload.DoesNotExist:
                     return Response({'success': False, 'message': 'Primary account does not exist'}, status=HTTP_404_NOT_FOUND)
@@ -275,7 +277,9 @@ class OtpVerifyViewSet(CreateAPIView):
                             'mobile': member.phone_no_secondary_user,
                             'user_type': 'SECONDARY',
                             'name': member.member_name,
+                            'secondary_user_id': member.secondary_user_id,
                             'primary_name':member.primary_user_id.name,
+                            'primary_user_id':member.primary_user_id.primary_user_id,
                             'primary_mobile_number':member.primary_user_id.phone_no_primary
                         }
                 except Members.DoesNotExist:
