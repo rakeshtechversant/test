@@ -265,7 +265,8 @@ class OtpVerifyViewSet(CreateAPIView):
                             'mobile': member.phone_no_secondary_user,
                             'user_type': 'SECONDARY',
                             'name': member.member_name,
-                            'primary_name':member.primary_user_id.name
+                            'primary_name':member.primary_user_id.name,
+                            'primary_mobile_number':member.primary_user_id.phone_no_primary
                         }
                 except Members.DoesNotExist:
                     return Response({'success': False, 'message': 'Secondary account does not exist'}, status=HTTP_404_NOT_FOUND)
