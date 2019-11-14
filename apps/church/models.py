@@ -144,7 +144,6 @@ class Images(models.Model):
     title = models.CharField(max_length=200)
     date = models.DateField(default=timezone.now)
 
-
 class ChurchDetails(models.Model):
     church_name = models.CharField(max_length=200)
     description = models.TextField(max_length=5000, null=True, blank=True)
@@ -247,4 +246,15 @@ class PrivacyPolicy(models.Model):
     policy=RichTextField(null=True,blank=True)
 
 
+IOS = 'IOS'
+ANDROID = 'ANDROID'
 
+
+PHONE_TYPE = (
+    (IOS, 'IOS'),
+    (ANDROID, 'ANDROID'),
+)
+
+class PhoneVersion(models.Model):
+    version = models.CharField(max_length=20)
+    phone_type = models.CharField(max_length=255, choices=PHONE_TYPE, null=True, blank=True)

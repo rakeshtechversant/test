@@ -6,12 +6,13 @@ from apps.api.views import UserNoticeList, NoticeBereavementDelete, NoticeBereav
     FamilyDetailView, PrayerGroupBasedFamilyView, PrayerGrouplistView, ChurchVicarView, \
     ChurchHistoryView, ChurchImagesView, PrayerGroupaddView, PrayerGroupMemberaddView, \
     FamilyListView, FamilyMemberList, NoticeModelViewSet, SendOtp, PrayerGroupBasedMembersView,FamilyMemberDetails, \
-    ViewRequestNumberViewset, AcceptViewRequestNumberViewset, EachUserNotification,EachUserUnreadCount,PrivacyView
+    ViewRequestNumberViewset, AcceptViewRequestNumberViewset, EachUserNotification,EachUserUnreadCount,PrivacyView,PhoneVersionView
 
 router = DefaultRouter()
 
 # Notice APIs
 router.register(r'notices', NoticeModelViewSet)
+router.register(r'phone-version', PhoneVersionView)
 router.register(r'occupations', views.OccupationView)
 router.register(r'member-types', views.MemberTypeView)
 
@@ -43,7 +44,9 @@ urlpatterns = [
     url(r'^notification-status/$',EachUserNotification.as_view(),name='notification_detail'),
     url(r'^notification-unread-count/$',EachUserUnreadCount.as_view(),name='notification_unread_detail'),
     url(r'^number-request/$',ViewRequestNumberViewset.as_view(),name='number_request'),
-     url(r'^number-request-accept/$',AcceptViewRequestNumberViewset.as_view(),name='number_request_accept'),
-    path('privacy-policy/',PrivacyView.as_view(),name='privacy')
+    url(r'^number-request-accept/$',AcceptViewRequestNumberViewset.as_view(),name='number_request_accept'),
+    path('privacy-policy/',PrivacyView.as_view(),name='privacy'),
+
+    
 ]
 

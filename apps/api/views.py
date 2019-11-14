@@ -34,10 +34,10 @@ from apps.api.serializers import ChurchHistorySerializer, ChurchImagesSerializer
     UserDetailsRetrieveSerializer, MembersDetailsSerializer, UnapprovedMemberSerializer, MemberSerializer, \
     PrimaryUserSerializer, \
     UserByadminSerializer, FamilyByadminSerializer, PrimaryNotificationSerializer, SecondaryNotificationSerializer, \
-    ViewRequestNumberSerializer, RequestAcceptNumberSerializer, AdminNotificationSerializer
+    ViewRequestNumberSerializer, RequestAcceptNumberSerializer, AdminNotificationSerializer, PhoneVersionSerializer
 from apps.church.models import Members, Family, UserProfile, ChurchDetails, FileUpload, OtpModels, \
     PrayerGroup, Notification, Notice, NoticeBereavement, UnapprovedMember, NoticeReadPrimary, NoticeReadSecondary, \
-    ViewRequestNumber, NoticeReadAdmin, PrivacyPolicy
+    ViewRequestNumber, NoticeReadAdmin, PrivacyPolicy, PhoneVersion
 
 from apps.api.models import AdminProfile
 from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_400_BAD_REQUEST, HTTP_401_UNAUTHORIZED, \
@@ -2010,7 +2010,6 @@ class ViewRequestNumberViewset(CreateAPIView):
 
         usertype_from = request.POST.get('usertype_from', False)
         usertype_to = request.POST.get('usertype_to', False)
-
         if not request_from and not request_to and not  usertype_from and not usertype_to:
             return Response({'success': False,'message': 'You should fill all the fields'}, status=HTTP_400_BAD_REQUEST)
         else :
@@ -2302,4 +2301,10 @@ class PrivacyView(TemplateView):
         context = super(PrivacyView, self).get_context_data(**kwargs)
         context['privacy']= PrivacyPolicy.objects.first().policy
         return context
+
+
+class PhoneVersionView(ModelViewSet):
+    queryset = PhoneVersion.objects.all()
+    serializer_class = PhoneVersionSerializer
+    permission_classes = [IsAdminUser]
 
