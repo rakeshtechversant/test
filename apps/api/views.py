@@ -2306,5 +2306,5 @@ class PrivacyView(TemplateView):
 class PhoneVersionView(ModelViewSet):
     queryset = PhoneVersion.objects.all()
     serializer_class = PhoneVersionSerializer
-    permission_classes = [IsAdminUser]
+    permission_classes = [AllowAny]
 
