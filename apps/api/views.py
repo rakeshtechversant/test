@@ -2006,7 +2006,8 @@ class EachUserNotification(APIView):
                 except:
                     pass
             else:
-                data_obj.append(messages.data)
+                pass
+                # data_obj.append(messages.data)
         data['response'] = data_obj
         return Response(data,status=HTTP_200_OK)
 
