@@ -1986,29 +1986,24 @@ class EachUserNotification(APIView):
             "success": True,
             "code": 200,
         }
+        # impoer pdb;pdb.set_trace()
         data_obj = []
-        count_msg = notice_section.count()
-        count_msg= count_msg -1
-        for notif in notice_section:
+        # count_msg = notice_section.count()
+        # count_msg= count_msg -1
+        for index, notif in enumerate(notice_section):
             if notif.notification.is_json == True :
-                try:
-                    dump_value = json.dumps(messages.data[count_msg])
-                    v1 = json.loads(dump_value)
-                    data_str =v1['message']
-                    json_val = ast.literal_eval(data_str)
-                    json_load_obj = json.dumps(json_val)
-                    data_final=json.loads(json_load_obj)
-
-
-                    # data_obj = data_final
-                    data_obj.append(data_final)
-                    count_msg= count_msg -1
-                except:
-                    pass
+                dump_value = json.dumps(messages.data[index])
+                v1 = json.loads(dump_value)
+                data_str =v1['message']
+                json_val = ast.literal_eval(data_str)
+                json_load_obj = json.dumps(json_val)
+                data_final=json.loads(json_load_obj)
+                # data_obj = data_final
+                data_obj.append(data_final)
+                # count_msg= count_msg -1
 
             else:
-               pass
-                # data_obj.append(messages.data)
+                data_obj.append(messages.data[index])
         data['response'] = data_obj
         return Response(data,status=HTTP_200_OK)
 
