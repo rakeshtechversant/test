@@ -1991,19 +1991,20 @@ class EachUserNotification(APIView):
         count_msg= count_msg -1
         for notif in notice_section:
             if notif.notification.is_json == True :
+                try:
+                    dump_value = json.dumps(messages.data[count_msg])
+                    v1 = json.loads(dump_value)
+                    data_str =v1['message']
+                    json_val = ast.literal_eval(data_str)
+                    json_load_obj = json.dumps(json_val)
+                    data_final=json.loads(json_load_obj)
 
-                dump_value = json.dumps(messages.data[count_msg])
-                v1 = json.loads(dump_value)
-                data_str =v1['message']
-                json_val = ast.literal_eval(data_str)
-                json_load_obj = json.dumps(json_val)
-                data_final=json.loads(json_load_obj)
 
-
-                # data_obj = data_final
-                data_obj.append(data_final)
-                count_msg= count_msg -1
-
+                    # data_obj = data_final
+                    data_obj.append(data_final)
+                    count_msg= count_msg -1
+                except:
+                    pass
             else:
                 data_obj.append(messages.data)
         data['response'] = data_obj
