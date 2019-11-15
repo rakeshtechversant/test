@@ -563,6 +563,7 @@ class ViewRequestNumberSerializer(serializers.ModelSerializer):
 
 class RequestAcceptNumberSerializer(serializers.ModelSerializer):
     is_acceped = serializers.BooleanField(read_only=True)
+    # notification_id = serializers.PrimaryKeyRelatedField(queryset=Notification.objects.all())
     class Meta:
         model = ViewRequestNumber
         fields = ['request_from', 'request_to','userttype_to','userttype_from','is_acceped']
