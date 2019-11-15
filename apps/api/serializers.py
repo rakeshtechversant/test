@@ -558,15 +558,15 @@ class ViewRequestNumberSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ViewRequestNumber
-        fields = ['request_from', 'request_to','userttype_to','userttype_from']
+        fields = ['request_from', 'request_to','usertype_to','usertype_from']
 
 
 class RequestAcceptNumberSerializer(serializers.ModelSerializer):
-    is_acceped = serializers.BooleanField(read_only=True)
+    is_accepted = serializers.BooleanField(write_only=True)
     # notification_id = serializers.PrimaryKeyRelatedField(queryset=Notification.objects.all())
     class Meta:
         model = ViewRequestNumber
-        fields = ['request_from', 'request_to','userttype_to','userttype_from','is_acceped']
+        fields = ['request_from', 'request_to','usertype_to','usertype_from','is_accepted']
 
 
 class PrivacyPolicy(serializers.ModelSerializer):

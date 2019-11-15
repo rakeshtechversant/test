@@ -2234,21 +2234,21 @@ class AcceptViewRequestNumberViewset(CreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        request_from = request.POST.get('request_from', False)
-        request_to = request.POST.get('request_to', False)
+      
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        request_from = serializer.validated_data.get("request_from", None)
+        request_to = serializer.validated_data.get("request_to", None)
+        usertype_from = serializer.validated_data.get("usertype_from", None)
+        usertype_to = serializer.validated_data.get("usertype_to", None)
+        is_accepted = serializer.validated_data.get("is_accepted", None)
 
-        usertype_from = request.POST.get('usertype_from', False)
-        usertype_to = request.POST.get('usertype_to', False)
-
-        is_accepted = request.POST.get('is_accepted', False)
-
-        # notification_id = request.POST.get('notification_id', False)
 
         if not request_from and not request_to and not  usertype_from and not usertype_to and not is_accepted :
             return Response({'success': False,'message': 'You should fill all the fields'}, status=HTTP_400_BAD_REQUEST)
         else :
             try:
-                if is_accepted == 'True':
+                if is_accepted == True:
                     try:
                         obj = ViewRequestNumber.objects.get(request_from=request_from,request_to=request_to,usertype_from=usertype_from,usertype_to=usertype_to)
                     except:
