@@ -2005,8 +2005,9 @@ class EachUserNotification(APIView):
                     count_msg= count_msg -1
                 except:
                     pass
+
             else:
-                pass
+               pass
                 # data_obj.append(messages.data)
         data['response'] = data_obj
         return Response(data,status=HTTP_200_OK)
