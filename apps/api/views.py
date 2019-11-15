@@ -2309,46 +2309,6 @@ class AcceptViewRequestNumberViewset(CreateAPIView):
                         obj.is_accepted=False
                         obj.request_mobile = ''
                         obj.save()
-                        try:
-                            if usertype_from == 'PRIMARY':
-                                if usertype_to == 'PRIMARY' :
-                                    prim_obj = FileUpload.objects.get(primary_user_id =int(request_to))
-                                    user_details_str = "Number request rejected by %s"%(prim_obj.name)
-                                    prim_obj_not = FileUpload.objects.get(primary_user_id =int(request_from))
-                                    not_obj = Notification.objects.create(created_by_primary=prim_obj_not,
-                                                                                  message=user_details_str)
-                                    NoticeReadPrimary.objects.create(notification=not_obj, user_to=prim_obj_not)
-                                    not_obj.save()
-                                elif usertype_to == 'SECONDARY':
-                                    sec_obj = Members.objects.get(secondary_user_id =int(request_to))
-                                    user_details_str = "Number request rejected by %s"%(sec_obj.member_name)
-                                    prim_obj_not = FileUpload.objects.get(primary_user_id =int(request_from))
-                                    not_obj = Notification.objects.create(created_by_primary=prim_obj_not,
-                                                                                  message=user_details_str)
-
-                                    NoticeReadPrimary.objects.create(notification=not_obj, user_to=prim_obj_not)
-                                    not_obj.save()
-
-                            elif usertype_from == 'SECONDARY':
-                                if usertype_to == 'PRIMARY' :
-                                    prim_obj = FileUpload.objects.get(primary_user_id =int(request_to))
-                                    user_details_str = "Number request rejected by %s"%(prim_obj.name)
-                                    sec_obj_not = Members.objects.get(secondary_user_id =int(request_from))
-                                    not_obj = Notification.objects.create(created_by_secondary=sec_obj_not,
-                                                                                  message=user_details_str)
-
-                                    NoticeReadPrimary.objects.create(notification=not_obj, user_to=sec_obj_not)
-                                    not_obj.save()
-                                elif usertype_to == 'SECONDARY':
-                                    sec_obj = Members.objects.get(secondary_user_id =int(request_to))
-                                    user_details_str = "Number request rejected by %s"%(sec_obj.member_name)
-                                    sec_obj_not = Members.objects.get(secondary_user_id =int(request_from))
-                                    not_obj = Notification.objects.create(created_by_secondary=sec_obj_not,message=user_details_str)
-
-                                    NoticeReadSecondary.objects.create(notification=not_obj, user_to=sec_obj_not)
-                                    not_obj.save()
-                        except:
-                            pass
 
                     return Response({'success': True,'message':'Phone number access rejected'}, status=HTTP_201_CREATED)
   
