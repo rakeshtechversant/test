@@ -1359,7 +1359,6 @@ class UnapprovedMemberView(mixins.CreateModelMixin,
     @action(methods=['get'], detail=True, url_path='approve-member',
         permission_classes=[IsAuthenticated, AdminPermission])
     def approve_member(self, request, pk=None):
-
         member = self.get_object()
 
         data = UnapprovedMemberSerializer(member).data
@@ -1374,13 +1373,15 @@ class UnapprovedMemberView(mixins.CreateModelMixin,
         primary_user = FileUpload.objects.get(pk=data.pop('primary_user_id'))
 
         Members.objects.create(primary_user_id=primary_user, **data)
-        # try:
-        #     user_details_str = ""
-        #     not_obj = Notification.objects.create(created_by_primary=primary_user,
-        #               message=user_details_str,is_json=True)
-        #     NoticeReadPrimary.objects.create(notification=not_obj, user_to=primary_user)
-        # except:
-        #     pass
+        try:
+            user_details_str = "Your request to add %s has been accepted. The profile is listed in your family."%(member.member_name)
+            not_obj = Notification.objects.create(created_by_primary=primary_user,
+                      message=user_details_str)
+            NoticeReadPrimary.objects.create(notification=not_obj, user_to=primary_user)
+        except:
+            pass
+
+
         member.delete()
 
         return Response({'success': True})
@@ -1388,8 +1389,14 @@ class UnapprovedMemberView(mixins.CreateModelMixin,
     @action(methods=['get'], detail=True, url_path='reject-member',
         permission_classes=[IsAuthenticated, AdminPermission])
     def reject_member(self, request, pk=None):
-
         member = self.get_object()
+        try:
+            user_details_str = user_details_str = 'Admin has rejected your request to add %s to your family list.Please contact admin for further information.'%(member.member_name)
+            not_obj = Notification.objects.create(created_by_primary=member.primary_user_id,
+                      message=user_details_str)
+            NoticeReadPrimary.objects.create(notification=not_obj, user_to=member.primary_user_id)
+        except:
+            pass       
         member.rejected = True
         member.save()
 
