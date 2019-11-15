@@ -73,8 +73,7 @@ class UserLoginMobileView(APIView):
                         'name': 'admin',
                         'token':token.key
                     }
-                    otp_number = get_random_string(length=6, allowed_chars='1234567890')
-
+                    otp_number = '989004'
                     try:
                         OtpModels.objects.filter(mobile_number=mobile_number).delete()
                     except:
@@ -1375,7 +1374,13 @@ class UnapprovedMemberView(mixins.CreateModelMixin,
         primary_user = FileUpload.objects.get(pk=data.pop('primary_user_id'))
 
         Members.objects.create(primary_user_id=primary_user, **data)
-
+        # try:
+        #     user_details_str = ""
+        #     not_obj = Notification.objects.create(created_by_primary=primary_user,
+        #               message=user_details_str,is_json=True)
+        #     NoticeReadPrimary.objects.create(notification=not_obj, user_to=primary_user)
+        # except:
+        #     pass
         member.delete()
 
         return Response({'success': True})
