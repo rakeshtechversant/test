@@ -1998,11 +1998,13 @@ class EachUserNotification(APIView):
                 json_val = ast.literal_eval(data_str)
                 json_load_obj = json.dumps(json_val)
                 data_final=json.loads(json_load_obj)
+                data_final.update({"type":"Number request notification"})
                 # data_obj = data_final
                 data_obj.append(data_final)
                 # count_msg= count_msg -1
 
             else:
+                messages.data[index].update({"type":"Default notification"})
                 data_obj.append(messages.data[index])
         data['response'] = data_obj
         return Response(data,status=HTTP_200_OK)
@@ -2376,4 +2378,3 @@ class PhoneVersionView(ModelViewSet):
     queryset = PhoneVersion.objects.all()
     serializer_class = PhoneVersionSerializer
     permission_classes = [AllowAny]
-
