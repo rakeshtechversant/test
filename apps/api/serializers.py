@@ -125,7 +125,7 @@ class ChurchHistorySerializer(serializers.ModelSerializer):
 
             data['image'].append({
                     'image_url': image_url,
-                    'title': image.title,
+                    'title': image.category,
                     'date': image.date
                 }
             )
