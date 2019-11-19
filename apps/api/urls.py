@@ -1,14 +1,15 @@
 from django.urls import include, path
 from django.conf.urls import url
 
-from apps.api.views import UserLoginView,UserLoginMobileView,UserListView,UserDetailView,UserDeleteView,UserUpdateView,UserCreateView,PostsViewset,\
-OtpVerifyViewSet,SecondaryaddView, Profile, UnapprovedMemberView, UpdateMemberByPrimary, CreateUserByAdminView, UpdateUserByAdminView, AddFamilyByAdminView
+from apps.api.views import UserLoginView, UserLoginMobileView, UserListView, UserDetailView, UserDeleteView, \
+    UserUpdateView, UserCreateView, PostsViewset, \
+    OtpVerifyViewSet, SecondaryaddView, Profile, UnapprovedMemberView, UpdateMemberByPrimary, CreateUserByAdminView, \
+    UpdateUserByAdminView, AddFamilyByAdminView, GalleryImagesView
 from rest_framework import routers
 
 router = routers.DefaultRouter()
 router.register(r'excel-import', PostsViewset, basename='excel_import')
 router.register(r'seconday-member-by-primary', UnapprovedMemberView, basename='seconday-member-by-primary')
-
 urlpatterns = [
     path('login-user/', UserLoginView.as_view(),name='login'),
     path('create/',UserCreateView.as_view(),name='create_user'),

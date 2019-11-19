@@ -5,8 +5,9 @@ from rest_framework.routers import DefaultRouter
 from apps.api.views import UserNoticeList, NoticeBereavementDelete, NoticeBereavementEdit, NoticeBereavementCreate, \
     FamilyDetailView, PrayerGroupBasedFamilyView, PrayerGrouplistView, ChurchVicarView, \
     ChurchHistoryView, ChurchImagesView, PrayerGroupaddView, PrayerGroupMemberaddView, \
-    FamilyListView, FamilyMemberList, NoticeModelViewSet, SendOtp, PrayerGroupBasedMembersView,FamilyMemberDetails, \
-    ViewRequestNumberViewset, AcceptViewRequestNumberViewset, EachUserNotification,EachUserUnreadCount,PrivacyView,PhoneVersionView
+    FamilyListView, FamilyMemberList, NoticeModelViewSet, SendOtp, PrayerGroupBasedMembersView, FamilyMemberDetails, \
+    ViewRequestNumberViewset, AcceptViewRequestNumberViewset, EachUserNotification, EachUserUnreadCount, PrivacyView, \
+    PhoneVersionView, GalleryImagesView
 
 router = DefaultRouter()
 
@@ -15,6 +16,7 @@ router.register(r'notices', NoticeModelViewSet)
 router.register(r'phone-version', PhoneVersionView)
 router.register(r'occupations', views.OccupationView)
 router.register(r'member-types', views.MemberTypeView)
+router.register(r'images-category',GalleryImagesView,basename='gallery_images')
 
 urlpatterns = [
     path('', views.UserListView.as_view()),

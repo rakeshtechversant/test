@@ -94,3 +94,4 @@ class MemberTypeView(viewsets.ModelViewSet):
     serializer_class = serializers.MemberTypeSerializer
     permission_classes = [IsAuthenticated]
     authentication_classes = [TokenAuthentication]
+

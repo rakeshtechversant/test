@@ -34,10 +34,11 @@ from apps.api.serializers import ChurchHistorySerializer, ChurchImagesSerializer
     UserDetailsRetrieveSerializer, MembersDetailsSerializer, UnapprovedMemberSerializer, MemberSerializer, \
     PrimaryUserSerializer, \
     UserByadminSerializer, FamilyByadminSerializer, PrimaryNotificationSerializer, SecondaryNotificationSerializer, \
-    ViewRequestNumberSerializer, RequestAcceptNumberSerializer, AdminNotificationSerializer, PhoneVersionSerializer
+    ViewRequestNumberSerializer, RequestAcceptNumberSerializer, AdminNotificationSerializer, PhoneVersionSerializer, \
+    GalleryImagesSerializer
 from apps.church.models import Members, Family, UserProfile, ChurchDetails, FileUpload, OtpModels, \
     PrayerGroup, Notification, Notice, NoticeBereavement, UnapprovedMember, NoticeReadPrimary, NoticeReadSecondary, \
-    ViewRequestNumber, NoticeReadAdmin, PrivacyPolicy, PhoneVersion
+    ViewRequestNumber, NoticeReadAdmin, PrivacyPolicy, PhoneVersion, Images
 
 from apps.api.models import AdminProfile
 from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_400_BAD_REQUEST, HTTP_401_UNAUTHORIZED, \
@@ -1609,6 +1610,7 @@ class UserNoticeList(ListAPIView):
                 'current_year':today.year,
                 'dob':member.dob,
                 'image':image,
+                'created_at': bereavement['created_at'],
 
                 # 'secondary_member': member_name.member_name,
                 }
@@ -1634,6 +1636,7 @@ class UserNoticeList(ListAPIView):
                 'current_year':today.year,
                 'dob':member_name.dob,
                 'occupation':member_name.occupation,
+                'created_at': bereavement['created_at'],
 
             }
 
@@ -2398,7 +2401,7 @@ class PhoneVersionView(ModelViewSet):
     serializer_class = PhoneVersionSerializer
     permission_classes = [AllowAny]
 
-# class ChurchFolderView(ModelViewSet):
-#     queryset = ChurchFolder.objects.all()
-#     serializer_class =ChurchFolderSerializer
-#     permission_classes = [AllowAny]
+class GalleryImagesView(ModelViewSet):
+    queryset = Images.objects.all()
+    serializer_class = GalleryImagesSerializer
+    permission_classes = [AllowAny]

@@ -14,13 +14,13 @@ class Notice(models.Model):
     description = models.TextField(max_length=10000, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
-    image = models.ImageField(upload_to='members/', null=True, blank=True)
+    image = models.FileField(upload_to='pan_folder/', null=True, blank=True)
 
 
 class FileUpload(models.Model):
     primary_user_id = models.AutoField(max_length=5, primary_key=True)
     name = models.CharField(max_length=200)
-    image = models.ImageField(upload_to='members/', null=True, blank=True)
+    image = models.FileField(upload_to='members/', null=True, blank=True)
     address = models.TextField(max_length=500, null=True, blank=True)
     phone_no_primary = models.CharField(max_length=20, null=True, blank=True)
     phone_no_secondary = models.CharField(max_length=20, null=True, blank=True)
@@ -44,7 +44,7 @@ class FileUpload(models.Model):
 class Family(models.Model):
     name = models.CharField(max_length=255)
     about = models.TextField(max_length=500, null=True, blank=True)
-    image = models.ImageField(upload_to='familyimage/', null=True, blank=True)
+    image = models.FileField(upload_to='familyimage/', null=True, blank=True)
     members_length = models.IntegerField(default=0)
     primary_user_id = models.ForeignKey(FileUpload, on_delete=models.CASCADE, related_name='get_file_upload', null=True,
                                         blank=True)
@@ -59,7 +59,7 @@ class Members(models.Model):
     relation = models.CharField(max_length=255, null=True, blank=True)
     dob = models.CharField(max_length=20, null=True, blank=True)
     dom = models.CharField(max_length=20, null=True, blank=True)
-    image = models.ImageField(upload_to='members/', null=True, blank=True)
+    image = models.FileField(upload_to='members/', null=True, blank=True)
     phone_no_secondary_user = models.CharField(max_length=20, null=True, blank=True)
     phone_no_secondary_user_secondary = models.CharField(max_length=20, null=True, blank=True)
     primary_user_id = models.ForeignKey(FileUpload, on_delete=models.CASCADE, related_name='get_primary_user',
@@ -85,7 +85,7 @@ class UnapprovedMember(models.Model):
     relation = models.CharField(max_length=255, null=True, blank=True)
     dob = models.CharField(max_length=20, null=True, blank=True)
     dom = models.CharField(max_length=20, null=True, blank=True)
-    image = models.ImageField(upload_to='members/', null=True, blank=True)
+    image = models.FileField(upload_to='members/', null=True, blank=True)
     phone_no_secondary_user = models.CharField(max_length=20, null=True, blank=True)
     phone_no_secondary_user_secondary = models.CharField(max_length=20, null=True, blank=True)
     primary_user_id = models.ForeignKey(FileUpload, on_delete=models.CASCADE, null=True, blank=True)
@@ -111,7 +111,7 @@ class UserProfile(models.Model):
     address = models.TextField(max_length=500)
     occupation = models.CharField(max_length=200, null=True, blank=True)
     about = models.TextField(max_length=5000)
-    profile_image = models.FileField(upload_to='cards/pan_folder/', null=True, blank=True)
+    profile_image = models.FileField(upload_to='pan_folder/', null=True, blank=True)
     mobile_number = models.CharField(max_length=20, null=True, blank=True)
     date_of_marriage = models.DateTimeField(null=True, blank=True)
     is_primary = models.BooleanField(default=False)
@@ -125,7 +125,7 @@ class Notice(models.Model):
     description = models.TextField(max_length=10000, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
-    image = models.ImageField(upload_to='members/', null=True, blank=True)
+    image = models.FileField(upload_to='pan_folder/', null=True, blank=True)
 
 
 class PrayerGroup(models.Model):
@@ -141,7 +141,7 @@ class PrayerGroup(models.Model):
 
 class Images(models.Model):
     image = models.FileField(upload_to='pan_folder/')
-    title = models.CharField(max_length=200)
+    category = models.CharField(max_length=200)
     date = models.DateField(default=timezone.now)
 
 class ChurchDetails(models.Model):
@@ -218,6 +218,7 @@ class NoticeReadAdmin(models.Model):
 
 class NoticeBereavement(models.Model):
     # title = models.CharField(max_length=200, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     description = models.TextField(max_length=100, null=True, blank=True)
     prayer_group = models.ForeignKey(PrayerGroup, on_delete=models.CASCADE, null=True, blank=True)
     family = models.ForeignKey(Family, on_delete=models.CASCADE, null=True, blank=True)
@@ -258,3 +259,17 @@ PHONE_TYPE = (
 class PhoneVersion(models.Model):
     version = models.CharField(max_length=20)
     phone_type = models.CharField(max_length=255, choices=PHONE_TYPE, null=True, blank=True)
+
+class ChurchFolder(models.Model):
+    church_img = models.ForeignKey(Images, related_name="churchfolder", on_delete=models.CASCADE)
+    name = models.CharField(max_length=128)
+    parent = models.ForeignKey("self", null=True, on_delete=models.CASCADE, blank=True)
+
+    @property
+    def get_folder_path(self):
+        if self.parent:
+            return self.parent.get_folder_path + "/" + self.name
+        return ""
+
+class Meta:
+    unique_together = ("church_img", "name", "parent")

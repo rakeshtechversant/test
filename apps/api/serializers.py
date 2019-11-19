@@ -4,7 +4,8 @@ from django.contrib.auth.models import User
 import requests
 from apps.church.models import UserProfile, ChurchDetails, FileUpload, OtpModels, \
     OtpVerify, PrayerGroup, Notification, Family, Members, Notice, NoticeBereavement, \
-    UnapprovedMember, NoticeReadPrimary, NoticeReadSecondary, NoticeReadAdmin, ViewRequestNumber,PrivacyPolicy,PhoneVersion
+    UnapprovedMember, NoticeReadPrimary, NoticeReadSecondary, NoticeReadAdmin, ViewRequestNumber, PrivacyPolicy, \
+    PhoneVersion, Images
 from rest_framework.serializers import CharField
 from apps.api.token_create import get_tokens_for_user
 from django.utils.crypto import get_random_string
@@ -295,6 +296,7 @@ class PrimaryUserProfileSerializer(serializers.ModelSerializer):
 
 
 class NoticeBereavementSerializer(serializers.ModelSerializer):
+    created_at = serializers.DateTimeField(format="%d/%m/%Y %I:%M %p", read_only=True)
     class Meta:
         model=NoticeBereavement
         fields = '__all__'
@@ -578,3 +580,11 @@ class PhoneVersionSerializer(serializers.ModelSerializer):
     class Meta:
         model = PhoneVersion
         fields = '__all__'
+
+
+class GalleryImagesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model= Images
+        fields = '__all__'
+
+
