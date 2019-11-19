@@ -2405,3 +2405,65 @@ class GalleryImagesView(ModelViewSet):
     queryset = Images.objects.all()
     serializer_class = GalleryImagesSerializer
     permission_classes = [AllowAny]
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        page = self.paginate_queryset(queryset)
+        data = {
+                'code': 200,
+                'status': "OK",
+        }
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        data['response'] = serializer.data
+        return Response(data)
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        data = {
+            'code': 200,
+            'status': "OK",
+        }
+        data['response'] = serializer.data
+        return Response(data)
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        data = {
+            'code': 200,
+            'status': "OK",
+        }
+        data['response'] = serializer.data
+        return Response(data, status=status.HTTP_201_CREATED, headers=headers)
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        data = {
+            'code': 200,
+            'status': "OK",
+        }
+        data['response'] = "Successfully deleted"
+        return Response(data)
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        data = {
+            'code': 200,
+            'status': "OK",
+        }
+        data['response'] = serializer.data
+        return Response(data)
