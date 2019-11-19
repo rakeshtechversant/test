@@ -1591,7 +1591,10 @@ class UserNoticeList(ListAPIView):
             family=Family.objects.get(id=bereavement['family'])
             try:
                 member=FileUpload.objects.get(primary_user_id=bereavement['primary_member'])
-                image=request.build_absolute_uri(member.image.url)
+                if member.image:
+                    image=request.build_absolute_uri(member.image.url)
+                else:
+                    image='null'
                 import datetime as dt
                 today = dt.datetime.now()
                 new_data ={
@@ -1614,7 +1617,10 @@ class UserNoticeList(ListAPIView):
                 import datetime as dt
                 today = dt.datetime.now()
                 member_name=Members.objects.get(secondary_user_id=bereavement['secondary_member'])
-                image=request.build_absolute_uri(member_name.image.url)
+                if member_name.image:
+                    image=request.build_absolute_uri(member_name.image.url)
+                else:
+                    image='null'
                 new_data ={
                 'id': bereavement['id'],
                 'type': 'bereavement',
