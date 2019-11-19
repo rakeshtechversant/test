@@ -1604,8 +1604,8 @@ class UserNoticeList(ListAPIView):
                 # 'title' : bereavement['title'],
                 'description': bereavement['description'],
                 'prayer_group': prayer.name,
-                'family': bereavement['family'],
-                'primary_member': member.name,
+                'family': family.name,
+                'name': member.name,
                 'occupation':member.occupation,
                 'current_year':today.year,
                 'dob':member.dob,
@@ -1619,6 +1619,7 @@ class UserNoticeList(ListAPIView):
                 import datetime as dt
                 today = dt.datetime.now()
                 member_name=Members.objects.get(secondary_user_id=bereavement['secondary_member'])
+                family=Family.objects.get(id=bereavement['family'])
                 if member_name.image:
                     image=request.build_absolute_uri(member_name.image.url)
                 else:
@@ -1629,9 +1630,9 @@ class UserNoticeList(ListAPIView):
                 # 'title' : bereavement['title'],
                 'description': bereavement['description'],
                 'prayer_group': prayer.name,
-                'family': bereavement['family'],
+                'family': family.name,
                 # 'primary_member': member.name,
-                'secondary_member': member_name.member_name,
+                'name': member_name.member_name,
                 'image':image,
                 'current_year':today.year,
                 'dob':member_name.dob,
