@@ -1591,6 +1591,9 @@ class UserNoticeList(ListAPIView):
             family=Family.objects.get(id=bereavement['family'])
             try:
                 member=FileUpload.objects.get(primary_user_id=bereavement['primary_member'])
+                image=request.build_absolute_uri(member.image.url)
+                import datetime as dt
+                today = dt.datetime.now()
                 new_data ={
                 'id': bereavement['id'],
                 'type': 'bereavement',
@@ -1599,12 +1602,19 @@ class UserNoticeList(ListAPIView):
                 'prayer_group': prayer.name,
                 'family': bereavement['family'],
                 'primary_member': member.name,
+                'occupation':member.occupation,
+                'current_year':today.year,
+                'dob':member.dob,
+                'image':image,
 
                 # 'secondary_member': member_name.member_name,
                 }
 
             except:
+                import datetime as dt
+                today = dt.datetime.now()
                 member_name=Members.objects.get(secondary_user_id=bereavement['secondary_member'])
+                image=request.build_absolute_uri(member_name.image.url)
                 new_data ={
                 'id': bereavement['id'],
                 'type': 'bereavement',
@@ -1613,8 +1623,11 @@ class UserNoticeList(ListAPIView):
                 'prayer_group': prayer.name,
                 'family': bereavement['family'],
                 # 'primary_member': member.name,
-
                 'secondary_member': member_name.member_name,
+                'image':image,
+                'current_year':today.year,
+                'dob':member_name.dob,
+                'occupation':member_name.occupation,
 
             }
 
@@ -2379,4 +2392,7 @@ class PhoneVersionView(ModelViewSet):
     serializer_class = PhoneVersionSerializer
     permission_classes = [AllowAny]
 
-# class ChurchFolderView()
+# class ChurchFolderView(ModelViewSet):
+#     queryset = ChurchFolder.objects.all()
+#     serializer_class =ChurchFolderSerializer
+#     permission_classes = [AllowAny]
