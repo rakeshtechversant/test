@@ -232,11 +232,10 @@ class NoticeSerializer(serializers.ModelSerializer):
         fields = '__all__'
     #
     def create(self, validated_data):
-
         notice = Notice(**validated_data)
         notice.save()
 
-        body="Admin have one new notice"
+        body="Admin created one new notice"
         notifications=Notification.objects.create(created_time=tz.now(),message=body)
         primary_members=FileUpload.objects.all()
         secondary_members=Members.objects.all()
@@ -252,7 +251,7 @@ class NoticeSerializer(serializers.ModelSerializer):
         instance = super().update(instance, validated_data)
         instance.save()
         
-        body="Admin has edited"
+        body="Admin has edited a notice"
         notifications=Notification.objects.create(created_time=tz.now(),message=body)
         primary_members=FileUpload.objects.all()
         secondary_members=Members.objects.all()

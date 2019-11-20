@@ -40,7 +40,19 @@ class ImageAdmin(admin.ModelAdmin):
     list_display = ('image','category')
     search_fields = ['image','category']
 
+class NoticeInlinePrimary(admin.TabularInline):
+    model = NoticeReadPrimary
+
+class NoticeInlinePSecondary(admin.TabularInline):
+    model = NoticeReadSecondary
+
+class NoticeInlineAdmin(admin.TabularInline):
+    model = NoticeReadAdmin
+
 class NotificationAdmin(admin.ModelAdmin):
+    inlines = [
+        NoticeInlinePrimary,NoticeInlinePSecondary,NoticeInlineAdmin,
+    ]
     list_display = ('created_by_admin','created_by_primary','created_by_secondary','message')
     search_fields = ['created_by_admin','created_by_primary','created_by_secondary','message']
 
