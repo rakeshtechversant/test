@@ -289,9 +289,10 @@ class PrimaryUserProfileSerializer(serializers.ModelSerializer):
         data['user_type'] = 'PRIMARY'
 
         request = self.context['request']
-
-        data['image'] = request.build_absolute_uri(instance.image.url)
-        
+        try :
+            data['image'] = request.build_absolute_uri(instance.image.url)
+        except:
+             data['image'] = None
         return data
 
 
@@ -315,7 +316,10 @@ class MemberProfileSerializer(serializers.ModelSerializer):
 
         request = self.context['request']
 
-        data['image'] = request.build_absolute_uri(instance.image.url)
+        try :
+            data['image'] = request.build_absolute_uri(instance.image.url)
+        except:
+            data['image'] = None
         return data
 
 
@@ -473,7 +477,10 @@ class MemberSerializer(serializers.ModelSerializer):
             data['family_name' ] = ''
 
         if obj.image:
-            data['image'] = request.build_absolute_uri(obj.image.url)
+            try :
+                data['image'] = request.build_absolute_uri(instance.image.url)
+            except:
+                data['image'] = None
 
         data['user_type'] = 'secondary'
 
@@ -498,7 +505,10 @@ class PrimaryUserSerializer(serializers.ModelSerializer):
             data['family_name'] = ''
 
         if obj.image:
-            data['image'] = request.build_absolute_uri(obj.image.url)
+            try :
+                data['image'] = request.build_absolute_uri(instance.image.url)
+            except:
+                data['image'] = None
 
         data['user_type'] = 'primary'
 
