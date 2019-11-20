@@ -218,7 +218,6 @@ class OtpVerifyViewSet(CreateAPIView):
         serializer.is_valid(raise_exception=True)
         otp = serializer.validated_data.get("otp", None)
         user_type = serializer.validated_data.get("user_type", None)
-
         try:
             otp_obj = OtpModels.objects.get(otp=otp)
             if user_type == 'PRIMARY' or user_type == 'SECONDARY' :
@@ -231,7 +230,8 @@ class OtpVerifyViewSet(CreateAPIView):
                     return Response({'success': False, 'message': 'Otp Already Used'}, status=HTTP_400_BAD_REQUEST)
             else:
                 pass
-        except:
+        except Exception as e:
+            print(str(e))
             return Response({'success': False, 'message': 'Invalid Otp'}, status=HTTP_400_BAD_REQUEST)
         else:
             if user_type == 'PRIMARY' or user_type == 'SECONDARY' :
