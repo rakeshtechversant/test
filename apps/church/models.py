@@ -141,6 +141,7 @@ class PrayerGroup(models.Model):
 
 class Images(models.Model):
     image = models.FileField(upload_to='pan_folder/')
+    title = models.CharField(max_length=200)
     category = models.CharField(max_length=200)
     date = models.DateField(default=timezone.now)
 

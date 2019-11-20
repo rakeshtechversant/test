@@ -37,8 +37,8 @@ class MemeberAdmin(admin.ModelAdmin):
     search_fields = ['member_name','phone_no_secondary_user']
 
 class ImageAdmin(admin.ModelAdmin):
-    list_display = ('image','category')
-    search_fields = ['image','category']
+    list_display = ('id','image','category','title')
+    search_fields = ['image','category','title']
 
 class NotificationAdmin(admin.ModelAdmin):
     list_display = ('created_by_admin','created_by_primary','created_by_secondary','message')
