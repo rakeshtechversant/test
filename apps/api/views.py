@@ -74,7 +74,7 @@ class UserLoginMobileView(APIView):
                         'name': 'admin',
                         'token':token.key
                     }
-                    otp_number = '989004'
+                    otp_number = get_random_string(length=6, allowed_chars='1234567890')
                     try:
                         OtpModels.objects.filter(mobile_number=mobile_number).delete()
                     except:
@@ -218,28 +218,20 @@ class OtpVerifyViewSet(CreateAPIView):
         serializer.is_valid(raise_exception=True)
         otp = serializer.validated_data.get("otp", None)
         user_type = serializer.validated_data.get("user_type", None)
-        try:
+        try:  
             otp_obj = OtpModels.objects.get(otp=otp)
-            if user_type == 'PRIMARY' or user_type == 'SECONDARY' :
-                # otp_obj = OtpModels.objects.get(otp=otp)
-                if (datetime.now(timezone.utc) - otp_obj.created_time).total_seconds() >= 1800:
-                    otp_obj.is_expired = True
-                    otp_obj.save()
-                    return Response({'success': False, 'message': 'Otp Expired'}, status=HTTP_400_BAD_REQUEST)
-                if otp_obj.is_expired:
-                    return Response({'success': False, 'message': 'Otp Already Used'}, status=HTTP_400_BAD_REQUEST)
-            else:
-                pass
-        except Exception as e:
-            print(str(e))
+            if (datetime.now(timezone.utc) - otp_obj.created_time).total_seconds() >= 1800:
+                otp_obj.is_expired = True
+                otp_obj.save()
+                return Response({'success': False, 'message': 'Otp Expired'}, status=HTTP_400_BAD_REQUEST)
+            if otp_obj.is_expired:
+                return Response({'success': False, 'message': 'Otp Already Used'}, status=HTTP_400_BAD_REQUEST)
+        except:
             return Response({'success': False, 'message': 'Invalid Otp'}, status=HTTP_400_BAD_REQUEST)
         else:
-            if user_type == 'PRIMARY' or user_type == 'SECONDARY' :
-                if otp_obj:
-                    otp_obj.is_expired = True
-                    otp_obj.save()
-                else:
-                    pass
+            if otp_obj:
+                otp_obj.is_expired = True
+                otp_obj.save()
             else:
                 pass
             
