@@ -1040,6 +1040,7 @@ class NoticeModelViewSet(ModelViewSet):
         data['response'] = serializer.data
         return Response(data)
 
+
 class SendOtp(APIView):
     queryset = FileUpload.objects.all()
     serializer_class = UserRegistrationMobileSerializer
@@ -1510,20 +1511,68 @@ class NoticeBereavementCreate(CreateAPIView):
                         member_id=Members.objects.get(secondary_user_id=member_id)
                     except:
                         return Response({'success': False,'message': 'Member doesnot exist'}, status=HTTP_400_BAD_REQUEST)
-                    NoticeBereavement.objects.create(prayer_group=prayer_group_id,family=family_id,secondary_member=member_id,description=description)
+                    beri_obj=NoticeBereavement.objects.create(prayer_group=prayer_group_id,family=family_id,secondary_member=member_id,description=description)
                     member_id.in_memory=True
                     member_id.in_memory_date=tz.now()
                     member_id.save()
+
+                    # body = {
+                    #     "type": "Bereavement",
+                    #     "id": str(beri_obj.id),
+                    #     "message": "Admin created one new Bereavement",
+                    # }
+                    try:
+                        if member_id.primary_user_id.get_file_upload.first():
+                            family_name = member_id.primary_user_id.get_file_upload.first().name
+                        else:
+                            family_name = ''
+
+                        if family_name:
+                            body = "Bearevement announcement of %s belonging to %s"%(member_id.member_name,family_name)
+                        else:
+                            body = "Bearevement announcement of %s"%(member_id.member_name)
+                        notifications=Notification.objects.create(created_time=tz.now(),message=body)
+                        primary_members=FileUpload.objects.all()
+                        secondary_members=Members.objects.all()
+                        for primary_member in primary_members:
+                            NoticeReadPrimary.objects.create(notification=notifications,user_to=primary_member,is_read=False)
+                        for secondary_member in secondary_members:
+                            NoticeReadSecondary.objects.create(notification=notifications,user_to=secondary_member,is_read=False)
+                    except:
+                        pass
                     return Response({'success': True,'message':'Notice Created Successfully'}, status=HTTP_201_CREATED)
                 else:
                     try:
                         member_id=FileUpload.objects.get(primary_user_id=member_id)
                     except:
                         return Response({'success': False,'message': 'Member doesnot exist'}, status=HTTP_400_BAD_REQUEST)
-                    NoticeBereavement.objects.create(prayer_group=prayer_group_id,family=family_id,primary_member=member_id,description=description)
+                    beri_obj = NoticeBereavement.objects.create(prayer_group=prayer_group_id,family=family_id,primary_member=member_id,description=description)
                     member_id.in_memory=True
                     member_id.in_memory_date=tz.now()
                     member_id.save()
+                    # body = {
+                    #     "type": "Bereavement",
+                    #     "id": str(beri_obj.id),
+                    #     "message": "Admin created one new Bereavement",
+                    # }
+                    try:
+                        if member_id.get_file_upload.first():
+                            family_name = member_id.get_file_upload.first().name
+                        else:
+                            family_name = ''
+                        if family_name :
+                            body = "Bearevement announcement of %s belonging to %s"%(member_id.name,family_name)
+                        else:
+                            body = "Bearevement announcement of %s"%(member_id.name)
+                        notifications=Notification.objects.create(created_time=tz.now(),message=body)
+                        primary_members=FileUpload.objects.all()
+                        secondary_members=Members.objects.all()
+                        for primary_member in primary_members:
+                            NoticeReadPrimary.objects.create(notification=notifications,user_to=primary_member,is_read=False)
+                        for secondary_member in secondary_members:
+                            NoticeReadSecondary.objects.create(notification=notifications,user_to=secondary_member,is_read=False)
+                    except:
+                        pass
                     return Response({'success': True,'message':'Notice Created Successfully'}, status=HTTP_201_CREATED)
 
 class NoticeBereavementEdit(RetrieveUpdateAPIView):
@@ -2003,6 +2052,7 @@ class EachUserNotification(APIView):
         }
         # impoer pdb;pdb.set_trace()
         data_obj = []
+
         # count_msg = notice_section.count()
         # count_msg= count_msg -1
         for index, notif in enumerate(notice_section):
