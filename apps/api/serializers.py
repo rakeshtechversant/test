@@ -63,9 +63,20 @@ class UserCreateSerializer(serializers.ModelSerializer):
     #     return data
 
 class FamilyListSerializer(serializers.ModelSerializer):
+    members_length = serializers.SerializerMethodField()
     class Meta:
         model = Family
         fields = ['name','members_length','image','id']
+
+    def get_members_length(self, obj):
+            try:
+                name = obj.primary_user_id
+                number_list = Members.objects.filter(primary_user_id=name.primary_user_id).count()
+                number_list = number_list + 1
+            except:
+                number_list = 0
+            return number_list
+
 
 class FamilyDetailSerializer(serializers.ModelSerializer):
     class Meta:
@@ -230,7 +241,7 @@ class NoticeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Notice
         fields = '__all__'
-    #
+
     def create(self, validated_data):
         notice = Notice(**validated_data)
         notice.save()
