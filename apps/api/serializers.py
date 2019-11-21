@@ -253,8 +253,12 @@ class NoticeSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         notice = Notice(**validated_data)
         notice.save()
+        body= {"message":"You have received a new notice",
+                            "type":"notice",
+                            "id":str(notice.id)
+                            }
 
-        body="You have received a new notice"
+        # body="You have received a new notice"
         notifications=Notification.objects.create(created_time=tz.now(),message=body)
         primary_members=FileUpload.objects.all()
         secondary_members=Members.objects.all()
@@ -270,7 +274,11 @@ class NoticeSerializer(serializers.ModelSerializer):
         instance = super().update(instance, validated_data)
         instance.save()
         
-        body="A notice has been modified"
+        # body="A notice has been modified"
+        body= {"message":"A notice has been modified",
+                            "type":"notice",
+                            "id":str(instance.id)
+            }
         notifications=Notification.objects.create(created_time=tz.now(),message=body)
         primary_members=FileUpload.objects.all()
         secondary_members=Members.objects.all()
