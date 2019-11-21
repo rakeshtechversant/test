@@ -207,11 +207,19 @@ class LoginSerializer(serializers.ModelSerializer):
 class MembersSerializer(serializers.ModelSerializer):
     primary_name = serializers.SerializerMethodField()
     phone_no_primary = serializers.SerializerMethodField()
+    in_memory_date = serializers.SerializerMethodField()
     # family_
 
     class Meta:
         model = Members
-        fields = ['phone_no_primary','primary_name','secondary_user_id','member_name','relation','dob','dom','image','phone_no_secondary_user','primary_user_id','occupation']
+        fields = ['phone_no_primary','primary_name','secondary_user_id','member_name','relation','dob','dom','image','phone_no_secondary_user','primary_user_id','in_memory','in_memory_date','occupation']
+
+    def get_in_memory_date(self, obj):
+        date = obj.in_memory_date
+        if date:
+            return date
+        else:
+            return None
 
     def get_primary_name(self, obj):
         name = obj.primary_user_id.name
