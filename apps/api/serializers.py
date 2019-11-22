@@ -63,9 +63,20 @@ class UserCreateSerializer(serializers.ModelSerializer):
     #     return data
 
 class FamilyListSerializer(serializers.ModelSerializer):
+    members_length = serializers.SerializerMethodField()
     class Meta:
         model = Family
         fields = ['name','members_length','image','id']
+
+    def get_members_length(self, obj):
+            try:
+                name = obj.primary_user_id
+                number_list = Members.objects.filter(primary_user_id=name.primary_user_id).count()
+                number_list = number_list + 1
+            except:
+                number_list = 0
+            return number_list
+
 
 class FamilyDetailSerializer(serializers.ModelSerializer):
     class Meta:
@@ -196,11 +207,19 @@ class LoginSerializer(serializers.ModelSerializer):
 class MembersSerializer(serializers.ModelSerializer):
     primary_name = serializers.SerializerMethodField()
     phone_no_primary = serializers.SerializerMethodField()
+    in_memory_date = serializers.SerializerMethodField()
     # family_
 
     class Meta:
         model = Members
-        fields = ['phone_no_primary','primary_name','secondary_user_id','member_name','relation','dob','dom','image','phone_no_secondary_user','primary_user_id','occupation']
+        fields = ['phone_no_primary','primary_name','secondary_user_id','member_name','relation','dob','dom','image','phone_no_secondary_user','primary_user_id','in_memory','in_memory_date','occupation']
+
+    def get_in_memory_date(self, obj):
+        date = obj.in_memory_date
+        if date:
+            return date
+        else:
+            return None
 
     def get_primary_name(self, obj):
         name = obj.primary_user_id.name
@@ -230,12 +249,16 @@ class NoticeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Notice
         fields = '__all__'
-    #
+
     def create(self, validated_data):
         notice = Notice(**validated_data)
         notice.save()
+        body= {"message":"You have received a new notice",
+                            "type":"notice",
+                            "id":str(notice.id)
+                            }
 
-        body="Admin created one new notice"
+        # body="You have received a new notice"
         notifications=Notification.objects.create(created_time=tz.now(),message=body)
         primary_members=FileUpload.objects.all()
         secondary_members=Members.objects.all()
@@ -251,7 +274,11 @@ class NoticeSerializer(serializers.ModelSerializer):
         instance = super().update(instance, validated_data)
         instance.save()
         
-        body="Admin has edited a notice"
+        # body="A notice has been modified"
+        body= {"message":"A notice has been modified",
+                            "type":"notice",
+                            "id":str(instance.id)
+            }
         notifications=Notification.objects.create(created_time=tz.now(),message=body)
         primary_members=FileUpload.objects.all()
         secondary_members=Members.objects.all()
