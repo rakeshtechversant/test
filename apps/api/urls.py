@@ -20,14 +20,14 @@ urlpatterns = [
     path('user-by-admin/', CreateUserByAdminView.as_view(), name='user_by_admin'),
     path('update-user-by-admin/<int:pk>/', UpdateUserByAdminView.as_view(), name='update_user_by_admin'),
     path('add-family-by-admin/', AddFamilyByAdminView.as_view(), name='add_family_by_admin'),
-    
+    path('update-family-by-primary/', UpdateFamilyByPrimary.as_view(), name='update-family-by-primary'),
+
     url(r'^(?P<pk>[\w-]+)/$',UserDetailView.as_view(),name='ind_user'),
     url(r'^update-member-own/$',UserUpdateView.as_view(),name='update_user'),
     url(r'^(?P<pk>[\w-]+)/add-users/$',SecondaryaddView.as_view(),name='add_user'),
     url(r'^(?P<pk>[\w-]+)/delete/$',UserDeleteView.as_view(),name='delete_user'),
 
     url(r'^update-member-by-primary/(?P<pk>[\w-]+)/$', UpdateMemberByPrimary.as_view(),name='update-member-by-primary'),
-    url(r'^(?P<pk>[\w-]+)/update-family-by-primary/$', UpdateFamilyByPrimary.as_view(),name='update-member-by-primary'),
 
     url(r'^api/', include(router.urls)),
 

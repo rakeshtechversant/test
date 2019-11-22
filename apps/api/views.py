@@ -35,7 +35,7 @@ from apps.api.serializers import ChurchHistorySerializer, ChurchImagesSerializer
     PrimaryUserSerializer, \
     UserByadminSerializer, FamilyByadminSerializer, PrimaryNotificationSerializer, SecondaryNotificationSerializer, \
     ViewRequestNumberSerializer, RequestAcceptNumberSerializer, AdminNotificationSerializer, PhoneVersionSerializer, \
-    GalleryImagesSerializer, FamilyDetailSerializer
+    GalleryImagesSerializer, FamilyDetailSerializer, FamilyEditSerializer
 from apps.church.models import Members, Family, UserProfile, ChurchDetails, FileUpload, OtpModels, \
     PrayerGroup, Notification, Notice, NoticeBereavement, UnapprovedMember, NoticeReadPrimary, NoticeReadSecondary, \
     ViewRequestNumber, NoticeReadAdmin, PrivacyPolicy, PhoneVersion, Images
@@ -1728,36 +1728,42 @@ class UserNoticeList(ListAPIView):
 
 
 
-class UpdateFamilyByPrimary(RetrieveUpdateAPIView):
+class UpdateFamilyByPrimary(APIView):
     queryset = Family.objects.all()
-    serializer_class = FamilyDetailSerializer
+    serializer_class = FamilyEditSerializer
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated, IsPrimaryUserOrReadOnly]
 
-    def update(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)
-
-        try:
-            instance = self.get_object()
-            serializer = self.get_serializer(instance, data=request.data, partial=partial)
-            serializer.is_valid(raise_exception=True)
-            self.perform_update(serializer)
+        user=self.request.user.username
+        serializer = FamilyEditSerializer(data=request.data)
+        if serializer.is_valid():
+            try:
+                user_id_primary=FileUpload.objects.get(Q(phone_no_primary=user)|Q(phone_no_secondary=user))
+            except:
+               return Response({'status': False,'message': 'No such Family'},status=HTTP_400_BAD_REQUEST)
+            else:
+                try:
+                    instance=Family.objects.get(primary_user_id__primary_user_id=user_id_primary.primary_user_id)
+                except:
+                    return Response({'status': False,'message': 'You dont have any family,Please update and do edit'},status=HTTP_400_BAD_REQUEST)
+                else:
+                    instance.about=serializer.data['about']
+                    instance.image=serializer.data['image']
+                    instance.save()
+                    data = {
+                        'status': True,
+                        'message': 'Family Detail Updated Successfully'
+                        }
+                return Response(data, status=status.HTTP_200_OK)
+        else:
             data = {
-                'code': 200,
-                'status': "OK",
-            }
-            data['response'] = serializer.data
-        except:
+                    'status': False,
+                    'message': 'Invalid Family Detail'
+                    }
+            return Response(data, status=status.HTTP_400_BAD_REQUEST)
 
-            data = {
-                'status': False
-                }
-            serializer=self.get_serializer( data=request.data, partial=partial)
-            serializer.is_valid(raise_exception=True)
-            data['response'] = serializer.errors
-
-            return Response({'status': False,'message': 'No such Family'},status=HTTP_400_BAD_REQUEST)
-        return Response(data)
 
 
 

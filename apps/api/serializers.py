@@ -83,6 +83,11 @@ class FamilyDetailSerializer(serializers.ModelSerializer):
         model=Family
         fields = ['name','members_length','image','id','about']
 
+class FamilyEditSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=Family
+        fields = ['image','about']
+
 class UserRetrieveSerializer(serializers.ModelSerializer):
     family_name = serializers.SerializerMethodField()
     class Meta:
