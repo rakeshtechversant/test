@@ -35,7 +35,7 @@ from apps.api.serializers import ChurchHistorySerializer, ChurchImagesSerializer
     PrimaryUserSerializer, \
     UserByadminSerializer, FamilyByadminSerializer, PrimaryNotificationSerializer, SecondaryNotificationSerializer, \
     ViewRequestNumberSerializer, RequestAcceptNumberSerializer, AdminNotificationSerializer, PhoneVersionSerializer, \
-    GalleryImagesSerializer
+    GalleryImagesSerializer, FamilyDetailSerializer
 from apps.church.models import Members, Family, UserProfile, ChurchDetails, FileUpload, OtpModels, \
     PrayerGroup, Notification, Notice, NoticeBereavement, UnapprovedMember, NoticeReadPrimary, NoticeReadSecondary, \
     ViewRequestNumber, NoticeReadAdmin, PrivacyPolicy, PhoneVersion, Images
@@ -1658,6 +1658,39 @@ class UserNoticeList(ListAPIView):
             }
         # data['response']['member_details'].insert(0)
 
+        return Response(data)
+
+
+
+class UpdateFamilyByPrimary(RetrieveUpdateAPIView):
+    queryset = Family.objects.all()
+    serializer_class = FamilyDetailSerializer
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated, IsPrimaryUserOrReadOnly]
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+
+        try:
+            instance = self.get_object()
+            serializer = self.get_serializer(instance, data=request.data, partial=partial)
+            serializer.is_valid(raise_exception=True)
+            self.perform_update(serializer)
+            data = {
+                'code': 200,
+                'status': "OK",
+            }
+            data['response'] = serializer.data
+        except:
+
+            data = {
+                'status': False
+                }
+            serializer=self.get_serializer( data=request.data, partial=partial)
+            serializer.is_valid(raise_exception=True)
+            data['response'] = serializer.errors
+
+            return Response({'status': False,'message': 'No such Family'},status=HTTP_400_BAD_REQUEST)
         return Response(data)
 
 

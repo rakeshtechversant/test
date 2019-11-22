@@ -4,7 +4,7 @@ from django.conf.urls import url
 from apps.api.views import UserLoginView, UserLoginMobileView, UserListView, UserDetailView, UserDeleteView, \
     UserUpdateView, UserCreateView, PostsViewset, \
     OtpVerifyViewSet, SecondaryaddView, Profile, UnapprovedMemberView, UpdateMemberByPrimary, CreateUserByAdminView, \
-    UpdateUserByAdminView, AddFamilyByAdminView, GalleryImagesView
+    UpdateUserByAdminView, AddFamilyByAdminView, GalleryImagesView,UpdateFamilyByPrimary
 from rest_framework import routers
 
 router = routers.DefaultRouter()
@@ -27,6 +27,7 @@ urlpatterns = [
     url(r'^(?P<pk>[\w-]+)/delete/$',UserDeleteView.as_view(),name='delete_user'),
 
     url(r'^update-member-by-primary/(?P<pk>[\w-]+)/$', UpdateMemberByPrimary.as_view(),name='update-member-by-primary'),
+    url(r'^(?P<pk>[\w-]+)/update-family-by-primary/$', UpdateFamilyByPrimary.as_view(),name='update-member-by-primary'),
 
     url(r'^api/', include(router.urls)),
 
