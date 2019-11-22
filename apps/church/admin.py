@@ -44,9 +44,17 @@ class NotificationAdmin(admin.ModelAdmin):
     list_display = ('created_by_admin','created_by_primary','created_by_secondary','message')
     search_fields = ['created_by_admin','created_by_primary','created_by_secondary','message']
 
+class OccupationAdmin(admin.ModelAdmin):
+    list_display = ('occupation',)
+    search_fields = ['occupation',]
+
+class FamilyAdmin(admin.ModelAdmin):
+    list_display = ('name',)
+    search_fields = ['name',]
+
 admin.site.register(UserProfile)
 admin.site.register(PrayerGroup)
-admin.site.register(Family)
+admin.site.register(Family,FamilyAdmin)
 admin.site.register(Notice)
 admin.site.register(ChurchDetails)
 admin.site.register(OtpModels)
@@ -55,7 +63,7 @@ admin.site.register(Images,ImageAdmin)
 admin.site.register(FileUpload,FileAdmin)
 admin.site.register(Members,MemeberAdmin)
 admin.site.register(NoticeBereavement)
-admin.site.register(Occupation)
+admin.site.register(Occupation,OccupationAdmin)
 admin.site.register(MemberType)
 admin.site.register(NoticeReadPrimary)
 admin.site.register(NoticeReadSecondary)
