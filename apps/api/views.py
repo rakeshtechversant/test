@@ -1750,7 +1750,11 @@ class UpdateFamilyByPrimary(APIView):
                     return Response({'status': False,'message': 'You dont have any family,Please update and do edit'},status=HTTP_400_BAD_REQUEST)
                 else:
                     instance.about=serializer.data['about']
-                    instance.image=serializer.data['image']
+                    try:
+                        if request.FILES.get('image'):
+                            instance.image = request.FILES['image']
+                    except:
+                        pass
                     instance.save()
                     data = {
                         'status': True,
