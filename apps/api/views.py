@@ -2479,6 +2479,10 @@ class EachUserUnreadCount(APIView):
 
     def get(self, request, format=None):
         user=request.user.username
+        data ={
+            "success": True,
+            "code": 200,
+        }
         try:
             member=FileUpload.objects.get(phone_no_primary=user)
             notice_read_section=NoticeReadPrimary.objects.filter(user_to=member,is_read=True)
@@ -2501,7 +2505,7 @@ class EachUserUnreadCount(APIView):
 
 
 
-        data={
+        data['response']={
             'Unreadcount':count_unread,
             'Readcount':count_read,
             'status': True,
