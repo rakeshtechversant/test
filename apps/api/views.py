@@ -1245,10 +1245,10 @@ class FamilyMemberDetails(ListAPIView):
         primary_user_id = UserDetailsRetrieveSerializer(self.primary_user).data
 
         try:
-            family_image = self.primary_user.get_file_upload.first().image.url
+            family_images = self.primary_user.get_file_upload.first().image.url
+            family_image=request.build_absolute_uri(family_images)
         except:
             family_image = None
-
         
         if self.primary_user.get_file_upload.first():
             data['response'] = {
