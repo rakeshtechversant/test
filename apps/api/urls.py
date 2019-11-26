@@ -19,6 +19,7 @@ urlpatterns = [
     path('profile/',Profile.as_view(), name='profile'),
     path('user-by-admin/', CreateUserByAdminView.as_view(), name='user_by_admin'),
     path('update-user-by-admin/<int:pk>/', UpdateUserByAdminView.as_view(), name='update_user_by_admin'),
+    path('add-family-by-admin/<int:pk>/', AddFamilyByAdminView.as_view(), name='add_family_by_admin'),
     path('add-family-by-admin/', AddFamilyByAdminView.as_view(), name='add_family_by_admin'),
     path('update-family-by-primary/', UpdateFamilyByPrimary.as_view(), name='update-family-by-primary'),
 

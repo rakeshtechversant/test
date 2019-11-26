@@ -2075,6 +2075,45 @@ class AddFamilyByAdminView(APIView):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    def put(self, request, pk, format=None):
+        serializer = FamilyByadminSerializer(data=request.data)
+        if serializer.is_valid():
+            family_name = serializer.data['family_name']
+            try:
+                data = {
+                    'code': 200,
+                    'status': "OK",
+                }
+                instance = Family.objects.get(id=pk,name=family_name)
+
+                if request.FILES.get('image'):
+                    instance.image = request.FILES['image']
+                try:
+                    about = request.POST.get('about')
+                    instance.about = about
+                except:
+                    pass
+                instance.save()
+                data['response'] = "Family successfully updated"
+                return Response(data,status=status.HTTP_200_OK)
+            except:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk, format=None):
+        try:
+            instance = Family.objects.get(id=pk)
+            if instance:
+                instance.delete()
+                data = {
+                    'code': 200,
+                    'status': "OK",
+                }
+                data['response'] = "Family deleted successfully"
+                return Response(data,status=status.HTTP_200_OK)
+        except:
+            return Response({'success': False}, status=status.HTTP_400_BAD_REQUEST)
 
 class EachUserNotification(APIView):
     serializer_class = NoticeSerializer
