@@ -7,7 +7,7 @@ from apps.api.views import UserNoticeList, NoticeBereavementDelete, NoticeBereav
     ChurchHistoryView, ChurchImagesView, PrayerGroupaddView, PrayerGroupMemberaddView, \
     FamilyListView, FamilyMemberList, NoticeModelViewSet, SendOtp, PrayerGroupBasedMembersView, FamilyMemberDetails, \
     ViewRequestNumberViewset, AcceptViewRequestNumberViewset, EachUserNotification, EachUserUnreadCount, PrivacyView, \
-    PhoneVersionView, GalleryImagesView
+    PhoneVersionView, GalleryImagesView, GalleryImagesCreateView
 
 router = DefaultRouter()
 
@@ -17,7 +17,7 @@ router.register(r'phone-version', PhoneVersionView)
 router.register(r'occupations', views.OccupationView)
 router.register(r'member-types', views.MemberTypeView)
 router.register(r'images-category',GalleryImagesView,basename='gallery_images')
-
+router.register(r'gallery-image-upload-admin',GalleryImagesCreateView,basename='gallery_image_upload_admin')
 urlpatterns = [
     path('', views.UserListView.as_view()),
     path('admin/', include(router.urls)),

@@ -35,7 +35,7 @@ from apps.api.serializers import ChurchHistorySerializer, ChurchImagesSerializer
     PrimaryUserSerializer, \
     UserByadminSerializer, FamilyByadminSerializer, PrimaryNotificationSerializer, SecondaryNotificationSerializer, \
     ViewRequestNumberSerializer, RequestAcceptNumberSerializer, AdminNotificationSerializer, PhoneVersionSerializer, \
-    GalleryImagesSerializer, FamilyDetailSerializer, FamilyEditSerializer
+    GalleryImagesSerializer, FamilyDetailSerializer, FamilyEditSerializer, GalleryImagesCreateSerializer
 from apps.church.models import Members, Family, UserProfile, ChurchDetails, FileUpload, OtpModels, \
     PrayerGroup, Notification, Notice, NoticeBereavement, UnapprovedMember, NoticeReadPrimary, NoticeReadSecondary, \
     ViewRequestNumber, NoticeReadAdmin, PrivacyPolicy, PhoneVersion, Images
@@ -2559,6 +2559,51 @@ class GalleryImagesView(ModelViewSet):
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
+        data = {
+            'code': 200,
+            'status': "OK",
+        }
+        data['response'] = serializer.data
+        return Response(data, status=status.HTTP_201_CREATED, headers=headers)
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        data = {
+            'code': 200,
+            'status': "OK",
+        }
+        data['response'] = "Successfully deleted"
+        return Response(data)
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        data = {
+            'code': 200,
+            'status': "OK",
+        }
+        data['response'] = serializer.data
+        return Response(data)
+
+
+class GalleryImagesCreateView(ModelViewSet):
+    queryset = Images.objects.all()
+    serializer_class = GalleryImagesSerializer
+    permission_classes = [IsAdminUser]
+
+    def perform_create(self, serializer):
+        serializer.save(date=tz.now().date())
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+
         data = {
             'code': 200,
             'status': "OK",

@@ -628,4 +628,7 @@ class GalleryImagesSerializer(serializers.ModelSerializer):
         model= Images
         fields = '__all__'
 
-
+class GalleryImagesCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model= Images
+        fields = ['image','category','title','date']
