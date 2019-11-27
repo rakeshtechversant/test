@@ -130,6 +130,7 @@ class Notice(models.Model):
 
 class PrayerGroup(models.Model):
     # user_profile = models.ManyToManyField(FileUpload)
+    family = models.ManyToManyField(Family, null=True, blank=True)
     primary_user_id = models.ManyToManyField(FileUpload,
                     related_name='get_file_upload_prayergroup', null=True, blank=True)
     sec_member = models.ManyToManyField(Members,null=True,blank=True)

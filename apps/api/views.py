@@ -776,8 +776,10 @@ class PrayerGroupBasedFamilyView(ListAPIView):
             prayer_group = PrayerGroup.objects.get(id=prayer_id)
         except PrayerGroup.DoesNotExist:
             raise exceptions.NotFound(detail="Prayer group does not exist")
-        
-        family_list = Family.objects.filter(primary_user_id__in=prayer_group.primary_user_id.all())
+        family_list1 = prayer_group.family.all()
+        family_list1 = family_list1.filter(primary_user_id=None)
+        family_list2 = Family.objects.filter(primary_user_id__in=prayer_group.primary_user_id.all())
+        family_list = family_list1 | family_list2
         return family_list
 
     def list(self, request, *args, **kwargs):
@@ -2060,17 +2062,17 @@ class AddFamilyByAdminView(APIView):
         serializer = FamilyByadminSerializer(data=request.data)
 
         if serializer.is_valid():
-
-            # prayer_group = PrayerGroup.objects.get(pk=serializer.data['prayer_group'])
+            prayer_group = PrayerGroup.objects.get(pk=serializer.data['prayer_group'])
             family_name = serializer.data['family_name']
 
             instance = Family(name=family_name)
-
+            
             if request.FILES.get('image'):
                 instance.image = request.FILES['image']
 
             instance.save()
-
+            prayer_group.family.add(instance.id)
+            prayer_group.save()
             return Response(serializer.data)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
