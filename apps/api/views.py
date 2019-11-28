@@ -81,14 +81,14 @@ class UserLoginMobileView(APIView):
                         pass
 
                     OtpModels.objects.create(mobile_number=mobile_number, otp=otp_number)
-                    client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
-                    message = client.messages.create(to='+91' + mobile_number, from_='+15036837180',body=otp_number)
+                    # client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
+                    # message = client.messages.create(to='+91' + mobile_number, from_='+15036837180',body=otp_number)
 
-                    # message = "OTP for login is %s" % (otp_number,)
-                    # requests.get(
-                    #     "http://unifiedbuzz.com/api/insms/format/json/?mobile=" + mobile_number + "&text=" + message +
-                    #     "&flash=0&type=1&sender=MARCHR",
-                    #     headers={"X-API-Key": "918e0674e62e01ec16ddba9a0cea447b"})
+                    message = "OTP for login is %s" % (otp_number,)
+                    requests.get(
+                        "http://unifiedbuzz.com/api/insms/format/json/?mobile=" + mobile_number + "&text=" + message +
+                        "&flash=0&type=1&sender=MARCHR",
+                        headers={"X-API-Key": "918e0674e62e01ec16ddba9a0cea447b"})
                     return Response({'success': True, 'message': 'OTP Sent Successfully', 'user_details': data},
                                     status=HTTP_200_OK)
                 else:
@@ -112,13 +112,13 @@ class UserLoginMobileView(APIView):
                             except:
                                 pass
                             OtpModels.objects.create(mobile_number=mobile_number, otp=otp_number)
-                            client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
-                            message = client.messages.create(to='+91' + mobile_number, from_='+15036837180',body=otp_number)
-                            # message = "OTP for login is %s" % (otp_number,)
-                            # requests.get(
-                            #     "http://unifiedbuzz.com/api/insms/format/json/?mobile=" + mobile_number + "&text=" + message +
-                            #     "&flash=0&type=1&sender=MARCHR",
-                            #     headers={"X-API-Key": "918e0674e62e01ec16ddba9a0cea447b"})
+                            # client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
+                            # message = client.messages.create(to='+91' + mobile_number, from_='+15036837180',body=otp_number)
+                            message = "OTP for login is %s" % (otp_number,)
+                            requests.get(
+                                "http://unifiedbuzz.com/api/insms/format/json/?mobile=" + mobile_number + "&text=" + message +
+                                "&flash=0&type=1&sender=MARCHR",
+                                headers={"X-API-Key": "918e0674e62e01ec16ddba9a0cea447b"})
                             return Response({'success': True, 'message': 'OTP Sent Successfully', 'user_details': data},
                                             status=HTTP_200_OK)
                         else:
@@ -144,13 +144,13 @@ class UserLoginMobileView(APIView):
                             except:
                                 pass
                             OtpModels.objects.create(mobile_number=user_profile.phone_no_primary, otp=otp_number)
-                            client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
-                            message = client.messages.create(to='+91' + mobile_number, from_='+15036837180',body=otp_number)
-                            # message = "OTP for login is %s" % (otp_number,)
-                            # requests.get(
-                            #     "http://unifiedbuzz.com/api/insms/format/json/?mobile=" + user_profile.phone_no_primary + "&text=" + message +
-                            #     "&flash=0&type=1&sender=MARCHR",
-                            #     headers={"X-API-Key": "918e0674e62e01ec16ddba9a0cea447b"})
+                            # client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
+                            # message = client.messages.create(to='+91' + mobile_number, from_='+15036837180',body=otp_number)
+                            message = "OTP for login is %s" % (otp_number,)
+                            requests.get(
+                                "http://unifiedbuzz.com/api/insms/format/json/?mobile=" + user_profile.phone_no_primary + "&text=" + message +
+                                "&flash=0&type=1&sender=MARCHR",
+                                headers={"X-API-Key": "918e0674e62e01ec16ddba9a0cea447b"})
                             return Response({'success': True, 'message': 'OTP Sent Successfully', 'user_details': data},
                                             status=HTTP_200_OK)
                         else:
@@ -183,13 +183,13 @@ class UserLoginMobileView(APIView):
 
                             OtpModels.objects.create(mobile_number=user_profile.phone_no_secondary_user, otp=otp_number)
                             
-                            client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
-                            message = client.messages.create(to='+91' + mobile_number, from_='+15036837180',body=otp_number)
-                            # message = "OTP for login is %s" % (otp_number,)
-                            # requests.get(
-                            #     "http://unifiedbuzz.com/api/insms/format/json/?mobile=" + user_profile.phone_no_secondary_user + "&text=" + message +
-                            #     "&flash=0&type=1&sender=MARCHR",
-                            #     headers={"X-API-Key": "918e0674e62e01ec16ddba9a0cea447b"})
+                            # client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
+                            # message = client.messages.create(to='+91' + mobile_number, from_='+15036837180',body=otp_number)
+                            message = "OTP for login is %s" % (otp_number,)
+                            requests.get(
+                                "http://unifiedbuzz.com/api/insms/format/json/?mobile=" + user_profile.phone_no_secondary_user + "&text=" + message +
+                                "&flash=0&type=1&sender=MARCHR",
+                                headers={"X-API-Key": "918e0674e62e01ec16ddba9a0cea447b"})
 
                             return Response({'success': True, 'message': 'OTP Sent Successfully', 'user_details': data},
                                             status=HTTP_200_OK)
@@ -1070,13 +1070,13 @@ class SendOtp(APIView):
 
 
             message_body = sec_user.member_name + ' requested OTP for login: ' + otp_number
-            client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
-            message = client.messages.create(to='+91' + mobile_number, from_='+15036837180',body=message_body)
+            # client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
+            # message = client.messages.create(to='+91' + mobile_number, from_='+15036837180',body=message_body)
 
-            # requests.get(
-            #     "http://unifiedbuzz.com/api/insms/format/json/?mobile=" + mobile_number + "&text=" + message_body +
-            #     "&flash=0&type=1&sender=MARCHR",
-            #     headers={"X-API-Key": "918e0674e62e01ec16ddba9a0cea447b"})
+            requests.get(
+                "http://unifiedbuzz.com/api/insms/format/json/?mobile=" + mobile_number + "&text=" + message_body +
+                "&flash=0&type=1&sender=MARCHR",
+                headers={"X-API-Key": "918e0674e62e01ec16ddba9a0cea447b"})
 
             data = {
                 'mobile': mobile_number,
