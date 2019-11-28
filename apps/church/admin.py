@@ -6,33 +6,48 @@ from apps.church.models import NoticeBereavement, Members, UserProfile, PrayerGr
     OtpModels, FileUpload, Notification, Images, Occupation, MemberType, NoticeReadSecondary, NoticeReadPrimary, \
     NoticeReadAdmin, ViewRequestNumber,PrivacyPolicy,PhoneVersion
 
-from import_export.admin import ImportExportModelAdmin
 from import_export import resources
+from import_export.admin import ImportExportModelAdmin, ImportMixin, ExportMixin, ImportExportMixin
 from django.http import HttpResponse
 import csv
-class FileAdmin(admin.ModelAdmin):
+
+
+class FileUploadResource(resources.ModelResource):
+    class Meta:
+        model = FileUpload
+        exclude = ('id' )
+        import_id_fields = ['primary_user_id']
+
+class FileAdmin(ImportExportModelAdmin):
     list_display = ('name', 'phone_no_primary')
     search_fields = ['name','phone_no_primary']
-    actions = ['download_csv']
+    resource_class = FileUploadResource
 
-    def download_csv(self, request, queryset):
-        meta = self.model._meta
-        field_names = [field.name for field in meta.fields]
+    # actions = ['download_csv']
 
-        response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename={}.csv'.format(meta)
-        writer = csv.writer(response)
+    # def download_csv(self, request, queryset):
+    #     meta = self.model._meta
+    #     field_names = [field.name for field in meta.fields]
 
-        writer.writerow(field_names)
-        for obj in queryset:
-            row = writer.writerow([getattr(obj, field) for field in field_names])
+    #     response = HttpResponse(content_type='text/csv')
+    #     response['Content-Disposition'] = 'attachment; filename={}.csv'.format(meta)
+    #     writer = csv.writer(response)
 
-        return response
+    #     writer.writerow(field_names)
+    #     for obj in queryset:
+    #         row = writer.writerow([getattr(obj, field) for field in field_names])
 
-    download_csv.short_description = "Download CSV file for selected profiles."
+    #     return response
 
+    # download_csv.short_description = "Download CSV file for selected profiles."
 
-class MemeberAdmin(admin.ModelAdmin):
+class MemberResource(resources.ModelResource):
+    class Meta:
+        model = Members
+        exclude = ('id' )
+        import_id_fields = ['secondary_user_id']
+
+class MemeberAdmin(ImportExportModelAdmin):
     list_display = ('member_name','phone_no_secondary_user')
     search_fields = ['member_name','phone_no_secondary_user']
 
@@ -71,3 +86,4 @@ admin.site.register(NoticeReadAdmin)
 admin.site.register(ViewRequestNumber)
 admin.site.register(PrivacyPolicy)
 admin.site.register(PhoneVersion)
+
