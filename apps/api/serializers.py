@@ -221,6 +221,7 @@ class MembersSerializer(serializers.ModelSerializer):
     primary_name = serializers.SerializerMethodField()
     phone_no_primary = serializers.SerializerMethodField()
     in_memory_date = serializers.SerializerMethodField()
+
     # family_
 
     class Meta:
@@ -229,9 +230,8 @@ class MembersSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
-
-        data['user_type'] = 'PRIMARY'
-
+        data['name'] = data.pop('member_name')
+        data['user_type'] = 'SECONDARY'
         request = self.context['request']
         try :
             data['image'] = request.build_absolute_uri(instance.image.url)
@@ -262,12 +262,7 @@ class MembersSerializer(serializers.ModelSerializer):
             return primary_number
         return None
 
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
 
-        data['user_type'] = 'SECONDARY'
-
-        return data
 
 class NoticeSerializer(serializers.ModelSerializer):
     created_at = serializers.DateTimeField(format="%d/%m/%Y %I:%M %p", read_only=True)
