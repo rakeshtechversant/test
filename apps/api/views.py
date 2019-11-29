@@ -855,7 +855,7 @@ class PrayerGroupBasedMembersView(ListAPIView):
         }
 
         for primary_user in self.primary_user.all():
-            primary_user_id = UserRetrieveSerializer(primary_user).data
+            primary_user_id = UserRetrieveSerializer(primary_user,context={'request':request}).data
 
             data['response'].insert(0, primary_user_id)
 
@@ -1331,6 +1331,7 @@ class UnapprovedMemberView(mixins.CreateModelMixin,
         return Response(data)
 
     def update(self, request, *args, **kwargs):
+        import pdb;pdb.set_trace()
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
