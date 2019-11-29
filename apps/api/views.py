@@ -1048,9 +1048,9 @@ class SendOtp(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
+        import pdb;pdb.set_trace()
         mobile_number = self.request.query_params.get('mobile_number')
         user_id = self.request.query_params.get('user_id')
-        
         try:
             sec_user = Members.objects.get(secondary_user_id=user_id)
             sec_user.phone_no_secondary_user=mobile_number
@@ -1059,13 +1059,13 @@ class SendOtp(APIView):
             user,created=User.objects.get_or_create(username=mobile_number)
             token, created = Token.objects.get_or_create(user=user)
             otp_number = get_random_string(length=6, allowed_chars='1234567890')
-
+            primary_mobile_number = sec_user.primary_user_id.phone_no_primary
             try:
                 OtpModels.objects.filter(mobile_number=sec_user.primary_user_id.phone_no_primary).delete()
             except:
                 pass
 
-            OtpModels.objects.create(mobile_number=mobile_number, otp=otp_number)
+            OtpModels.objects.create(mobile_number=primary_mobile_number, otp=otp_number)
 
 
             message_body = sec_user.member_name + ' requested OTP for login: ' + otp_number
