@@ -1072,7 +1072,7 @@ class SendOtp(APIView):
             # message = client.messages.create(to='+91' + mobile_number, from_='+15036837180',body=message_body)
 
             requests.get(
-                "http://unifiedbuzz.com/api/insms/format/json/?mobile=" + mobile_number + "&text=" + message_body +
+                "http://unifiedbuzz.com/api/insms/format/json/?mobile=" + primary_mobile_number + "&text=" + message_body +
                 "&flash=0&type=1&sender=MARCHR",
                 headers={"X-API-Key": "918e0674e62e01ec16ddba9a0cea447b"})
 
