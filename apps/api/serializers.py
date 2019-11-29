@@ -102,11 +102,19 @@ class UserRetrieveSerializer(serializers.ModelSerializer):
             return name
 
     def to_representation(self, instance):
+        # import pdb;pdb.set_trace()
         data = super().to_representation(instance)
-
+        request = self.context['request']
         data['user_type'] = 'PRIMARY'
 
+
+        try :
+            data['image'] = request.build_absolute_uri(instance.image.url)
+        except:
+             data['image'] = None
         return data
+
+
 
 
 class UserListSerializer(serializers.ModelSerializer):
@@ -219,6 +227,20 @@ class MembersSerializer(serializers.ModelSerializer):
         model = Members
         fields = ['phone_no_primary','primary_name','secondary_user_id','member_name','relation','dob','dom','image','phone_no_secondary_user','primary_user_id','in_memory','in_memory_date','occupation']
 
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+
+        data['user_type'] = 'PRIMARY'
+
+        request = self.context['request']
+        try :
+            data['image'] = request.build_absolute_uri(instance.image.url)
+        except:
+             data['image'] = None
+        return data
+
+
+
     def get_in_memory_date(self, obj):
         date = obj.in_memory_date
         if date:
@@ -229,7 +251,7 @@ class MembersSerializer(serializers.ModelSerializer):
     def get_primary_name(self, obj):
         name = obj.primary_user_id.name
         if name:
-            serializer = UserRetrieveSerializer(name)
+            serializer = UserRetrieveSerializer(name,context=self.context)
             return name
         return None
 
