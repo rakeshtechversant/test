@@ -1048,8 +1048,9 @@ class SendOtp(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        mobile_number = self.request.data['mobile_number']
-        user_id = self.request.data['user_id']
+        import pdb;pdb.set_trace()
+        mobile_number = self.request.query_params.get('mobile_number')
+        user_id = self.request.query_params.get('user_id')
         try:
             sec_user = Members.objects.get(secondary_user_id=user_id)
             sec_user.phone_no_secondary_user=mobile_number
@@ -2537,6 +2538,7 @@ class EachUserUnreadCount(APIView):
                 count_read=len(notice_read_section)
                 count_unread=len(notice_unread_section)
             except:
+                
                 admin_profile = AdminProfile.objects.get(user=request.user)
                 notice_read_section=NoticeReadAdmin.objects.filter(user_to=admin_profile,is_read=True)
                 notice_unread_section=NoticeReadAdmin.objects.filter(user_to=admin_profile,is_read=False)
