@@ -565,7 +565,7 @@ class PrimaryUserSerializer(serializers.ModelSerializer):
 
         if obj.image:
             try :
-                data['image'] = request.build_absolute_uri(instance.image.url)
+                data['image'] = request.build_absolute_uri(obj.image.url)
             except:
                 data['image'] = None
 
