@@ -575,7 +575,7 @@ class UserDetailView(APIView):
                 except:
                     is_accepted = False
                 data={
-                    'member_name':user_details.member_name,
+                    'name':user_details.member_name,
                     'relation':user_details.relation,
                     'dob':user_details.dob,
                     'dom':user_details.dom,
