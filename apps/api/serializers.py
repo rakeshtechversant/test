@@ -106,6 +106,8 @@ class UserRetrieveSerializer(serializers.ModelSerializer):
         data = super().to_representation(instance)
         request = self.context['request']
         data['user_type'] = 'PRIMARY'
+        data['user_id'] = instance.primary_user_id
+        # data['user_id'] = data.pop('primary_user_id')
 
 
         try :
@@ -232,6 +234,7 @@ class MembersSerializer(serializers.ModelSerializer):
         data = super().to_representation(instance)
         data['name'] = data.pop('member_name')
         data['user_type'] = 'SECONDARY'
+        data['user_id'] = instance.secondary_user_id
         request = self.context['request']
         try :
             data['image'] = request.build_absolute_uri(instance.image.url)

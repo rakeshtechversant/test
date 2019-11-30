@@ -850,10 +850,7 @@ class PrayerGroupBasedMembersView(ListAPIView):
             page_nated_data = self.get_paginated_response(serializer.data).data
             data.update(page_nated_data)
             data['response'] = data.pop('results')
-
             return Response(data)
-
-
         serializer = self.get_serializer(queryset, many=True)
 
         data = {
@@ -861,6 +858,8 @@ class PrayerGroupBasedMembersView(ListAPIView):
             'status': "OK",
             'response': serializer.data
         }
+
+
 
         for primary_user in self.primary_user.all():
             primary_user_id = UserRetrieveSerializer(primary_user,context={'request':request}).data
