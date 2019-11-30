@@ -574,6 +574,10 @@ class UserDetailView(APIView):
                     is_accepted = phoneobj.first().is_accepted
                 except:
                     is_accepted = False
+                try:
+                    image=request.build_absolute_uri(user_details.image.url)
+                except:
+                    image='null'
                 data={
                     'name':user_details.member_name,
                     'relation':user_details.relation,
@@ -593,7 +597,7 @@ class UserDetailView(APIView):
                     'marrige_date':user_details.marrige_date,
                     'in_memory':user_details.in_memory,
                     'in_memory_date':user_details.in_memory_date,
-                    'image':request.build_absolute_uri(user_details.image.url)
+                    'image':image
 
                 }
                 return Response({'success': True,'message':'Profile found successfully','user_details':data}, status=HTTP_200_OK)
@@ -609,6 +613,10 @@ class UserDetailView(APIView):
                         is_accepted = phoneobj.first().is_accepted
                     except:
                         is_accepted = False
+                    try:
+                        image=request.build_absolute_uri(user_details.image.url)
+                    except:
+                        image='null'
                     data={
                        'member_name':user_details.primary_user_id,
                        'name':user_details.name,
@@ -626,7 +634,7 @@ class UserDetailView(APIView):
                        'marrige_date':user_details.marrige_date,
                        'in_memory':user_details.in_memory,
                        'in_memory_date':user_details.in_memory_date,
-                       'image':request.build_absolute_uri(user_details.image.url)
+                       'image':image
                     }
                     return Response({'success': True,'message':'Profile found successfully','user_details':data}, status=HTTP_200_OK)
                 except:
