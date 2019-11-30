@@ -436,6 +436,7 @@ class MembersDetailsSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
+        data['name'] = data.pop('member_name')
 
         data['user_type'] = 'SECONDARY'
 
