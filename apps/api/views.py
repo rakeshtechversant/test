@@ -1226,7 +1226,7 @@ class FamilyMemberDetails(ListAPIView):
             data.update(page_nated_data)
             # data['response'] = data.pop('results')
 
-            primary_user_id =UserDetailsRetrieveSerializer(self.primary_user).data
+            primary_user_id =UserDetailsRetrieveSerializer(self.primary_user,context={'request':request}).data
 
             
             data['response'] = {'family_members':data}
@@ -1242,7 +1242,7 @@ class FamilyMemberDetails(ListAPIView):
             
         }
 
-        primary_user_id = UserDetailsRetrieveSerializer(self.primary_user).data
+        primary_user_id = UserDetailsRetrieveSerializer(self.primary_user,context={'request':request}).data
 
         try:
             family_images = self.primary_user.get_file_upload.first().image.url
@@ -1429,7 +1429,7 @@ class FamilyDetailView(ListAPIView):
             data.update(page_nated_data)
             # data['response'] = data.pop('results')
 
-            primary_user_id =UserDetailsRetrieveSerializer(self.primary_user).data
+            primary_user_id =UserDetailsRetrieveSerializer(self.primary_user,context={'request':request}).data
 
 
             data['response'] = {'family_members':data}
@@ -1445,7 +1445,7 @@ class FamilyDetailView(ListAPIView):
 
         }
 
-        primary_user_id = UserDetailsRetrieveSerializer(self.primary_user).data
+        primary_user_id = UserDetailsRetrieveSerializer(self.primary_user,context={'request':request}).data
         # family = Family.objects.get(primary_user_id=primary_user_id)
 
         try:

@@ -386,6 +386,16 @@ class UserDetailsRetrieveSerializer(serializers.ModelSerializer):
         else:
             return None
 
+    def to_representation(self, instance):
+        # import pdb;pdb.set_trace()
+        data = super().to_representation(instance)
+        request = self.context['request']
+        try :
+            data['image'] = request.build_absolute_uri(instance.image.url)
+        except:
+             data['image'] = None
+        return data
+
     # def get_family_name(self, obj):
     #     try:
     #         name = obj.get_file_upload.get().name
