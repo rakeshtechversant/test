@@ -68,6 +68,14 @@ class FamilyListSerializer(serializers.ModelSerializer):
         model = Family
         fields = ['name','members_length','image','id']
 
+    def to_representation(self, obj):
+        data = super().to_representation(obj)
+        try:
+            data['name'] = obj.name.title()
+        except:
+            pass
+        return data
+
     def get_members_length(self, obj):
             try:
                 name = obj.primary_user_id
@@ -76,13 +84,6 @@ class FamilyListSerializer(serializers.ModelSerializer):
             except:
                 number_list = 0
             return number_list
-
-    # def to_representation(self, obj):
-    #     data = super().to_representation(obj)
-    #     if obj.name:
-    #         data['name'] = obj.name.title()
-    #     else:
-    #         data['name'] = ''
 
 class FamilyDetailSerializer(serializers.ModelSerializer):
     class Meta:
@@ -409,7 +410,11 @@ class UserDetailsRetrieveSerializer(serializers.ModelSerializer):
         try :
             data['image'] = request.build_absolute_uri(instance.image.url)
         except:
-             data['image'] = None
+            data['image'] = None
+        try:
+            data['name'] = instance.name.title()
+        except:
+            pass
         return data
 
     # def get_family_name(self, obj):
@@ -462,6 +467,10 @@ class MembersDetailsSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
+        try:
+            data['member_name'] = instance.member_name.title()
+        except:
+            pass
         data['name'] = data.pop('member_name')
 
         data['user_type'] = 'SECONDARY'

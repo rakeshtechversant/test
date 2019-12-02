@@ -1260,7 +1260,7 @@ class FamilyMemberDetails(ListAPIView):
         if self.primary_user.get_file_upload.first():
             data['response'] = {
                 'family_members':serializer.data,
-                'family_name':self.primary_user.get_file_upload.first().name,
+                'family_name':self.primary_user.get_file_upload.first().name.title(),
                 'family_about':self.primary_user.get_file_upload.first().about,
                 'family_image':family_image
             }
