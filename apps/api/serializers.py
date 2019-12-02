@@ -553,7 +553,7 @@ class MemberSerializer(serializers.ModelSerializer):
 
         if obj.primary_user_id:
             try:
-                data['family_name'] = obj.primary_user_id.get_file_upload.first().name
+                data['family_name'] = obj.primary_user_id.get_file_upload.first().name.title()
             except:
                 data['family_name'] = ''
 
@@ -589,7 +589,7 @@ class PrimaryUserSerializer(serializers.ModelSerializer):
         request = self.context['request']
 
         if obj.get_file_upload.first():
-            data['family_name'] = obj.get_file_upload.first().name
+            data['family_name'] = obj.get_file_upload.first().name.title()
         else:
             data['family_name'] = ''
 
