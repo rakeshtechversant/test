@@ -77,6 +77,12 @@ class FamilyListSerializer(serializers.ModelSerializer):
                 number_list = 0
             return number_list
 
+    # def to_representation(self, obj):
+    #     data = super().to_representation(obj)
+    #     if obj.name:
+    #         data['name'] = obj.name.title()
+    #     else:
+    #         data['name'] = ''
 
 class FamilyDetailSerializer(serializers.ModelSerializer):
     class Meta:
@@ -108,7 +114,10 @@ class UserRetrieveSerializer(serializers.ModelSerializer):
         data['user_type'] = 'PRIMARY'
         data['user_id'] = instance.primary_user_id
         # data['user_id'] = data.pop('primary_user_id')
-
+        try:
+            data['name'] = obj.name.title()
+        except:
+            pass
 
         try :
             data['image'] = request.build_absolute_uri(instance.image.url)
@@ -236,10 +245,14 @@ class MembersSerializer(serializers.ModelSerializer):
         data['user_type'] = 'SECONDARY'
         data['user_id'] = instance.secondary_user_id
         request = self.context['request']
+        try:
+            data['member_name'] = obj.member_name.title()
+        except:
+            pass
         try :
             data['image'] = request.build_absolute_uri(instance.image.url)
         except:
-             data['image'] = None
+            data['image'] = None
         return data
 
 
@@ -538,6 +551,11 @@ class MemberSerializer(serializers.ModelSerializer):
         else:
             data['family_name' ] = ''
 
+        try:
+            data['member_name'] = obj.member_name.title()
+        except:
+            pass
+
         if obj.image:
             try :
                 data['image'] = request.build_absolute_uri(instance.image.url)
@@ -565,6 +583,11 @@ class PrimaryUserSerializer(serializers.ModelSerializer):
             data['family_name'] = obj.get_file_upload.first().name
         else:
             data['family_name'] = ''
+
+        try:
+            data['name'] = obj.name.title()
+        except:
+            pass
 
         if obj.image:
             try :
