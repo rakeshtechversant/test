@@ -1082,9 +1082,14 @@ class SendOtp(APIView):
                 "http://unifiedbuzz.com/api/insms/format/json/?mobile=" + primary_mobile_number + "&text=" + message_body +
                 "&flash=0&type=1&sender=MARCHR",
                 headers={"X-API-Key": "918e0674e62e01ec16ddba9a0cea447b"})
-
+            try:
+                superusers = User.objects.filter(is_superuser=True).first()
+                admin_phonenumber = superusers.username
+            except:
+                admin_phonenumber = ''
             data = {
                 'mobile': mobile_number,
+                'admin_mobile_number' : admin_phonenumber,
                 'user_type': 'SECONDARY',
                 'name': sec_user.member_name,
                 'token':token.key,
