@@ -358,6 +358,10 @@ class PrimaryUserProfileSerializer(serializers.ModelSerializer):
             data['image'] = request.build_absolute_uri(instance.image.url)
         except:
              data['image'] = None
+        try :
+            data['name'] = instance.name.title()
+        except:
+            pass
         return data
 
 
@@ -385,6 +389,11 @@ class MemberProfileSerializer(serializers.ModelSerializer):
             data['image'] = request.build_absolute_uri(instance.image.url)
         except:
             data['image'] = None
+
+        try :
+            data['member_name'] = instance.member_name.title()
+        except:
+            pass
         return data
 
 

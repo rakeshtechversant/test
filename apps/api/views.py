@@ -255,7 +255,7 @@ class OtpVerifyViewSet(CreateAPIView):
                     data = {
                         'mobile': mobile,
                         'user_type': 'PRIMARY',
-                        'name': user_profile.name,
+                        'name': user_profile.name.title(),
                         'primary_user_id': user_profile.primary_user_id
                     }
                 except FileUpload.DoesNotExist:
@@ -268,7 +268,7 @@ class OtpVerifyViewSet(CreateAPIView):
                     data = {
                             'mobile': member.phone_no_secondary_user,
                             'user_type': 'SECONDARY',
-                            'name': member.member_name,
+                            'name': member.member_name.title(),
                             'secondary_user_id': member.secondary_user_id,
                             'primary_name':member.primary_user_id.name,
                             'primary_user_id':member.primary_user_id.primary_user_id,
@@ -1074,7 +1074,7 @@ class SendOtp(APIView):
             OtpModels.objects.create(mobile_number=primary_mobile_number, otp=otp_number)
 
 
-            message_body = sec_user.member_name + ' requested OTP for login: ' + otp_number
+            message_body = sec_user.member_name.title() + ' requested OTP for login: ' + otp_number
             # client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
             # message = client.messages.create(to='+91' + mobile_number, from_='+15036837180',body=message_body)
 
@@ -2137,7 +2137,7 @@ class EachUserNotification(APIView):
         except:
 
             try:
-                member=Members.objects.filter(phone_no_secondary_user=user)
+                member=Members.objects.get(phone_no_secondary_user=user)
                 notice_section=NoticeReadSecondary.objects.filter(user_to=member)
                 notice_section.update(is_read=True)
                 messages=SecondaryNotificationSerializer(notice_section, many=True)
