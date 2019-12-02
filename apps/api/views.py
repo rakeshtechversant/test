@@ -1454,9 +1454,9 @@ class FamilyDetailView(ListAPIView):
 
         primary_user_id = UserDetailsRetrieveSerializer(self.primary_user,context={'request':request}).data
         # family = Family.objects.get(primary_user_id=primary_user_id)
-
+        # import pdb;pdb.set_trace()
         try:
-            family_image = self.primary_user.get_file_upload.first().image.url
+            family_image = request.build_absolute_uri(self.primary_user.get_file_upload.first().image.url)
         except:
             family_image = None
 
