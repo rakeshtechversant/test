@@ -1083,8 +1083,8 @@ class SendOtp(APIView):
                 "&flash=0&type=1&sender=MARCHR",
                 headers={"X-API-Key": "918e0674e62e01ec16ddba9a0cea447b"})
             try:
-                superusers = User.objects.filter(is_superuser=True).first()
-                admin_phonenumber = superusers.username
+                superusers = AdminProfile.objects.filter(user__is_superuser=True).first()
+                admin_phonenumber = superusers.mobile_number
             except:
                 admin_phonenumber = ''
             data = {
