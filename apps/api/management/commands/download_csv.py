@@ -1,15 +1,18 @@
 import csv
+import os
 import random
 import string
 import datetime
 from django.http import HttpResponse
 from django.core.management.base import BaseCommand, CommandError
 from apps.church.models import FileUpload , Family, Members , PrayerGroup 
+from pathlib import Path
 
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        with open('../../../Downloads/myfiles.csv', 'w', newline="") as myfile:
+        path_to_download_folder = str(os.path.join(Path.home(), "Downloads"))
+        with open(path_to_download_folder+'/myfiles.csv', 'w', newline="") as myfile:
             writer = csv.writer(myfile)
             primary_qs = FileUpload.objects.all()
             #Header
