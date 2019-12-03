@@ -338,7 +338,7 @@ class OtpVerifyUserIdViewSet(CreateAPIView):
                     data = {
                         'mobile': mobile,
                         'user_type': 'PRIMARY',
-                        'name': user_profile.name,
+                        'name': user_profile.name.title(),
                         'primary_user_id': user_profile.primary_user_id
                     }
                 except FileUpload.DoesNotExist:
@@ -353,7 +353,7 @@ class OtpVerifyUserIdViewSet(CreateAPIView):
                     data = {
                             'mobile': member.phone_no_secondary_user,
                             'user_type': 'SECONDARY',
-                            'name': member.member_name,
+                            'name': member.member_name.title(),
                             'secondary_user_id': member.secondary_user_id,
                             'primary_name':member.primary_user_id.name,
                             'primary_user_id':member.primary_user_id.primary_user_id,
@@ -1158,7 +1158,7 @@ class SendOtp(APIView):
             OtpModels.objects.create(mobile_number=primary_mobile_number, otp=otp_number)
 
 
-            message_body = sec_user.member_name + ' requested OTP for login: ' + otp_number
+            message_body = sec_user.member_name.title() + ' requested OTP for login: ' + otp_number
             # client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
             # message = client.messages.create(to='+91' + mobile_number, from_='+15036837180',body=message_body)
 
@@ -1166,9 +1166,14 @@ class SendOtp(APIView):
                 "http://unifiedbuzz.com/api/insms/format/json/?mobile=" + primary_mobile_number + "&text=" + message_body +
                 "&flash=0&type=1&sender=MARCHR",
                 headers={"X-API-Key": "918e0674e62e01ec16ddba9a0cea447b"})
-
+            try:
+                superusers = AdminProfile.objects.filter(user__is_superuser=True).first()
+                admin_phonenumber = superusers.mobile_number
+            except:
+                admin_phonenumber = ''
             data = {
                 'mobile': mobile_number,
+                'admin_mobile_number' : admin_phonenumber,
                 'user_type': 'SECONDARY',
                 'name': sec_user.member_name,
                 'token':token.key,
@@ -1394,7 +1399,7 @@ class FamilyMemberDetails(ListAPIView):
         if self.primary_user.get_file_upload.first():
             data['response'] = {
                 'family_members':serializer.data,
-                'family_name':self.primary_user.get_file_upload.first().name,
+                'family_name':self.primary_user.get_file_upload.first().name.title(),
                 'family_about':self.primary_user.get_file_upload.first().about,
                 'family_image':family_image
             }
@@ -2271,7 +2276,7 @@ class EachUserNotification(APIView):
         except:
 
             try:
-                member=Members.objects.filter(phone_no_secondary_user=user)
+                member=Members.objects.get(phone_no_secondary_user=user)
                 notice_section=NoticeReadSecondary.objects.filter(user_to=member)
                 notice_section.update(is_read=True)
                 messages=SecondaryNotificationSerializer(notice_section, many=True)

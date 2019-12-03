@@ -68,6 +68,14 @@ class FamilyListSerializer(serializers.ModelSerializer):
         model = Family
         fields = ['name','members_length','image','id']
 
+    def to_representation(self, obj):
+        data = super().to_representation(obj)
+        try:
+            data['name'] = obj.name.title()
+        except:
+            pass
+        return data
+
     def get_members_length(self, obj):
             try:
                 name = obj.primary_user_id
@@ -76,7 +84,6 @@ class FamilyListSerializer(serializers.ModelSerializer):
             except:
                 number_list = 0
             return number_list
-
 
 class FamilyDetailSerializer(serializers.ModelSerializer):
     class Meta:
@@ -108,7 +115,10 @@ class UserRetrieveSerializer(serializers.ModelSerializer):
         data['user_type'] = 'PRIMARY'
         data['user_id'] = instance.primary_user_id
         # data['user_id'] = data.pop('primary_user_id')
-
+        try:
+            data['name'] = obj.name.title()
+        except:
+            pass
 
         try :
             data['image'] = request.build_absolute_uri(instance.image.url)
@@ -245,10 +255,14 @@ class MembersSerializer(serializers.ModelSerializer):
         data['user_type'] = 'SECONDARY'
         data['user_id'] = instance.secondary_user_id
         request = self.context['request']
+        try:
+            data['member_name'] = obj.member_name.title()
+        except:
+            pass
         try :
             data['image'] = request.build_absolute_uri(instance.image.url)
         except:
-             data['image'] = None
+            data['image'] = None
         return data
 
 
@@ -353,6 +367,10 @@ class PrimaryUserProfileSerializer(serializers.ModelSerializer):
             data['image'] = request.build_absolute_uri(instance.image.url)
         except:
              data['image'] = None
+        try :
+            data['name'] = instance.name.title()
+        except:
+            pass
         return data
 
 
@@ -380,6 +398,11 @@ class MemberProfileSerializer(serializers.ModelSerializer):
             data['image'] = request.build_absolute_uri(instance.image.url)
         except:
             data['image'] = None
+
+        try :
+            data['member_name'] = instance.member_name.title()
+        except:
+            pass
         return data
 
 
@@ -405,7 +428,11 @@ class UserDetailsRetrieveSerializer(serializers.ModelSerializer):
         try :
             data['image'] = request.build_absolute_uri(instance.image.url)
         except:
-             data['image'] = None
+            data['image'] = None
+        try:
+            data['name'] = instance.name.title()
+        except:
+            pass
         return data
 
     # def get_family_name(self, obj):
@@ -458,6 +485,10 @@ class MembersDetailsSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
+        try:
+            data['member_name'] = instance.member_name.title()
+        except:
+            pass
         data['name'] = data.pop('member_name')
 
         data['user_type'] = 'SECONDARY'
@@ -540,12 +571,17 @@ class MemberSerializer(serializers.ModelSerializer):
 
         if obj.primary_user_id:
             try:
-                data['family_name'] = obj.primary_user_id.get_file_upload.first().name
+                data['family_name'] = obj.primary_user_id.get_file_upload.first().name.title()
             except:
                 data['family_name'] = ''
 
         else:
             data['family_name' ] = ''
+
+        try:
+            data['member_name'] = obj.member_name.title()
+        except:
+            pass
 
         if obj.image:
             try :
@@ -571,9 +607,14 @@ class PrimaryUserSerializer(serializers.ModelSerializer):
         request = self.context['request']
 
         if obj.get_file_upload.first():
-            data['family_name'] = obj.get_file_upload.first().name
+            data['family_name'] = obj.get_file_upload.first().name.title()
         else:
             data['family_name'] = ''
+
+        try:
+            data['name'] = obj.name.title()
+        except:
+            pass
 
         if obj.image:
             try :
