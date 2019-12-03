@@ -205,10 +205,11 @@ class OTPVeifySerializer(serializers.ModelSerializer):
 class OTPVeifySerializerUserId(serializers.ModelSerializer):
     user_type = serializers.CharField()
     user_id = serializers.CharField()
+    phone_number = serializers.CharField()
 
     class Meta:
         model = OtpVerify
-        fields = ['otp','user_type','user_id']
+        fields = ['otp','user_type','user_id','phone_number']
 
 class SecondaryaddSerializer(serializers.ModelSerializer):
 
