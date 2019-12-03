@@ -300,6 +300,7 @@ class OtpVerifyUserIdViewSet(CreateAPIView):
         otp = serializer.validated_data.get("otp", None)
         user_type = serializer.validated_data.get("user_type", None)
         user_id = serializer.validated_data.get("user_id", None)
+        phone_number = serializer.validated_data.get("phone_number", None)
 
         try:
             otp_obj = OtpModels.objects.get(otp=otp)
@@ -347,8 +348,11 @@ class OtpVerifyUserIdViewSet(CreateAPIView):
             elif user_type == "SECONDARY":
                 try:
                     member = Members.objects.get(secondary_user_id=user_id)
-                    member.phone_no_secondary_user = otp_obj.mobile_number
-                    member.save()
+                    if member.phone_no_secondary_user is None :
+                        member.phone_no_secondary_user = phone_number
+                        member.save()
+                    else:
+                        member.phone_no_secondary_user = otp_obj.mobile_number
                     user = otp_obj.mobile_number
                     data = {
                             'mobile': member.phone_no_secondary_user,
@@ -1201,6 +1205,11 @@ class SendOtpSecSave(APIView):
         mobile_number = self.request.query_params.get('mobile_number')
         user_id = self.request.query_params.get('user_id')
         try:
+            superusers = AdminProfile.objects.filter(user__is_superuser=True).first()
+            admin_phonenumber = superusers.mobile_number
+        except:
+            admin_phonenumber = ''
+        try:
             sec_user = Members.objects.get(secondary_user_id=user_id)
             user,created=User.objects.get_or_create(username=mobile_number)
             token, created = Token.objects.get_or_create(user=user)
@@ -1225,6 +1234,7 @@ class SendOtpSecSave(APIView):
 
             data = {
                 'mobile': mobile_number,
+                'admin_mobile_number' : admin_phonenumber,
                 'user_type': 'SECONDARY',
                 'name': sec_user.member_name,
                 'token':token.key,
@@ -1235,9 +1245,13 @@ class SendOtpSecSave(APIView):
                             status=HTTP_200_OK)
 
         except Members.DoesNotExist:
-            raise exceptions.NotFound(detail="User does not exist")
+            data = {
+                'admin_mobile_number' : admin_phonenumber,
+            }
+            return Response({'success': False, 'message': 'User does not exist','user_details': data},
+                            status=status=HTTP_404_NOT_FOUND)
 
-        superusers = User.objects.filter(is_superuser=True).first()
+        # superusers = User.objects.filter(is_superuser=True).first()
 
         # if user.primary_user_id:
         #     return Response({'success': False,'message': superusers.}, status=HTTP_400_BAD_REQUEST)
