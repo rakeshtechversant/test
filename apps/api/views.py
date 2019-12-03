@@ -1878,7 +1878,7 @@ class UpdateFamilyByPrimary(APIView):
     queryset = Family.objects.all()
     serializer_class = FamilyEditSerializer
     authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated, IsPrimaryUserOrReadOnly]
+    permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)
