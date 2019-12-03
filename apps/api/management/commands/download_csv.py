@@ -11,6 +11,7 @@ from pathlib import Path
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
+        import pdb;pdb.set_trace()
         path_to_download_folder = str(os.path.join(Path.home(), "Downloads"))
         with open(path_to_download_folder+'/myfiles.csv', 'w', newline="") as myfile:
             writer = csv.writer(myfile)
