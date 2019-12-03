@@ -7,7 +7,7 @@ from apps.api.views import UserNoticeList, NoticeBereavementDelete, NoticeBereav
     ChurchHistoryView, ChurchImagesView, PrayerGroupaddView, PrayerGroupMemberaddView, \
     FamilyListView, FamilyMemberList, NoticeModelViewSet, SendOtp, PrayerGroupBasedMembersView, FamilyMemberDetails, \
     ViewRequestNumberViewset, AcceptViewRequestNumberViewset, EachUserNotification, EachUserUnreadCount, PrivacyView, \
-    PhoneVersionView, GalleryImagesView, GalleryImagesCreateView
+    PhoneVersionView, GalleryImagesView, GalleryImagesCreateView, SendOtpSecSave
 
 router = DefaultRouter()
 
@@ -41,7 +41,8 @@ urlpatterns = [
     
     # Generate OTP
     url(r'^get-otp/$',SendOtp.as_view(),name='send_otp'),
-    
+    url(r'^get-otp-user-save/$',SendOtpSecSave.as_view(),name='send_otp'),
+
     url(r'^family-member-details/$',FamilyMemberDetails.as_view(),name='family_member_details'),
     url(r'^notification-status/$',EachUserNotification.as_view(),name='notification_detail'),
     url(r'^notification-unread-count/$',EachUserUnreadCount.as_view(),name='notification_unread_detail'),

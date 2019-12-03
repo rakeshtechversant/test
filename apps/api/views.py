@@ -35,7 +35,8 @@ from apps.api.serializers import ChurchHistorySerializer, ChurchImagesSerializer
     PrimaryUserSerializer, \
     UserByadminSerializer, FamilyByadminSerializer, PrimaryNotificationSerializer, SecondaryNotificationSerializer, \
     ViewRequestNumberSerializer, RequestAcceptNumberSerializer, AdminNotificationSerializer, PhoneVersionSerializer, \
-    GalleryImagesSerializer, FamilyDetailSerializer, FamilyEditSerializer, GalleryImagesCreateSerializer
+    GalleryImagesSerializer, FamilyDetailSerializer, FamilyEditSerializer, GalleryImagesCreateSerializer, \
+    OTPVeifySerializerUserId
 from apps.church.models import Members, Family, UserProfile, ChurchDetails, FileUpload, OtpModels, \
     PrayerGroup, Notification, Notice, NoticeBereavement, UnapprovedMember, NoticeReadPrimary, NoticeReadSecondary, \
     ViewRequestNumber, NoticeReadAdmin, PrivacyPolicy, PhoneVersion, Images
@@ -72,7 +73,8 @@ class UserLoginMobileView(APIView):
                         'mobile': admin_profile.mobile_number,
                         'user_type': 'ADMIN',
                         'name': 'admin',
-                        'token':token.key
+                        'token':token.key,
+                        'user_id':admin_profile.id
                     }
                     otp_number = get_random_string(length=6, allowed_chars='1234567890')
                     try:
@@ -104,7 +106,8 @@ class UserLoginMobileView(APIView):
                                 'mobile': user_profile.phone_no_primary,
                                 'user_type': 'PRIMARY',
                                 'name': user_profile.name,
-                                'token':token.key
+                                'token':token.key,
+                                'user_id':user_profile.primary_user_id
                             }
                             otp_number = get_random_string(length=6, allowed_chars='1234567890')
                             try:
@@ -136,7 +139,8 @@ class UserLoginMobileView(APIView):
                                 'mobile': user_profile.phone_no_primary,
                                 'user_type': 'PRIMARY',
                                 'name': user_profile.name,
-                                'token':token.key
+                                'token':token.key,
+                                'user_id':user_profile.primary_user_id
                             }
                             otp_number = get_random_string(length=6, allowed_chars='1234567890')
                             try:
@@ -171,7 +175,8 @@ class UserLoginMobileView(APIView):
                                 'token':token.key,
                                 'primary_user_name': user_profile.primary_user_id.name,
                                 'primary_user_id': user_profile.primary_user_id.primary_user_id,
-                                'phone_no_primary' : user_profile.primary_user_id.phone_no_primary
+                                'phone_no_primary' : user_profile.primary_user_id.phone_no_primary,
+                                'user_id':user_profile.secondary_user_id
                             }
 
                             otp_number = get_random_string(length=6, allowed_chars='1234567890')
@@ -207,8 +212,6 @@ class UserLoginMobileView(APIView):
                     return Response({
                                         'message': 'You are not in primary list,go to next section for update your number as secondary user',
                                         'success': False, 'user_details': data}, status=HTTP_400_BAD_REQUEST)
-
-
 class OtpVerifyViewSet(CreateAPIView):
     queryset = OtpModels.objects.all()
     serializer_class = OTPVeifySerializer
@@ -218,7 +221,87 @@ class OtpVerifyViewSet(CreateAPIView):
         serializer.is_valid(raise_exception=True)
         otp = serializer.validated_data.get("otp", None)
         user_type = serializer.validated_data.get("user_type", None)
-        try:  
+        try:
+            otp_obj = OtpModels.objects.get(otp=otp)
+            if (datetime.now(timezone.utc) - otp_obj.created_time).total_seconds() >= 1800:
+                otp_obj.is_expired = True
+                otp_obj.save()
+                return Response({'success': False, 'message': 'Otp Expired'}, status=HTTP_400_BAD_REQUEST)
+            if otp_obj.is_expired:
+                return Response({'success': False, 'message': 'Otp Already Used'}, status=HTTP_400_BAD_REQUEST)
+        except:
+            return Response({'success': False, 'message': 'Invalid Otp'}, status=HTTP_400_BAD_REQUEST)
+        else:
+            if otp_obj:
+                otp_obj.is_expired = True
+                otp_obj.save()
+            else:
+                pass
+
+            if user_type == "ADMIN":
+                try:
+                    admin = AdminProfile.objects.get(mobile_number=otp_obj.mobile_number)
+                    user = admin.user
+                    data = {
+                        'mobile': admin.mobile_number,
+                        'user_type': 'ADMIN',
+                        'name': 'Admin',
+                    }
+                except AdminProfile.DoesNotExist:
+                    return Response({'success': False, 'message': 'Admin account does not exist'}, status=HTTP_404_NOT_FOUND)
+
+            elif user_type == "PRIMARY":
+                try:
+                    user_profile = FileUpload.objects.get(Q(phone_no_secondary=otp_obj.mobile_number) | Q(phone_no_primary=otp_obj.mobile_number))
+                    user = otp_obj.mobile_number
+                    mobile = user_profile.phone_no_primary if user_profile.phone_no_primary else user_profile.phone_no_secondary
+                    data = {
+                        'mobile': mobile,
+                        'user_type': 'PRIMARY',
+                        'name': user_profile.name,
+                        'primary_user_id': user_profile.primary_user_id
+                    }
+                except FileUpload.DoesNotExist:
+                    return Response({'success': False, 'message': 'Primary account does not exist'}, status=HTTP_404_NOT_FOUND)
+
+            elif user_type == "SECONDARY":
+                try:
+                    member = Members.objects.get(phone_no_secondary_user=otp_obj.mobile_number)
+                    user = otp_obj.mobile_number
+                    data = {
+                            'mobile': member.phone_no_secondary_user,
+                            'user_type': 'SECONDARY',
+                            'name': member.member_name,
+                            'secondary_user_id': member.secondary_user_id,
+                            'primary_name':member.primary_user_id.name,
+                            'primary_user_id':member.primary_user_id.primary_user_id,
+                            'primary_mobile_number':member.primary_user_id.phone_no_primary
+                        }
+                except Members.DoesNotExist:
+                    return Response({'success': False, 'message': 'Secondary account does not exist'}, status=HTTP_404_NOT_FOUND)
+
+            try:
+                user = User.objects.get(username=user)
+            except User.DoesNotExist:
+                return Response({'success': False, 'message': ' User does not exist'}, status=HTTP_404_NOT_FOUND)
+
+            token, created = Token.objects.get_or_create(user=user)
+            data.update({"token": token.key})
+            return Response({'success': True, 'message': 'OTP Verified Successfully', 'user_details': data}, status=HTTP_201_CREATED)
+
+
+class OtpVerifyUserIdViewSet(CreateAPIView):
+    queryset = OtpModels.objects.all()
+    serializer_class = OTPVeifySerializerUserId
+
+    def create(self, request):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        otp = serializer.validated_data.get("otp", None)
+        user_type = serializer.validated_data.get("user_type", None)
+        user_id = serializer.validated_data.get("user_id", None)
+
+        try:
             otp_obj = OtpModels.objects.get(otp=otp)
             if (datetime.now(timezone.utc) - otp_obj.created_time).total_seconds() >= 1800:
                 otp_obj.is_expired = True
@@ -263,7 +346,9 @@ class OtpVerifyViewSet(CreateAPIView):
 
             elif user_type == "SECONDARY":
                 try:
-                    member = Members.objects.get(phone_no_secondary_user=otp_obj.mobile_number)
+                    member = Members.objects.get(secondary_user_id=user_id)
+                    member.phone_no_secondary_user = otp_obj.mobile_number
+                    member.save()
                     user = otp_obj.mobile_number
                     data = {
                             'mobile': member.phone_no_secondary_user,
@@ -1061,7 +1146,6 @@ class SendOtp(APIView):
             sec_user = Members.objects.get(secondary_user_id=user_id)
             sec_user.phone_no_secondary_user=mobile_number
             sec_user.save()
-
             user,created=User.objects.get_or_create(username=mobile_number)
             token, created = Token.objects.get_or_create(user=user)
             otp_number = get_random_string(length=6, allowed_chars='1234567890')
@@ -1102,6 +1186,56 @@ class SendOtp(APIView):
         # if user.primary_user_id:
         #     return Response({'success': False,'message': superusers.}, status=HTTP_400_BAD_REQUEST)
 
+
+class SendOtpSecSave(APIView):
+    queryset = FileUpload.objects.all()
+    serializer_class = UserRegistrationMobileSerializer
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        mobile_number = self.request.query_params.get('mobile_number')
+        user_id = self.request.query_params.get('user_id')
+        try:
+            sec_user = Members.objects.get(secondary_user_id=user_id)
+            user,created=User.objects.get_or_create(username=mobile_number)
+            token, created = Token.objects.get_or_create(user=user)
+            otp_number = get_random_string(length=6, allowed_chars='1234567890')
+            primary_mobile_number = sec_user.primary_user_id.phone_no_primary
+            try:
+                OtpModels.objects.filter(mobile_number=sec_user.primary_user_id.phone_no_primary).delete()
+            except:
+                pass
+
+            OtpModels.objects.create(mobile_number=primary_mobile_number, otp=otp_number)
+
+
+            message_body = sec_user.member_name + ' requested OTP for login: ' + otp_number
+            # client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
+            # message = client.messages.create(to='+91' + mobile_number, from_='+15036837180',body=message_body)
+
+            requests.get(
+                "http://unifiedbuzz.com/api/insms/format/json/?mobile=" + primary_mobile_number + "&text=" + message_body +
+                "&flash=0&type=1&sender=MARCHR",
+                headers={"X-API-Key": "918e0674e62e01ec16ddba9a0cea447b"})
+
+            data = {
+                'mobile': mobile_number,
+                'user_type': 'SECONDARY',
+                'name': sec_user.member_name,
+                'token':token.key,
+                'primary_user_name':sec_user.primary_user_id.name,
+                'primary_mobile_number':sec_user.primary_user_id.phone_no_primary
+            }
+            return Response({'success': True, 'message': 'OTP Sent Successfully','user_details': data},
+                            status=HTTP_200_OK)
+
+        except Members.DoesNotExist:
+            raise exceptions.NotFound(detail="User does not exist")
+
+        superusers = User.objects.filter(is_superuser=True).first()
+
+        # if user.primary_user_id:
+        #     return Response({'success': False,'message': superusers.}, status=HTTP_400_BAD_REQUEST)
 
 
 class Profile(APIView):

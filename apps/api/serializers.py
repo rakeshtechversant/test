@@ -185,11 +185,20 @@ class FileUploadSerializer(serializers.ModelSerializer):
 
 class OTPVeifySerializer(serializers.ModelSerializer):
     user_type = serializers.CharField()
+    user_id = serializers.CharField()
 
     class Meta:
         model = OtpVerify
         fields = ['otp','user_type']
 
+
+class OTPVeifySerializerUserId(serializers.ModelSerializer):
+    user_type = serializers.CharField()
+    user_id = serializers.CharField()
+
+    class Meta:
+        model = OtpVerify
+        fields = ['otp','user_type','user_id']
 
 class SecondaryaddSerializer(serializers.ModelSerializer):
 
