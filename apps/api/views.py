@@ -1229,7 +1229,8 @@ class SendOtpSecSave(APIView):
                 'name': sec_user.member_name,
                 'token':token.key,
                 'primary_user_name':sec_user.primary_user_id.name,
-                'primary_mobile_number':sec_user.primary_user_id.phone_no_primary
+                'primary_mobile_number':sec_user.primary_user_id.phone_no_primary,
+                'user_id':user_id,
             }
             return Response({'success': True, 'message': 'OTP Sent Successfully','user_details': data},
                             status=HTTP_200_OK)
