@@ -1249,7 +1249,7 @@ class SendOtpSecSave(APIView):
                 'admin_mobile_number' : admin_phonenumber,
             }
             return Response({'success': False, 'message': 'User does not exist','user_details': data},
-                            status=status=HTTP_404_NOT_FOUND)
+                            status=HTTP_404_NOT_FOUND)
 
         # superusers = User.objects.filter(is_superuser=True).first()
 
