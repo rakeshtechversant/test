@@ -12,16 +12,18 @@ from pathlib import Path
 class Command(BaseCommand):
     def handle(self, *args, **options):
         path_to_download_folder = str(os.path.join(str(Path.home()), "Downloads"))
-        with open(path_to_download_folder+'/myfiles.csv', 'w', newline="") as myfile:
+        with open('apps/api/csv_tables/download.csv', 'w', newline="") as myfile:
             writer = csv.writer(myfile)
             primary_qs = FileUpload.objects.all()
             #Header
-            writer.writerow(['prayer group','Name','Family_name','Family_About','Family_Image',\
-                'Members','Phone_no_primary','Phone_no_secondary','Address','Relation','User_Image',\
-                'occupation','About_User'
+            writer.writerow(['SL NO','PRAYER GROUP','NAME','FAMILY NAME','FAMILY ABOUT','FAMILY IMAGE',\
+                'MEMBERS','PHONE NO PRIMARY','PHONE NO SECONDARY','EMAIL','ADDRESS','RELATION','USER IMAGE',\
+                'OCCUPATION','ABOUT USER','DOB','DOM','BLOOD GROUP','ID'
                 # ,'Martial_Status','Memory_Date'
                 ])
+            count = 1
             for user in primary_qs:
+                
                 output1 = []
                 output2 = []
                 try:
@@ -37,21 +39,24 @@ class Command(BaseCommand):
                     else:
                         img_fam = ''
                     writer.writerows([''])
-                    output1.append([prayer_obj.name,user.name,family_obj.name,family_obj.about,img_fam,\
-                        '',user.phone_no_primary,user.phone_no_primary,user.address,user.relation,img,\
-                        user.occupation,user.about])
+                    output1.append([count,prayer_obj.name,user.name,family_obj.name,family_obj.about,img_fam,\
+                        '',user.phone_no_primary,user.phone_no_secondary,user.email,user.address,user.relation,img,\
+                        user.occupation,user.about,user.dob,user.dom,user.blood_group,user.primary_user_id])
                     writer.writerows(output1)
                     print(output1)
-
-                    mem_obj=Members.objects.filter(primary_user_id=user_id)
-                    for mem in mem_obj:
-                        if mem.image :
-                            img_mem=mem.image.url
-                        else:
-                            img_mem = ''
-                        output2.append(['','','','','',mem.member_name,mem.phone_no_secondary_user,mem.phone_no_secondary_user_secondary,'',\
-                        	mem.relation,img_mem,mem.occupation,mem.about])
-                    writer.writerows(output2)
+                    count = count + 1
+                    try:
+                        mem_obj=Members.objects.filter(primary_user_id=user_id)
+                        for mem in mem_obj:
+                            if mem.image :
+                                img_mem=mem.image.url
+                            else:
+                                img_mem = ''
+                            output2.append(['','','','','','',mem.member_name,mem.phone_no_secondary_user,mem.phone_no_secondary_user_secondary,mem.email,'',\
+                                mem.relation,img_mem,mem.occupation,mem.about,mem.dob,mem.dom,mem.blood_group,mem.secondary_user_id])
+                        writer.writerows(output2)
+                    except:
+                        pass
 
                 except:
                     pass
