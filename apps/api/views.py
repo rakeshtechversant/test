@@ -1514,12 +1514,18 @@ class UnapprovedMemberView(mixins.CreateModelMixin,
     @action(methods=['get'], detail=True, url_path='approve-member',
         permission_classes=[IsAuthenticated, AdminPermission])
     def approve_member(self, request, pk=None):
+        # import pdb;pdb.set_trace()
         member = self.get_object()
 
         data = UnapprovedMemberSerializer(member).data
         data.pop('secondary_user_id')
         data.pop('rejected')
-
+        try:
+            img_name = data.get('image').split('/')[-1]
+            img_path = 'members/'+img_name
+            data['image'] = img_path
+        except:
+            pass
         edit_user = data.pop('edit_user')
 
         if edit_user:
