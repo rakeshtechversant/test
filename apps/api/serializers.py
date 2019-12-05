@@ -387,7 +387,6 @@ class MemberProfileSerializer(serializers.ModelSerializer):
         model = Members
         fields = '__all__'
         read_only_fields = ['phone_no_secondary_user']
-
     def to_representation(self, instance):
         data = super().to_representation(instance)
 
@@ -405,6 +404,7 @@ class MemberProfileSerializer(serializers.ModelSerializer):
         except:
             pass
         return data
+
 
 
 class UserDetailsRetrieveSerializer(serializers.ModelSerializer):
@@ -486,6 +486,7 @@ class MembersDetailsSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
+        request = self.context['request']
         try:
             data['member_name'] = instance.member_name.title()
         except:
@@ -493,6 +494,11 @@ class MembersDetailsSerializer(serializers.ModelSerializer):
         data['name'] = data.pop('member_name')
 
         data['user_type'] = 'SECONDARY'
+        try :
+            data['image'] = request.build_absolute_uri(instance.image.url)
+        except:
+            data['image'] = None
+
 
         return data
 
@@ -586,7 +592,7 @@ class MemberSerializer(serializers.ModelSerializer):
 
         if obj.image:
             try :
-                data['image'] = request.build_absolute_uri(instance.image.url)
+                data['image'] = request.build_absolute_uri(obj.image.url)
             except:
                 data['image'] = None
 
