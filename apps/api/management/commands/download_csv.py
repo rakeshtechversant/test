@@ -13,12 +13,12 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         path_to_download_folder = str(os.path.join(str(Path.home()), "Downloads"))
         with open('apps/api/csv_tables/download.csv', 'w', newline="") as myfile:
-            writer = csv.writer(myfile)
+            writer = csv.writer(myfile, quoting=csv.QUOTE_MINIMAL)
             primary_qs = FileUpload.objects.all()
             #Header
             writer.writerow(['SL NO','PRAYER GROUP','NAME','FAMILY NAME','FAMILY ABOUT','FAMILY IMAGE',\
                 'MEMBERS','PHONE NO PRIMARY','PHONE NO SECONDARY','EMAIL','ADDRESS','RELATION','USER IMAGE',\
-                'OCCUPATION','ABOUT USER','DOB','DOM','BLOOD GROUP','ID'
+                'OCCUPATION','ABOUT USER','DOB','DOM','BLOOD GROUP','ID_PRIMARY','ID_SECONDARY'
                 # ,'Martial_Status','Memory_Date'
                 ])
             count = 1
@@ -41,7 +41,7 @@ class Command(BaseCommand):
                     writer.writerows([''])
                     output1.append([count,prayer_obj.name,user.name,family_obj.name,family_obj.about,img_fam,\
                         '',user.phone_no_primary,user.phone_no_secondary,user.email,user.address,user.relation,img,\
-                        user.occupation,user.about,user.dob,user.dom,user.blood_group,user.primary_user_id])
+                        user.occupation,user.about,user.dob,user.dom,user.blood_group,user.primary_user_id,''])
                     writer.writerows(output1)
                     print(output1)
                     count = count + 1
@@ -53,7 +53,7 @@ class Command(BaseCommand):
                             else:
                                 img_mem = ''
                             output2.append(['','','','','','',mem.member_name,mem.phone_no_secondary_user,mem.phone_no_secondary_user_secondary,mem.email,'',\
-                                mem.relation,img_mem,mem.occupation,mem.about,mem.dob,mem.dom,mem.blood_group,mem.secondary_user_id])
+                                mem.relation,img_mem,mem.occupation,mem.about,mem.dob,mem.dom,mem.blood_group,'',mem.secondary_user_id])
                         writer.writerows(output2)
                     except:
                         pass
