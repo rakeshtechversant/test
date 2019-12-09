@@ -434,6 +434,15 @@ class UserDetailsRetrieveSerializer(serializers.ModelSerializer):
             data['name'] = instance.name.title()
         except:
             pass
+        try :
+            if instance.marrige_date :
+                data['dom'] = instance.marrige_date
+            elif instance.dom:
+                data['dom'] = instance.dom
+            else:
+                pass
+        except:
+            data['dom'] = None
         return data
 
     # def get_family_name(self, obj):
@@ -498,6 +507,16 @@ class MembersDetailsSerializer(serializers.ModelSerializer):
             data['image'] = request.build_absolute_uri(instance.image.url)
         except:
             data['image'] = None
+
+        try :
+            if instance.marrige_date :
+                data['dom'] = instance.marrige_date
+            elif instance.dom:
+                data['dom'] = instance.dom
+            else:
+                pass
+        except:
+            data['dom'] = None
 
 
         return data
