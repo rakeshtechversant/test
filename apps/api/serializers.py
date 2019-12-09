@@ -413,7 +413,7 @@ class UserDetailsRetrieveSerializer(serializers.ModelSerializer):
     # family_description = serializers.SerializerMethodField()
     class Meta:
         model = FileUpload
-        fields = ['primary_user_id','image','name','address','phone_no_primary','phone_no_secondary','dob','dom','blood_group','email','in_memory','in_memory_date','occupation','about']
+        fields = ['primary_user_id','image','name','address','phone_no_primary','phone_no_secondary','dob','dom','blood_group','email','in_memory','in_memory_date','occupation','about','relation']
 
     def get_in_memory_date(self, obj):
         date = obj.in_memory_date
@@ -554,9 +554,7 @@ class UnapprovedMemberSerializer(serializers.ModelSerializer):
         return instance
 
     def to_representation(self, obj):
-
         data = super().to_representation(obj)
-
         data['rejected'] = obj.rejected
         data['primary_user_id'] = obj.primary_user_id.primary_user_id
         data['edit_user'] = obj.edit_user

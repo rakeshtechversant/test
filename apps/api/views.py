@@ -723,7 +723,8 @@ class UserDetailView(APIView):
                        'marrige_date':user_details.marrige_date,
                        'in_memory':user_details.in_memory,
                        'in_memory_date':user_details.in_memory_date,
-                       'image':image
+                       'image':image,
+                       'relation':user_details.relation
                     }
                     return Response({'success': True,'message':'Profile found successfully','user_details':data}, status=HTTP_200_OK)
                 except:
