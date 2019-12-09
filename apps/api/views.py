@@ -667,11 +667,20 @@ class UserDetailView(APIView):
                     image=request.build_absolute_uri(user_details.image.url)
                 except:
                     image='null'
+                try :
+                    if user_details.marrige_date :
+                        date_om = user_details.marrige_date
+                    elif user_details.dom:
+                        date_om = user_details.dom
+                    else:
+                        pass
+                except:
+                    date_om = None
                 data={
                     'name':user_details.member_name,
                     'relation':user_details.relation,
                     'dob':user_details.dob,
-                    'dom':user_details.dom,
+                    'dom':date_om,
                     # 'image':user_details.image,
                     'is_accepted':is_accepted,
                     'phone_no_secondary_user':user_details.phone_no_secondary_user,
@@ -683,7 +692,7 @@ class UserDetailView(APIView):
                     'occupation':user_details.occupation,
                     'about':user_details.about,
                     'marital_status':user_details.marital_status,
-                    'marrige_date':user_details.marrige_date,
+                    'marrige_date':date_om,
                     'in_memory':user_details.in_memory,
                     'in_memory_date':user_details.in_memory_date,
                     'image':image
@@ -706,6 +715,15 @@ class UserDetailView(APIView):
                         image=request.build_absolute_uri(user_details.image.url)
                     except:
                         image='null'
+                    try :
+                        if user_details.marrige_date :
+                            date_om = user_details.marrige_date
+                        elif user_details.dom:
+                            date_om = user_details.dom
+                        else:
+                            pass
+                    except:
+                        date_om = None
                     data={
                        'member_name':user_details.primary_user_id,
                        'name':user_details.name,
@@ -714,13 +732,13 @@ class UserDetailView(APIView):
                        'phone_no_primary':user_details.phone_no_primary,
                        'phone_no_secondary':user_details.phone_no_secondary,
                        'dob':user_details.dob,
-                       'dom':user_details.dom,
+                       'dom':date_om,
                        'blood_group':user_details.blood_group,
                        'email':user_details.email,
                        'occupation':user_details.occupation,
                        'about':user_details.about,
                        'marital_status':user_details.marital_status,
-                       'marrige_date':user_details.marrige_date,
+                       'marrige_date':date_om,
                        'in_memory':user_details.in_memory,
                        'in_memory_date':user_details.in_memory_date,
                        'image':image,
