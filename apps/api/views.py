@@ -514,8 +514,8 @@ class UserListView(ListAPIView):
             'request': request
         }
         
-        queryset_primary = PrimaryUserSerializer(FileUpload.objects.all(), many=True, context=context).data
-        queryset_secondary = MemberSerializer(Members.objects.all(), many=True, context=context).data
+        queryset_primary = PrimaryUserSerializer(FileUpload.objects.all().order_by('name'), many=True, context=context).data
+        queryset_secondary = MemberSerializer(Members.objects.all().order_by('member_name'), many=True, context=context).data
 
         response = []
         for primary in queryset_primary:
@@ -579,7 +579,7 @@ class UserListView(ListAPIView):
 
 
 class FamilyListView(ListAPIView):
-    queryset = Family.objects.all()
+    queryset = Family.objects.all().order_by('name')
     serializer_class = FamilyListSerializer
     permission_classes = [AllowAny]
 
