@@ -36,7 +36,7 @@ from apps.api.serializers import ChurchHistorySerializer, ChurchImagesSerializer
     UserByadminSerializer, FamilyByadminSerializer, PrimaryNotificationSerializer, SecondaryNotificationSerializer, \
     ViewRequestNumberSerializer, RequestAcceptNumberSerializer, AdminNotificationSerializer, PhoneVersionSerializer, \
     GalleryImagesSerializer, FamilyDetailSerializer, FamilyEditSerializer, GalleryImagesCreateSerializer, \
-    OTPVeifySerializerUserId
+    OTPVeifySerializerUserId, CommonUserSerializer
 from apps.church.models import Members, Family, UserProfile, ChurchDetails, FileUpload, OtpModels, \
     PrayerGroup, Notification, Notice, NoticeBereavement, UnapprovedMember, NoticeReadPrimary, NoticeReadSecondary, \
     ViewRequestNumber, NoticeReadAdmin, PrivacyPolicy, PhoneVersion, Images
@@ -52,6 +52,8 @@ from django.utils import timezone as tz
 
 from django.contrib.auth.models import User
 from django.views.generic import TemplateView
+from rest_framework.pagination import PageNumberPagination
+from collections import OrderedDict 
 
 class UserLoginMobileView(APIView):
     queryset = UserProfile.objects.all()
@@ -502,11 +504,16 @@ class UserLoginView(APIView):
 #                 return Response({'message': 'Invalid credentials','success':False},status=HTTP_400_BAD_REQUEST)
 #         else:
 #             return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+class StandardResultsSetPagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = 'page_size'
+    max_page_size = 1000
 
-class UserListView(ListAPIView):
+class UserListCommonView(ListAPIView):
     queryset = FileUpload.objects.all()
     serializer_class = UserListSerializer
     permission_classes = [AllowAny]
+    pagination_class = StandardResultsSetPagination
 
     def list(self, request, *args, **kwargs):
 
@@ -518,9 +525,10 @@ class UserListView(ListAPIView):
         queryset_secondary = MemberSerializer(Members.objects.all().order_by('member_name'), many=True, context=context).data
 
         response = []
-        for primary in queryset_primary:
 
-            new_data ={
+        for primary in queryset_primary:
+            # name_pri=primary['primary_user_id']
+            new_data={ 
                 'user_id' : primary['primary_user_id'],
                 'name': primary['name'],
                 'image': primary['image'],
@@ -537,17 +545,20 @@ class UserListView(ListAPIView):
                 'in_memory': primary['in_memory'],
                 'in_memory_date': primary['in_memory_date'],
                 'family_name': primary['family_name'],
-                'user_type': primary['user_type']
+                'user_type': primary['user_type'],
+                'relation' : primary['relation'],
+                'primary_user_id': primary['primary_user_id']
             }
 
             response.append(new_data)
 
         for secondary in queryset_secondary:
-
-            new_data ={
+            # name_sec=secondary['secondary_user_id']
+            new_data={
                 'user_id' : secondary['secondary_user_id'],
                 'name': secondary['member_name'],
                 'image': secondary['image'],
+                'address' : '',
                 'phone_no_primary': secondary['phone_no_secondary_user'],
                 'phone_no_secondary': secondary['phone_no_secondary_user_secondary'],
                 'dob': secondary['dob'],
@@ -564,14 +575,20 @@ class UserListView(ListAPIView):
                 'relation': secondary['relation'],
                 'primary_user_id': secondary['primary_user_id']
             }
-
+        
             response.append(new_data)
+        response_query = sorted(response, key = lambda i: i['name']) 
+        responses = self.paginate_queryset(response_query)
+        if responses is not None:
+            serializer = CommonUserSerializer(responses,many=True)
+            return self.get_paginated_response(serializer.data)
 
-
+        serializer = CommonUserSerializer(response,many=True)
+        output = serializer.data
         data={
             'code': 200,
             'status': "OK",
-            'response': response
+            'response': output
 
             }
 
@@ -2867,4 +2884,78 @@ class GalleryImagesCreateView(ModelViewSet):
             'status': "OK",
         }
         data['response'] = serializer.data
+        return Response(data)
+
+class UserListView(ListAPIView):
+    queryset = FileUpload.objects.all()
+    serializer_class = UserListSerializer
+    permission_classes = [AllowAny]
+
+    def list(self, request, *args, **kwargs):
+
+        context ={
+            'request': request
+        }
+        
+        queryset_primary = PrimaryUserSerializer(FileUpload.objects.all().order_by('name'), many=True, context=context).data
+        queryset_secondary = MemberSerializer(Members.objects.all().order_by('member_name'), many=True, context=context).data
+
+        response = []
+        for primary in queryset_primary:
+
+            new_data ={
+                'user_id' : primary['primary_user_id'],
+                'name': primary['name'],
+                'image': primary['image'],
+                'address': primary['address'],
+                'phone_no_primary': primary['phone_no_primary'],
+                'phone_no_secondary': primary['phone_no_secondary'],
+                'dob': primary['dob'],
+                'dom': primary['dom'],
+                'blood_group': primary['blood_group'],
+                'email': primary['email'],
+                'occupation': primary['occupation'],
+                'about': primary['about'],
+                'marital_status': primary['marital_status'],
+                'in_memory': primary['in_memory'],
+                'in_memory_date': primary['in_memory_date'],
+                'family_name': primary['family_name'],
+                'user_type': primary['user_type']
+            }
+
+            response.append(new_data)
+
+        for secondary in queryset_secondary:
+
+            new_data ={
+                'user_id' : secondary['secondary_user_id'],
+                'name': secondary['member_name'],
+                'image': secondary['image'],
+                'phone_no_primary': secondary['phone_no_secondary_user'],
+                'phone_no_secondary': secondary['phone_no_secondary_user_secondary'],
+                'dob': secondary['dob'],
+                'dom': secondary['dom'],
+                'blood_group': secondary['blood_group'],
+                'email': secondary['email'],
+                'occupation': secondary['occupation'],
+                'about': secondary['about'],
+                'marital_status': secondary['marital_status'],
+                'in_memory': secondary['in_memory'],
+                'in_memory_date': secondary['in_memory_date'],
+                'family_name': secondary['family_name'],
+                'user_type': secondary['user_type'],
+                'relation': secondary['relation'],
+                'primary_user_id': secondary['primary_user_id']
+            }
+
+            response.append(new_data)
+
+
+        data={
+            'code': 200,
+            'status': "OK",
+            'response': response
+
+            }
+
         return Response(data)

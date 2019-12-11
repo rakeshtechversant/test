@@ -737,3 +737,26 @@ class GalleryImagesCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model= Images
         fields = ['image','category','title','date']
+
+
+
+class CommonUserSerializer(serializers.Serializer):
+    user_id = serializers.IntegerField()
+    name=serializers.CharField()
+    image=serializers.CharField()
+    address=serializers.CharField()
+    phone_no_primary=serializers.CharField()
+    phone_no_secondary=serializers.CharField()
+    dob=serializers.CharField()
+    dom=serializers.CharField()
+    blood_group=serializers.CharField()
+    email=serializers.CharField()
+    occupation=serializers.CharField()
+    about=serializers.CharField()
+    marital_status=serializers.CharField()
+    in_memory=serializers.CharField()
+    in_memory_date=serializers.CharField()
+    family_name=serializers.CharField()
+    user_type=serializers.CharField()
+    relation=serializers.CharField()
+    primary_user_id=serializers.IntegerField()
