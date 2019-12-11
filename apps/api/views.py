@@ -3068,31 +3068,42 @@ class PrayerGroupBasedMembersPaginatedView(ListAPIView):
 
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
-        page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
+        # page = self.paginate_queryset(queryset)
+        # if page is not None:
+        #     serializer = self.get_serializer(page, many=True)
 
-            data = {
-                'code': 200,
-                'status': "OK",
-            }
+        #     data = {
+        #         'code': 200,
+        #         'status': "OK",
+        #     }
 
-            page_nated_data = self.get_paginated_response(serializer.data).data
-            data.update(page_nated_data)
-            response = data.pop('results')
-            # return Response(data)
-        # serializer = self.get_serializer(queryset, many=True)
+        #     page_nated_data = self.get_paginated_response(serializer.data).data
+        #     data.update(page_nated_data)
+        #      response = data.pop('results')
+        #     # return Response(data)
+        serializer = self.get_serializer(queryset, many=True)
 
         # data = {
         #     'code': 200,
         #     'status': "OK",
         #     'response': serializer.data
         # }
-
+        response = serializer.data
         for primary_user in self.primary_user.all():
             primary_user_id = UserRetrieveSerializer(primary_user,context={'request':request}).data
 
             response.insert(0, primary_user_id)
+
         response_query = sorted(response, key = lambda i: i['name']) 
+        page = self.paginate_queryset(response_query)
+        if page is not None:
+            # serializer = CommonUserSerializer(responses,many=True)
+            data = {
+                'code': 200,
+                'status': "OK",
+            }
+            page_nated_data = self.get_paginated_response(page).data
+            data.update(page_nated_data)
         data['response'] = response_query
+        data['response'] = data.pop('results')
         return Response(data)
