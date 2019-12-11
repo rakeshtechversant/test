@@ -910,6 +910,7 @@ class PrayerGroupBasedFamilyView(ListAPIView):
     queryset = Family.objects.all()
     serializer_class = FamilyListSerializer
     permission_classes = [AllowAny]
+    # pagination_class = StandardResultsSetPagination
 
     def get_queryset(self, *args, **kwargs):
         prayer_id = self.kwargs['pk']
@@ -958,6 +959,7 @@ class PrayerGroupBasedMembersView(ListAPIView):
     queryset = PrayerGroup.objects.all()
     serializer_class = MembersSerializer
     permission_classes = [AllowAny]
+    # pagination_class = StandardResultsSetPagination
 
     def get_queryset(self, *args, **kwargs):
         prayer_id = self.kwargs['pk']
@@ -2996,4 +2998,101 @@ class FamilyListPaginatedView(ListAPIView):
             'response': serializer.data
         }
 
+        return Response(data)
+
+class PrayerGroupBasedFamilyPaginatedView(ListAPIView):
+    queryset = Family.objects.all()
+    serializer_class = FamilyListSerializer
+    permission_classes = [AllowAny]
+    pagination_class = StandardResultsSetPagination
+
+    def get_queryset(self, *args, **kwargs):
+        prayer_id = self.kwargs['pk']
+        
+        try:
+            prayer_group = PrayerGroup.objects.get(id=prayer_id)
+        except PrayerGroup.DoesNotExist:
+            raise exceptions.NotFound(detail="Prayer group does not exist")
+        family_list1 = prayer_group.family.all().order_by('name')
+        family_list1 = family_list1.filter(primary_user_id=None)
+        family_list2 = Family.objects.filter(primary_user_id__in=prayer_group.primary_user_id.all())
+        family_list = family_list1 | family_list2
+        return family_list
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+
+            data = {
+                'code': 200,
+                'status': "OK",
+            }
+
+            page_nated_data = self.get_paginated_response(serializer.data).data
+            data.update(page_nated_data)
+            data['response'] = data.pop('results')
+
+            return Response(data)
+
+
+        serializer = self.get_serializer(queryset, many=True)
+
+        data = {
+            'code': 200,
+            'status': "OK",
+            'response': serializer.data
+        }
+
+        return Response(data)
+
+
+class PrayerGroupBasedMembersPaginatedView(ListAPIView):
+    queryset = PrayerGroup.objects.all()
+    serializer_class = MembersSerializer
+    permission_classes = [AllowAny]
+    pagination_class = StandardResultsSetPagination
+    
+    def get_queryset(self, *args, **kwargs):
+        prayer_id = self.kwargs['pk']
+
+        try:
+            prayer_group = PrayerGroup.objects.get(id=prayer_id)
+        except PrayerGroup.DoesNotExist:
+            raise exceptions.NotFound(detail="Prayer group does not exist")
+        self.primary_user = prayer_group.primary_user_id
+        member_list = Members.objects.filter(primary_user_id__in=prayer_group.primary_user_id.all()).order_by('member_name')
+        return member_list
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+
+            data = {
+                'code': 200,
+                'status': "OK",
+            }
+
+            page_nated_data = self.get_paginated_response(serializer.data).data
+            data.update(page_nated_data)
+            response = data.pop('results')
+            # return Response(data)
+        # serializer = self.get_serializer(queryset, many=True)
+
+        # data = {
+        #     'code': 200,
+        #     'status': "OK",
+        #     'response': serializer.data
+        # }
+
+        for primary_user in self.primary_user.all():
+            primary_user_id = UserRetrieveSerializer(primary_user,context={'request':request}).data
+
+            response.insert(0, primary_user_id)
+        response_query = sorted(response, key = lambda i: i['name']) 
+        data['response'] = response_query
         return Response(data)
