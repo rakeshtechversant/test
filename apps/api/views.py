@@ -581,13 +581,17 @@ class UserListCommonView(ListAPIView):
         responses = self.paginate_queryset(response_query)
         if responses is not None:
             serializer = CommonUserSerializer(responses,many=True)
-            return self.get_paginated_response(serializer.data)
+            data = {
+                'code': 200,
+                'status': "OK",
+            }
+            page_nated_data = self.get_paginated_response(serializer.data).data
+            data.update(page_nated_data)
+            return Response(data)
 
         serializer = CommonUserSerializer(response,many=True)
         output = serializer.data
         data={
-            'code': 200,
-            'status': "OK",
             'response': output
 
             }
@@ -2957,5 +2961,39 @@ class UserListView(ListAPIView):
             'response': response
 
             }
+
+        return Response(data)
+
+class FamilyListPaginatedView(ListAPIView):
+    queryset = Family.objects.all().order_by('name')
+    serializer_class = FamilyListSerializer
+    permission_classes = [AllowAny]
+    pagination_class = StandardResultsSetPagination
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+
+            data = {
+                'code': 200,
+                'status': "OK",
+            }
+
+            page_nated_data = self.get_paginated_response(serializer.data).data
+            data.update(page_nated_data)
+            data['response'] = data.pop('results')
+
+            return Response(data)
+
+
+        serializer = self.get_serializer(queryset, many=True)
+
+        data = {
+            'code': 200,
+            'status': "OK",
+            'response': serializer.data
+        }
 
         return Response(data)

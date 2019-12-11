@@ -7,7 +7,7 @@ from apps.api.views import UserNoticeList, NoticeBereavementDelete, NoticeBereav
     ChurchHistoryView, ChurchImagesView, PrayerGroupaddView, PrayerGroupMemberaddView, \
     FamilyListView, FamilyMemberList, NoticeModelViewSet, SendOtp, PrayerGroupBasedMembersView, FamilyMemberDetails, \
     ViewRequestNumberViewset, AcceptViewRequestNumberViewset, EachUserNotification, EachUserUnreadCount, PrivacyView, \
-    PhoneVersionView, GalleryImagesView, GalleryImagesCreateView, SendOtpSecSave
+    PhoneVersionView, GalleryImagesView, GalleryImagesCreateView, SendOtpSecSave, FamilyListPaginatedView
 
 router = DefaultRouter()
 
@@ -29,6 +29,7 @@ urlpatterns = [
     path('notice-lists/',UserNoticeList.as_view(),name='notice_lists'),
     # Family APIs
     path('family-lists/',FamilyListView.as_view(),name='family_lists'),
+    path('family-lists_paginated/',FamilyListPaginatedView.as_view(),name='family_lists_paginated'),
     url(r'^family-member-list/(?P<pk>\d+)/$',FamilyMemberList.as_view(),name='family_member_list'),
     url(r'^prayer-group-based-family-group-list/(?P<pk>\d+)/$',PrayerGroupBasedFamilyView.as_view(),name='prayer_group_list'),
     url(r'^prayer-group-based-member-list/(?P<pk>\d+)/$',PrayerGroupBasedMembersView.as_view(),name='prayer_group_member_list'),
