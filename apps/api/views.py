@@ -661,7 +661,8 @@ class UserDetailView(APIView):
         request_to = None
         is_accepted = False
         member = None
-
+        date_om = None
+        
         user_type=request.GET['user_type']
         if not user_type:
             return Response({'success': False,'message':'Please provide user type'}, status=HTTP_400_BAD_REQUEST)
