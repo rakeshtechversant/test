@@ -387,7 +387,6 @@ class MemberProfileSerializer(serializers.ModelSerializer):
         model = Members
         fields = '__all__'
         read_only_fields = ['phone_no_secondary_user']
-
     def to_representation(self, instance):
         data = super().to_representation(instance)
 
@@ -407,13 +406,14 @@ class MemberProfileSerializer(serializers.ModelSerializer):
         return data
 
 
+
 class UserDetailsRetrieveSerializer(serializers.ModelSerializer):
     in_memory_date = serializers.SerializerMethodField()
     # family_name = serializers.SerializerMethodField()
     # family_description = serializers.SerializerMethodField()
     class Meta:
         model = FileUpload
-        fields = ['primary_user_id','image','name','address','phone_no_primary','phone_no_secondary','dob','dom','blood_group','email','in_memory','in_memory_date','occupation','about']
+        fields = ['primary_user_id','image','name','address','phone_no_primary','phone_no_secondary','dob','dom','blood_group','email','in_memory','in_memory_date','occupation','about','relation']
 
     def get_in_memory_date(self, obj):
         date = obj.in_memory_date
@@ -434,6 +434,15 @@ class UserDetailsRetrieveSerializer(serializers.ModelSerializer):
             data['name'] = instance.name.title()
         except:
             pass
+        try :
+            if instance.marrige_date :
+                data['dom'] = instance.marrige_date
+            elif instance.dom:
+                data['dom'] = instance.dom
+            else:
+                pass
+        except:
+            data['dom'] = None
         return data
 
     # def get_family_name(self, obj):
@@ -486,6 +495,7 @@ class MembersDetailsSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
+        request = self.context['request']
         try:
             data['member_name'] = instance.member_name.title()
         except:
@@ -493,6 +503,21 @@ class MembersDetailsSerializer(serializers.ModelSerializer):
         data['name'] = data.pop('member_name')
 
         data['user_type'] = 'SECONDARY'
+        try :
+            data['image'] = request.build_absolute_uri(instance.image.url)
+        except:
+            data['image'] = None
+
+        try :
+            if instance.marrige_date :
+                data['dom'] = instance.marrige_date
+            elif instance.dom:
+                data['dom'] = instance.dom
+            else:
+                pass
+        except:
+            data['dom'] = None
+
 
         return data
 
@@ -548,9 +573,7 @@ class UnapprovedMemberSerializer(serializers.ModelSerializer):
         return instance
 
     def to_representation(self, obj):
-
         data = super().to_representation(obj)
-
         data['rejected'] = obj.rejected
         data['primary_user_id'] = obj.primary_user_id.primary_user_id
         data['edit_user'] = obj.edit_user
@@ -586,7 +609,7 @@ class MemberSerializer(serializers.ModelSerializer):
 
         if obj.image:
             try :
-                data['image'] = request.build_absolute_uri(instance.image.url)
+                data['image'] = request.build_absolute_uri(obj.image.url)
             except:
                 data['image'] = None
 
