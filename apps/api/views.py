@@ -53,7 +53,7 @@ from django.utils import timezone as tz
 from django.contrib.auth.models import User
 from django.views.generic import TemplateView
 from rest_framework.pagination import PageNumberPagination
-from collections import OrderedDict 
+from collections import OrderedDict
 
 class UserLoginMobileView(APIView):
     queryset = UserProfile.objects.all()
@@ -524,8 +524,8 @@ class UserListCommonView(ListAPIView):
         try:
             term = request.GET['term']
             if term:
-                queryset_primary = PrimaryUserSerializer(FileUpload.objects.filter(name__startswith=term).order_by('name'), many=True, context=context).data
-                queryset_secondary = MemberSerializer(Members.objects.filter(member_name__startswith=term).order_by('member_name'), many=True, context=context).data
+                queryset_primary = PrimaryUserSerializer(FileUpload.objects.filter(name__icontains=term).order_by('name'), many=True, context=context).data
+                queryset_secondary = MemberSerializer(Members.objects.filter(member_name__icontains=term).order_by('member_name'), many=True, context=context).data
             else:
                 queryset_primary = PrimaryUserSerializer(FileUpload.objects.all().order_by('name'), many=True, context=context).data
                 queryset_secondary = MemberSerializer(Members.objects.all().order_by('member_name'), many=True, context=context).data
@@ -2983,7 +2983,14 @@ class FamilyListPaginatedView(ListAPIView):
     permission_classes = [AllowAny]
     pagination_class = StandardResultsSetPagination
     def list(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset())
+        try:
+            term = request.GET['term']
+            if term:
+                queryset = Family.objects.filter(name__icontains=term).order_by('name')
+            else:
+                queryset = self.filter_queryset(self.get_queryset())
+        except:
+            queryset = self.filter_queryset(self.get_queryset())
 
         page = self.paginate_queryset(queryset)
         if page is not None:
@@ -3032,7 +3039,14 @@ class PrayerGroupBasedFamilyPaginatedView(ListAPIView):
 
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
-
+        try:
+            term = request.GET['term']
+            if term:
+                queryset = queryset.filter(name__icontains=term).order_by('name')
+            else:
+                queryset = self.filter_queryset(self.get_queryset())
+        except:
+            queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.get_serializer(page, many=True)
@@ -3079,6 +3093,17 @@ class PrayerGroupBasedMembersPaginatedView(ListAPIView):
 
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
+        try:
+            term = request.GET['term']
+            if term:
+                queryset = queryset.filter(member_name__icontains=term).order_by('member_name')
+                queryset_primary = self.primary_user.filter(name__icontains=term)
+            else:
+                queryset = self.filter_queryset(self.get_queryset())
+                queryset_primary = self.primary_user.all()
+        except:
+            queryset = self.filter_queryset(self.get_queryset())
+            queryset_primary = self.primary_user.all()
         # page = self.paginate_queryset(queryset)
         # if page is not None:
         #     serializer = self.get_serializer(page, many=True)
@@ -3100,7 +3125,7 @@ class PrayerGroupBasedMembersPaginatedView(ListAPIView):
         #     'response': serializer.data
         # }
         response = serializer.data
-        for primary_user in self.primary_user.all():
+        for primary_user in queryset_primary:
             primary_user_id = UserRetrieveSerializer(primary_user,context={'request':request}).data
 
             response.insert(0, primary_user_id)
