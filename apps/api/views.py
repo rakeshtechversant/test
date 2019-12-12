@@ -524,8 +524,8 @@ class UserListCommonView(ListAPIView):
         try:
             term = request.GET['term']
             if term:
-                queryset_primary = PrimaryUserSerializer(FileUpload.objects.filter(name__icontains=term).order_by('name'), many=True, context=context).data
-                queryset_secondary = MemberSerializer(Members.objects.filter(member_name__icontains=term).order_by('member_name'), many=True, context=context).data
+                queryset_primary = PrimaryUserSerializer(FileUpload.objects.filter(Q(name__icontains=term)|Q(occupation__icontains=term)).order_by('name'), many=True, context=context).data
+                queryset_secondary = MemberSerializer(Members.objects.filter(Q(member_name__icontains=term)|Q(occupation__icontains=term)).order_by('member_name'), many=True, context=context).data
             else:
                 queryset_primary = PrimaryUserSerializer(FileUpload.objects.all().order_by('name'), many=True, context=context).data
                 queryset_secondary = MemberSerializer(Members.objects.all().order_by('member_name'), many=True, context=context).data
@@ -3096,8 +3096,8 @@ class PrayerGroupBasedMembersPaginatedView(ListAPIView):
         try:
             term = request.GET['term']
             if term:
-                queryset = queryset.filter(member_name__icontains=term).order_by('member_name')
-                queryset_primary = self.primary_user.filter(name__icontains=term)
+                queryset = queryset.filter(Q(member_name__icontains=term)|Q(occupation__icontains=term)).order_by('member_name')
+                queryset_primary = self.primary_user.filter(Q(name__icontains=term)|Q(occupation__icontains=term))
             else:
                 queryset = self.filter_queryset(self.get_queryset())
                 queryset_primary = self.primary_user.all()
