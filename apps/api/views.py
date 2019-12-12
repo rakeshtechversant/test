@@ -521,8 +521,17 @@ class UserListCommonView(ListAPIView):
             'request': request
         }
         
-        queryset_primary = PrimaryUserSerializer(FileUpload.objects.all().order_by('name'), many=True, context=context).data
-        queryset_secondary = MemberSerializer(Members.objects.all().order_by('member_name'), many=True, context=context).data
+        try:
+            term = request.GET['term']
+            if term:
+                queryset_primary = PrimaryUserSerializer(FileUpload.objects.filter(name__startswith=term).order_by('name'), many=True, context=context).data
+                queryset_secondary = MemberSerializer(Members.objects.filter(member_name__startswith=term).order_by('member_name'), many=True, context=context).data
+            else:
+                queryset_primary = PrimaryUserSerializer(FileUpload.objects.all().order_by('name'), many=True, context=context).data
+                queryset_secondary = MemberSerializer(Members.objects.all().order_by('member_name'), many=True, context=context).data
+        except:
+            queryset_primary = PrimaryUserSerializer(FileUpload.objects.all().order_by('name'), many=True, context=context).data
+            queryset_secondary = MemberSerializer(Members.objects.all().order_by('member_name'), many=True, context=context).data
 
         response = []
 
