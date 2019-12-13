@@ -358,9 +358,10 @@ class OtpVerifyUserIdViewSet(CreateAPIView):
                     if member.phone_no_secondary_user is None :
                         member.phone_no_secondary_user = phone_number
                         member.save()
+                        user = member.phone_no_secondary_user
                     else:
                         member.phone_no_secondary_user = otp_obj.mobile_number
-                    user = otp_obj.mobile_number
+                        user = otp_obj.mobile_number
                     data = {
                             'mobile': member.phone_no_secondary_user,
                             'user_type': 'SECONDARY',
@@ -1992,8 +1993,6 @@ class UpdateFamilyByPrimary(APIView):
                     'message': 'Invalid Family Detail'
                     }
             return Response(data, status=status.HTTP_400_BAD_REQUEST)
-
-
 
 
 
