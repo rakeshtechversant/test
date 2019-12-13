@@ -355,7 +355,7 @@ class OtpVerifyUserIdViewSet(CreateAPIView):
             elif user_type == "SECONDARY":
                 try:
                     member = Members.objects.get(secondary_user_id=user_id)
-                    if member.phone_no_secondary_user is None :
+                    if member.phone_no_secondary_user is None or member.phone_no_secondary_user == '':
                         member.phone_no_secondary_user = phone_number
                         member.save()
                         user = member.phone_no_secondary_user
