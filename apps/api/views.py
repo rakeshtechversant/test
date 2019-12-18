@@ -1423,6 +1423,61 @@ class SendOtpSecSave(APIView):
         # if user.primary_user_id:
         #     return Response({'success': False,'message': superusers.}, status=HTTP_400_BAD_REQUEST)
 
+class SendWithoutOtpSecSave(APIView):
+    queryset = FileUpload.objects.all()
+    serializer_class = UserRegistrationMobileSerializer
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        mobile_number = self.request.query_params.get('mobile_number')
+        user_id = self.request.query_params.get('user_id')
+        try:
+            superusers = AdminProfile.objects.filter(user__is_superuser=True).first()
+            admin_phonenumber = superusers.mobile_number
+        except:
+            admin_phonenumber = ''
+        try:
+            sec_user = Members.objects.get(secondary_user_id=user_id)
+            user,created=User.objects.get_or_create(username=mobile_number)
+            token, created = Token.objects.get_or_create(user=user)
+            otp_number = get_random_string(length=6, allowed_chars='1234567890')
+            primary_mobile_number = sec_user.primary_user_id.phone_no_primary
+            try:
+                OtpModels.objects.filter(mobile_number=sec_user.primary_user_id.phone_no_primary).delete()
+            except:
+                pass
+
+            # OtpModels.objects.create(mobile_number=primary_mobile_number, otp=otp_number)
+
+
+            # message_body = sec_user.member_name + ' requested OTP for login: ' + otp_number
+            # client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
+            # message = client.messages.create(to='+91' + mobile_number, from_='+15036837180',body=message_body)
+
+            # requests.get(
+            #     "http://unifiedbuzz.com/api/insms/format/json/?mobile=" + primary_mobile_number + "&text=" + message_body +
+            #     "&flash=0&type=1&sender=MARCHR",
+            #     headers={"X-API-Key": "918e0674e62e01ec16ddba9a0cea447b"})
+
+            data = {
+                'mobile': mobile_number,
+                'admin_mobile_number' : admin_phonenumber,
+                'user_type': 'SECONDARY',
+                'name': sec_user.member_name,
+                'token':token.key,
+                'primary_user_name':sec_user.primary_user_id.name,
+                'primary_mobile_number':sec_user.primary_user_id.phone_no_primary,
+                'user_id':user_id,
+            }
+            return Response({'success': True, 'message': 'OTP Sent Successfully','user_details': data},
+                            status=HTTP_200_OK)
+
+        except Members.DoesNotExist:
+            data = {
+                'admin_mobile_number' : admin_phonenumber,
+            }
+            return Response({'success': False, 'message': 'User does not exist','user_details': data},
+                            status=HTTP_404_NOT_FOUND)
 
 class Profile(APIView):
     authentication_classes = [TokenAuthentication]
