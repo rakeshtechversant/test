@@ -4,7 +4,8 @@ from django.conf.urls import url
 from apps.api.views import UserLoginView, UserLoginMobileView, UserListView, UserDetailView, UserDeleteView, \
     UserUpdateView, UserCreateView, PostsViewset, \
     OtpVerifyViewSet, SecondaryaddView, Profile, UnapprovedMemberView, UpdateMemberByPrimary, CreateUserByAdminView, \
-    UpdateUserByAdminView, AddFamilyByAdminView, GalleryImagesView, UpdateFamilyByPrimary, OtpVerifyUserIdViewSet
+    UpdateUserByAdminView, AddFamilyByAdminView, GalleryImagesView, UpdateFamilyByPrimary, OtpVerifyUserIdViewSet, \
+    UserLoginMobileWithOutOtpView
 from rest_framework import routers
 
 router = routers.DefaultRouter()
@@ -14,6 +15,7 @@ urlpatterns = [
     path('login-user/', UserLoginView.as_view(),name='login'),
     path('create/',UserCreateView.as_view(),name='create_user'),
     path('mobile-login/',UserLoginMobileView.as_view(),name='create_user_mobile'),
+    path('mobile-login-without-otp/',UserLoginMobileWithOutOtpView.as_view(),name='create_user_mobile'),
     path('sec_member/',UserListView.as_view(),name='user_list'),
     path('otp_verify/',OtpVerifyViewSet.as_view(),name='otp_verify'),
     path('otp_verify_id/',OtpVerifyUserIdViewSet.as_view(),name='otp_verify_id'),

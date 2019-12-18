@@ -212,6 +212,113 @@ class UserLoginMobileView(APIView):
                     return Response({
                                         'message': 'You are not in primary list,go to next section for update your number as secondary user',
                                         'success': False, 'user_details': data}, status=HTTP_400_BAD_REQUEST)
+
+class UserLoginMobileWithOutOtpView(APIView):
+    queryset = UserProfile.objects.all()
+    serializer_class = UserRegistrationMobileSerializer
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        mobile_number = request.data['mobile_number']
+        if not mobile_number:
+            return Response({'message': 'Mobile field should not be blank', 'success': False},
+                            status=HTTP_400_BAD_REQUEST)
+        else:
+            if AdminProfile.objects.filter(mobile_number=mobile_number):
+                admin_profile = AdminProfile.objects.get(mobile_number=mobile_number)
+                if mobile_number == admin_profile.mobile_number:
+                    user=User.objects.get(username=admin_profile.user)
+                    token, created = Token.objects.get_or_create(user=user)
+                    data = {
+                        'mobile': admin_profile.mobile_number,
+                        'user_type': 'ADMIN',
+                        'name': 'admin',
+                        'token':token.key,
+                        'user_id':admin_profile.id
+                    }
+
+                    return Response({'success': True, 'message': 'Success Response', 'user_details': data},
+                                    status=HTTP_200_OK)
+                else:
+                    pass
+            else:
+                if FileUpload.objects.filter(phone_no_primary=mobile_number):
+                    user_profiles = FileUpload.objects.filter(phone_no_primary=mobile_number)
+                    for user_profile in user_profiles:
+                        if mobile_number == user_profile.phone_no_primary:
+                            user,created=User.objects.get_or_create(username=mobile_number)
+                            token, created = Token.objects.get_or_create(user=user)
+                            data = {
+                                'mobile': user_profile.phone_no_primary,
+                                'user_type': 'PRIMARY',
+                                'name': user_profile.name,
+                                'token':token.key,
+                                'user_id':user_profile.primary_user_id
+                            }
+
+                            return Response({'success': True, 'message': 'Success Response', 'user_details': data},
+                                            status=HTTP_200_OK)
+                        else:
+                            data = {}
+                            return Response({'message': 'Something went wrong', 'success': False},
+                                            status=HTTP_400_BAD_REQUEST)
+
+                elif FileUpload.objects.filter(phone_no_secondary=mobile_number):
+                    user_profiles = FileUpload.objects.filter(phone_no_secondary=mobile_number)
+                    for user_profile in user_profiles:
+                        if mobile_number == user_profile.phone_no_secondary:
+                            user,created=User.objects.get_or_create(username=mobile_number)
+                            token, created = Token.objects.get_or_create(user=user)
+                            data = {
+                                'mobile': user_profile.phone_no_primary,
+                                'user_type': 'PRIMARY',
+                                'name': user_profile.name,
+                                'token':token.key,
+                                'user_id':user_profile.primary_user_id
+                            }
+
+                            return Response({'success': True, 'message': 'Success Response', 'user_details': data},
+                                            status=HTTP_200_OK)
+                        else:
+                            data = {}
+                            return Response({'message': 'Something went wrong', 'success': False},
+                                            status=HTTP_400_BAD_REQUEST)
+
+                elif Members.objects.filter(phone_no_secondary_user=mobile_number):
+                    user_details = Members.objects.filter(phone_no_secondary_user=mobile_number)
+                    for user_profile in user_details:
+                        user,created=User.objects.get_or_create(username=mobile_number)
+                        token, created = Token.objects.get_or_create(user=user)
+                        if mobile_number == user_profile.phone_no_secondary_user:
+                            data = {
+                                'mobile': user_profile.phone_no_secondary_user,
+                                'user_type': 'SECONDARY',
+                                'name': user_profile.member_name,
+                                'token':token.key,
+                                'primary_user_name': user_profile.primary_user_id.name,
+                                'primary_user_id': user_profile.primary_user_id.primary_user_id,
+                                'phone_no_primary' : user_profile.primary_user_id.phone_no_primary,
+                                'user_id':user_profile.secondary_user_id
+                            }
+
+
+                            return Response({'success': True, 'message': 'Success Response', 'user_details': data},
+                                            status=HTTP_200_OK)
+                        else:
+                            data = {}
+                            return Response({'message': 'Something went wrong', 'success': False},
+                                            status=HTTP_400_BAD_REQUEST)
+
+
+
+                else:
+                    data = {
+                        'mobile': mobile_number,
+                    }
+                    return Response({
+                                        'message': 'You are not in primary list,go to next section for update your number as secondary user',
+                                        'success': False, 'user_details': data}, status=HTTP_400_BAD_REQUEST)
+
 class OtpVerifyViewSet(CreateAPIView):
     queryset = OtpModels.objects.all()
     serializer_class = OTPVeifySerializer
