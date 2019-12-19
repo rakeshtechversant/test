@@ -43,7 +43,7 @@ class FileUpload(models.Model):
 
 class Family(models.Model):
     name = models.CharField(max_length=255)
-    about = models.TextField(max_length=500, null=True, blank=True)
+    about = models.TextField(null=True, blank=True)
     image = models.FileField(upload_to='familyimage/', null=True, blank=True)
     members_length = models.IntegerField(default=0)
     primary_user_id = models.ForeignKey(FileUpload, on_delete=models.CASCADE, related_name='get_file_upload', null=True,
