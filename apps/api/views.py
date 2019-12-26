@@ -1751,17 +1751,17 @@ class UnapprovedMemberView(mixins.CreateModelMixin,
 
         if edit_user:
             Members.objects.filter(secondary_user_id=edit_user).update(**data)
+        else:
+            primary_user = FileUpload.objects.get(pk=data.pop('primary_user_id'))
 
-        primary_user = FileUpload.objects.get(pk=data.pop('primary_user_id'))
-
-        Members.objects.create(primary_user_id=primary_user, **data)
-        try:
-            user_details_str = "Your request to add %s has been accepted. The profile is listed in your family."%(member.member_name)
-            not_obj = Notification.objects.create(created_by_primary=primary_user,
-                      message=user_details_str)
-            NoticeReadPrimary.objects.create(notification=not_obj, user_to=primary_user)
-        except:
-            pass
+            Members.objects.create(primary_user_id=primary_user, **data)
+            try:
+                user_details_str = "Your request to add %s has been accepted. The profile is listed in your family."%(member.member_name)
+                not_obj = Notification.objects.create(created_by_primary=primary_user,
+                          message=user_details_str)
+                NoticeReadPrimary.objects.create(notification=not_obj, user_to=primary_user)
+            except:
+                pass
 
 
         member.delete()
@@ -2166,7 +2166,6 @@ class UpdateMemberByPrimary(APIView):
     permission_classes = [IsAuthenticated, IsPrimaryUserOrReadOnly]
 
     def post(self, request, *args, **kwargs):
-        
         instance = Members.objects.get(pk=kwargs.get('pk'))
 
         if not instance.primary_user_id.phone_no_primary == request.user.username:
