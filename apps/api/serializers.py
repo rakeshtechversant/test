@@ -400,9 +400,19 @@ class MemberProfileSerializer(serializers.ModelSerializer):
             data['image'] = None
 
         try :
-            data['member_name'] = instance.member_name.title()
+            data['name'] = instance.member_name.title()
         except:
-            pass
+            data['name'] = None
+            
+        try :
+            data['phone_no_primary'] = instance.phone_no_secondary_user
+        except:
+            data['phone_no_primary'] = None
+
+        try :
+            data['phone_no_secondary'] = instance.phone_no_secondary_user_secondary
+        except:
+            data['phone_no_secondary'] = None
         return data
 
 
