@@ -315,9 +315,6 @@ class UserLoginMobileWithOutOtpView(APIView):
                             data = {}
                             return Response({'message': 'Something went wrong', 'success': False},
                                             status=HTTP_400_BAD_REQUEST)
-
-
-
                 else:
                     data = {
                         'mobile': mobile_number,
@@ -463,6 +460,133 @@ class OtpVerifyUserIdViewSet(CreateAPIView):
                 try:
                     member = Members.objects.get(secondary_user_id=user_id)
                     if member.phone_no_secondary_user is None or member.phone_no_secondary_user == '':
+                        member.phone_no_secondary_user = phone_number
+                        member.save()
+                        user = member.phone_no_secondary_user
+                    else:
+                        member.phone_no_secondary_user = otp_obj.mobile_number
+                        user = otp_obj.mobile_number
+                    data = {
+                            'mobile': member.phone_no_secondary_user,
+                            'user_type': 'SECONDARY',
+                            'name': member.member_name.title(),
+                            'secondary_user_id': member.secondary_user_id,
+                            'primary_name':member.primary_user_id.name,
+                            'primary_user_id':member.primary_user_id.primary_user_id,
+                            'primary_mobile_number':member.primary_user_id.phone_no_primary
+                        }
+                except Members.DoesNotExist:
+                    return Response({'success': False, 'message': 'Secondary account does not exist'}, status=HTTP_404_NOT_FOUND)
+
+            try:
+                user = User.objects.get(username=user)
+            except User.DoesNotExist:
+                return Response({'success': False, 'message': ' User does not exist'}, status=HTTP_404_NOT_FOUND)
+
+            token, created = Token.objects.get_or_create(user=user)
+            data.update({"token": token.key})
+            return Response({'success': True, 'message': 'OTP Verified Successfully', 'user_details': data}, status=HTTP_201_CREATED)
+
+class OtpVerifyUserCheckNumberViewSet(CreateAPIView):
+    queryset = OtpModels.objects.all()
+    serializer_class = OTPVeifySerializerUserId
+
+    def create(self, request):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        otp = serializer.validated_data.get("otp", None)
+        user_type = serializer.validated_data.get("user_type", None)
+        user_id = serializer.validated_data.get("user_id", None)
+        phone_number = serializer.validated_data.get("phone_number", None)
+
+        try:
+            superusers = AdminProfile.objects.filter(user__is_superuser=True).first()
+            admin_phonenumber = superusers.mobile_number
+        except:
+            admin_phonenumber = ''
+
+        try:
+            otp_obj = OtpModels.objects.get(otp=otp)
+            if (datetime.now(timezone.utc) - otp_obj.created_time).total_seconds() >= 1800:
+                otp_obj.is_expired = True
+                otp_obj.save()
+                return Response({'success': False, 'message': 'Otp Expired'}, status=HTTP_400_BAD_REQUEST)
+            if otp_obj.is_expired:
+                return Response({'success': False, 'message': 'Otp Already Used'}, status=HTTP_400_BAD_REQUEST)
+        except:
+            return Response({'success': False, 'message': 'Invalid Otp'}, status=HTTP_400_BAD_REQUEST)
+        else:
+            if otp_obj:
+                otp_obj.is_expired = True
+                otp_obj.save()
+            else:
+                pass
+            
+            if user_type == "ADMIN":
+                try:
+                    admin = AdminProfile.objects.get(mobile_number=otp_obj.mobile_number)
+                    user = admin.user
+                    data = {
+                        'mobile': admin.mobile_number,
+                        'user_type': 'ADMIN',
+                        'name': 'Admin',
+                    }
+                except AdminProfile.DoesNotExist:
+                    return Response({'success': False, 'message': 'Admin account does not exist'}, status=HTTP_404_NOT_FOUND)
+            
+            elif user_type == "PRIMARY":
+                try:
+                    user_profile = FileUpload.objects.get(Q(phone_no_secondary=otp_obj.mobile_number) | Q(phone_no_primary=otp_obj.mobile_number))
+                    user = otp_obj.mobile_number
+                    mobile = user_profile.phone_no_primary if user_profile.phone_no_primary else user_profile.phone_no_secondary
+                    data = {
+                        'mobile': mobile,
+                        'user_type': 'PRIMARY',
+                        'name': user_profile.name.title(),
+                        'primary_user_id': user_profile.primary_user_id
+                    }
+                except FileUpload.DoesNotExist:
+                    return Response({'success': False, 'message': 'Primary account does not exist'}, status=HTTP_404_NOT_FOUND)
+
+            elif user_type == "SECONDARY":
+                try:
+                    # import pdb;pdb.set_trace()
+                    member = Members.objects.get(secondary_user_id=user_id)
+                    if member.primary_user_id.phone_no_primary == phone_number or member.primary_user_id.phone_no_secondary == phone_number:
+                        if member.primary_user_id.phone_no_primary != None and member.primary_user_id.phone_no_secondary != None:
+                            if member.primary_user_id.phone_no_secondary == phone_number:
+                                # if member.phone_no_secondary_user is None or member.phone_no_secondary_user == '':
+                                member.phone_no_secondary_user = phone_number
+                                member.primary_user_id.phone_no_secondary = None
+                                member.save()
+                                member.primary_user_id.save()
+                                user = member.phone_no_secondary_user
+                                # else:
+                                #     pass
+
+                            elif member.primary_user_id.phone_no_primary  == phone_number:
+                                # if member.phone_no_secondary_user is None or member.phone_no_secondary_user == '':
+                                sec_number = member.primary_user_id.phone_no_secondary
+
+                                member.primary_user_id.phone_no_secondary = None
+                                member.primary_user_id.phone_no_primary = sec_number
+
+                                member.phone_no_secondary_user = phone_number
+                                member.save()
+                                member.primary_user_id.save()
+                                user = member.phone_no_secondary_user
+                            else:
+                                pass
+                        elif(member.primary_user_id.phone_no_secondary == None):
+                            # return Response({'success': False, 'message': 'Please contact admin'},status=HTTP_404_NOT_FOUND)
+                            data = {
+                                'admin_mobile_number' : admin_phonenumber,
+                            }
+                            return Response({'success': False, 'message': 'Please contact admin','user_details': data},
+                            status=HTTP_404_NOT_FOUND)
+                        else:
+                            pass
+                    elif member.phone_no_secondary_user is None or member.phone_no_secondary_user == '':
                         member.phone_no_secondary_user = phone_number
                         member.save()
                         user = member.phone_no_secondary_user
@@ -3307,3 +3431,6 @@ class PrayerGroupBasedMembersPaginatedView(ListAPIView):
         data['response'] = response_query
         data['response'] = data.pop('results')
         return Response(data)
+
+
+
