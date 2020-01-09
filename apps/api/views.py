@@ -610,8 +610,34 @@ class OtpVerifyUserCheckNumberViewSet(CreateAPIView):
 
             elif user_type == "SECONDARY":
                 try:
-                    # import pdb;pdb.set_trace()
                     member = Members.objects.get(secondary_user_id=user_id)
+                    mems = Members.objects.filter(primary_user_id=member.primary_user_id).exclude(secondary_user_id=user_id)
+                    if mems.count() >= 1:
+                        for mem in mems:
+                            if(mem.phone_no_secondary_user == phone_number) or mem.phone_no_secondary_user_secondary:
+                                if(mem.phone_no_secondary_user == phone_number):
+                                    mem.phone_no_secondary_user = None
+                                    mem.save()
+                                    mem.phone_no_secondary_user = mem.phone_no_secondary_user_secondary
+                                    mem.phone_no_secondary_user_secondary = None
+                                    mem.save()
+
+                                    #if member.phone_no_secondary_user is None or member.phone_no_secondary_user == '':
+                                    member.phone_no_secondary_user = phone_number
+                                    member.save()
+                                    user = member.phone_no_secondary_user
+                                elif mem.phone_no_secondary_user_secondary == phone_number :
+                                    mem.phone_no_secondary_user_secondary = None
+                                    mem.save()
+                                    #if member.phone_no_secondary_user is None or member.phone_no_secondary_user == '':
+                                    member.phone_no_secondary_user = phone_number
+                                    member.save()
+                                    user = member.phone_no_secondary_user
+                                else:
+                                    pass
+                            else:
+                                pass
+
                     if member.primary_user_id.phone_no_primary == phone_number or member.primary_user_id.phone_no_secondary == phone_number:
                         if member.primary_user_id.phone_no_primary != None and member.primary_user_id.phone_no_secondary != None:
                             if member.primary_user_id.phone_no_secondary == phone_number:
