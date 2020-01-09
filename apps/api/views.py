@@ -62,10 +62,58 @@ class UserLoginMobileView(APIView):
 
     def post(self, request):
         mobile_number = request.data['mobile_number']
+        user_type  = request.data['user_type']
+        user_id  = request.data['user_id']
+        try:
+            superusers = AdminProfile.objects.filter(user__is_superuser=True).first()
+            admin_phonenumber = superusers.mobile_number
+        except:
+            admin_phonenumber = ''
         if not mobile_number:
             return Response({'message': 'Mobile field should not be blank', 'success': False},
                             status=HTTP_400_BAD_REQUEST)
         else:
+            # import pdb;pdb.set_trace()
+            try:
+                user_profile = Members.objects.get(secondary_user_id=user_id)
+                if user_type == 'SECONDARY' and user_id :
+                    if user_profile.primary_user_id.phone_no_primary == mobile_number or user_profile.primary_user_id.phone_no_secondary == mobile_number:
+                        if(user_profile.primary_user_id.phone_no_secondary == None):
+                            data = {
+                                'admin_mobile_number' : admin_phonenumber,
+                            }
+                            return Response({'success': False, 'message': 'Please contact admin','user_details': data},
+                            status=HTTP_404_NOT_FOUND)
+                        else:
+                            user,created=User.objects.get_or_create(username=mobile_number)
+                            token, created = Token.objects.get_or_create(user=user)
+                            data = {
+                                'mobile': mobile_number,
+                                'user_type': 'SECONDARY',
+                                'name': user_profile.member_name,
+                                'token':token.key,
+                                'user_id':user_profile.secondary_user_id
+                            }
+                            otp_number = get_random_string(length=6, allowed_chars='1234567890')
+                            try:
+                                OtpModels.objects.filter(mobile_number=mobile_number).delete()
+                            except:
+                                pass
+                            OtpModels.objects.create(mobile_number=mobile_number, otp=otp_number)
+                            # client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
+                            # message = client.messages.create(to='+91' + mobile_number, from_='+15036837180',body=otp_number)
+                            message = "OTP for login is %s" % (otp_number,)
+                            requests.get(
+                                "http://unifiedbuzz.com/api/insms/format/json/?mobile=" + mobile_number + "&text=" + message +
+                                "&flash=0&type=1&sender=MARCHR",
+                                headers={"X-API-Key": "918e0674e62e01ec16ddba9a0cea447b"})
+                            return Response({'success': True, 'message': 'OTP Sent Successfully', 'user_details': data},
+                                            status=HTTP_200_OK)
+                                           
+                    else:
+                        pass
+            except:
+                pass
             if AdminProfile.objects.filter(mobile_number=mobile_number):
                 admin_profile = AdminProfile.objects.get(mobile_number=mobile_number)
                 if mobile_number == admin_profile.mobile_number:
@@ -259,6 +307,10 @@ class UserLoginMobileWithOutOtpView(APIView):
                                 'mobile': user_profile.phone_no_primary,
                                 'user_type': 'PRIMARY',
                                 'name': user_profile.name,
+                                'prayer_group_name':user_profile.get_file_upload_prayergroup.first().name ,
+                                'family_name':user_profile.get_file_upload.first().name ,
+                                'prayer_group_id':user_profile.get_file_upload_prayergroup.first().id ,
+                                'family_name_id':user_profile.get_file_upload.first().id ,
                                 'token':token.key,
                                 'user_id':user_profile.primary_user_id
                             }
@@ -280,6 +332,10 @@ class UserLoginMobileWithOutOtpView(APIView):
                                 'mobile': user_profile.phone_no_primary,
                                 'user_type': 'PRIMARY',
                                 'name': user_profile.name,
+                                'prayer_group_name':user_profile.get_file_upload_prayergroup.first().name ,
+                                'family_name':user_profile.get_file_upload.first().name ,
+                                'prayer_group_id':user_profile.get_file_upload_prayergroup.first().id ,
+                                'family_name_id':user_profile.get_file_upload.first().id ,
                                 'token':token.key,
                                 'user_id':user_profile.primary_user_id
                             }
@@ -301,6 +357,10 @@ class UserLoginMobileWithOutOtpView(APIView):
                                 'mobile': user_profile.phone_no_secondary_user,
                                 'user_type': 'SECONDARY',
                                 'name': user_profile.member_name,
+                                'prayer_group_name':user_profile.primary_user_id.get_file_upload_prayergroup.first().name ,
+                                'family_name':user_profile.primary_user_id.get_file_upload.first().name ,
+                                'prayer_group_id':user_profile.primary_user_id.get_file_upload_prayergroup.first().id ,
+                                'family_name_id':user_profile.primary_user_id.get_file_upload.first().id ,
                                 'token':token.key,
                                 'primary_user_name': user_profile.primary_user_id.name,
                                 'primary_user_id': user_profile.primary_user_id.primary_user_id,
