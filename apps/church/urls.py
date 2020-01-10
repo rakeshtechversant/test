@@ -8,7 +8,8 @@ from apps.api.views import UserNoticeList, NoticeBereavementDelete, NoticeBereav
     FamilyListView, FamilyMemberList, NoticeModelViewSet, SendOtp, PrayerGroupBasedMembersView, FamilyMemberDetails, \
     ViewRequestNumberViewset, AcceptViewRequestNumberViewset, EachUserNotification, EachUserUnreadCount, PrivacyView, \
     PhoneVersionView, GalleryImagesView, GalleryImagesCreateView, SendOtpSecSave, FamilyListPaginatedView,\
-    PrayerGroupBasedFamilyPaginatedView,PrayerGroupBasedMembersPaginatedView,SendWithoutOtpSecSave
+    PrayerGroupBasedFamilyPaginatedView,PrayerGroupBasedMembersPaginatedView,SendWithoutOtpSecSave, UpdatePhoneNumberSecondary,\
+    PrimaryToSecondaryViewset
 
 router = DefaultRouter()
 
@@ -55,7 +56,8 @@ urlpatterns = [
     url(r'^number-request/$',ViewRequestNumberViewset.as_view(),name='number_request'),
     url(r'^number-request-accept/$',AcceptViewRequestNumberViewset.as_view(),name='number_request_accept'),
     path('privacy-policy/',PrivacyView.as_view(),name='privacy'),
-
+    path('update-phone-number-secondary/', UpdatePhoneNumberSecondary.as_view(),name='update-phone-number-secondary'),
+    url(r'^primary-to-secondary/$',PrimaryToSecondaryViewset.as_view(),name='primary_to_secondary'),
     
 ]
 

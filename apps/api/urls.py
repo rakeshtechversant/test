@@ -5,13 +5,14 @@ from apps.api.views import UserLoginView, UserLoginMobileView, UserListView, Use
     UserUpdateView, UserCreateView, PostsViewset, \
     OtpVerifyViewSet, SecondaryaddView, Profile, UnapprovedMemberView, UpdateMemberByPrimary, CreateUserByAdminView, \
     UpdateUserByAdminView, AddFamilyByAdminView, GalleryImagesView, UpdateFamilyByPrimary, OtpVerifyUserIdViewSet, \
-    UserLoginMobileWithOutOtpView,UserListCommonView,OtpVerifyUserCheckNumberViewSet
+    UserLoginMobileWithOutOtpView,UserListCommonView,OtpVerifyUserCheckNumberViewSet,StatusChangeAcceptView
 
 from rest_framework import routers
 
 router = routers.DefaultRouter()
 router.register(r'excel-import', PostsViewset, basename='excel_import')
 router.register(r'seconday-member-by-primary', UnapprovedMemberView, basename='seconday-member-by-primary')
+router.register(r'status-change-accept-reject', StatusChangeAcceptView, basename='status-change-accept-reject')
 urlpatterns = [
     path('login-user/', UserLoginView.as_view(),name='login'),
     path('create/',UserCreateView.as_view(),name='create_user'),
@@ -34,9 +35,8 @@ urlpatterns = [
     url(r'^update-member-own/$',UserUpdateView.as_view(),name='update_user'),
     url(r'^(?P<pk>[\w-]+)/add-users/$',SecondaryaddView.as_view(),name='add_user'),
     url(r'^(?P<pk>[\w-]+)/delete/$',UserDeleteView.as_view(),name='delete_user'),
-
-    url(r'^update-member-by-primary/(?P<pk>[\w-]+)/$', UpdateMemberByPrimary.as_view(),name='update-member-by-primary'),
-
+    
+    url(r'^update-member-by-primary/(?P<pk>[\w-]+)/$', UpdateMemberByPrimary.as_view(),name='update_member_by_primary'),
     url(r'^api/', include(router.urls)),
 
 ]

@@ -36,10 +36,10 @@ from apps.api.serializers import ChurchHistorySerializer, ChurchImagesSerializer
     UserByadminSerializer, FamilyByadminSerializer, PrimaryNotificationSerializer, SecondaryNotificationSerializer, \
     ViewRequestNumberSerializer, RequestAcceptNumberSerializer, AdminNotificationSerializer, PhoneVersionSerializer, \
     GalleryImagesSerializer, FamilyDetailSerializer, FamilyEditSerializer, GalleryImagesCreateSerializer, \
-    OTPVeifySerializerUserId, CommonUserSerializer
+    OTPVeifySerializerUserId, CommonUserSerializer, MemberNumberSerializer, PrimaryToSecondarySerializer
 from apps.church.models import Members, Family, UserProfile, ChurchDetails, FileUpload, OtpModels, \
     PrayerGroup, Notification, Notice, NoticeBereavement, UnapprovedMember, NoticeReadPrimary, NoticeReadSecondary, \
-    ViewRequestNumber, NoticeReadAdmin, PrivacyPolicy, PhoneVersion, Images
+    ViewRequestNumber, NoticeReadAdmin, PrivacyPolicy, PhoneVersion, Images, PrimaryToSecondary
 
 from apps.api.models import AdminProfile
 from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_400_BAD_REQUEST, HTTP_401_UNAUTHORIZED, \
@@ -275,10 +275,57 @@ class UserLoginMobileWithOutOtpView(APIView):
 
     def post(self, request):
         mobile_number = request.data['mobile_number']
+        user_type  = request.data['user_type']
+        user_id  = request.data['user_id']
+        try:
+            superusers = AdminProfile.objects.filter(user__is_superuser=True).first()
+            admin_phonenumber = superusers.mobile_number
+        except:
+            admin_phonenumber = ''
         if not mobile_number:
             return Response({'message': 'Mobile field should not be blank', 'success': False},
                             status=HTTP_400_BAD_REQUEST)
         else:
+            try:
+                user_profile = Members.objects.get(secondary_user_id=user_id)
+                if user_type == 'SECONDARY' and user_id :
+                    if user_profile.primary_user_id.phone_no_primary == mobile_number or user_profile.primary_user_id.phone_no_secondary == mobile_number:
+                        if(user_profile.primary_user_id.phone_no_secondary == None):
+                            data = {
+                                'admin_mobile_number' : admin_phonenumber,
+                            }
+                            return Response({'success': False, 'message': 'Please contact admin','user_details': data},
+                            status=HTTP_404_NOT_FOUND)
+                        else:
+                            user,created=User.objects.get_or_create(username=mobile_number)
+                            token, created = Token.objects.get_or_create(user=user)
+                            data = {
+                                'mobile': mobile_number,
+                                'user_type': 'SECONDARY',
+                                'name': user_profile.member_name,
+                                'token':token.key,
+                                'user_id':user_profile.secondary_user_id
+                            }
+                            # otp_number = get_random_string(length=6, allowed_chars='1234567890')
+                            # try:
+                            #     OtpModels.objects.filter(mobile_number=mobile_number).delete()
+                            # except:
+                            #     pass
+                            # OtpModels.objects.create(mobile_number=mobile_number, otp=otp_number)
+                            # # client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
+                            # # message = client.messages.create(to='+91' + mobile_number, from_='+15036837180',body=otp_number)
+                            # message = "OTP for login is %s" % (otp_number,)
+                            # requests.get(
+                            #     "http://unifiedbuzz.com/api/insms/format/json/?mobile=" + mobile_number + "&text=" + message +
+                            #     "&flash=0&type=1&sender=MARCHR",
+                            #     headers={"X-API-Key": "918e0674e62e01ec16ddba9a0cea447b"})
+                            return Response({'success': True, 'message': 'OTP Sent Successfully', 'user_details': data},
+                                            status=HTTP_200_OK)
+                                           
+                    else:
+                        pass
+            except:
+                pass
             if AdminProfile.objects.filter(mobile_number=mobile_number):
                 admin_profile = AdminProfile.objects.get(mobile_number=mobile_number)
                 if mobile_number == admin_profile.mobile_number:
@@ -2778,6 +2825,12 @@ class EachUserNotification(APIView):
                     elif data_final['type'] == 'notice' :
                         data_obj.append(data_final)
                         notice_flag = True
+                    # elif data_final['type'] == 'status_change_after_beraevement'
+                    #     data_obj.append(data_final)
+                    #     status_beri_flag = True
+                    # elif data_final['type'] == 'status_change_after_beraevement'
+                    #     data_obj.append(data_final)
+                    #     status_beri_flag = True
                     else:
                         pass
                 except:
@@ -3519,4 +3572,364 @@ class PrayerGroupBasedMembersPaginatedView(ListAPIView):
         return Response(data)
 
 
+class UpdatePhoneNumberSecondary(APIView):
+    queryset = Members.objects.all()
+    serializer_class = MemberNumberSerializer
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
 
+    def post(self, request, format=None):
+        # import pdb;pdb.set_trace()
+        # instance=Members.objects.get(phone_no_secondary_user=request.user.username)
+        serializer = MemberNumberSerializer(data=request.data)
+
+        if serializer.is_valid():
+            phone_number = serializer.data.get('phone_no_secondary_user',None)
+            phone_number_sec = serializer.data.get('phone_no_secondary_user_secondary',None)
+            if phone_number :
+                if FileUpload.objects.filter(phone_no_primary=phone_number).exists() or \
+                    FileUpload.objects.filter(phone_no_secondary=phone_number).exists()  or \
+                    Members.objects.filter(phone_no_secondary_user=phone_number).exists() or\
+                    Members.objects.filter(phone_no_secondary_user_secondary=phone_number).exists() :
+               
+                    data = {
+                        'status': False,
+                        'message':"Phone number already registered"
+                    }
+                    data['response'] = serializer.errors
+
+                    return Response(data, status=status.HTTP_400_BAD_REQUEST)
+                try:
+                    member=Members.objects.get(phone_no_secondary_user=request.user.username)
+                    member.phone_no_secondary_user = phone_number
+                    member.save()
+                    request.user.auth_token.delete()
+                except:
+                    data = {
+                        'status': False,
+                        'message':"You have no permission to do this action"
+                    }
+                    data['response'] = serializer.errors
+
+                    return Response(data, status=status.HTTP_400_BAD_REQUEST)
+                success_data = {
+                    'status': True,
+                    "message": "Member Phone number Updated Successfully"
+                }
+                success_data['response'] = serializer.data
+
+                return Response(success_data, status=status.HTTP_201_CREATED)
+            elif phone_number_sec:
+                if FileUpload.objects.filter(phone_no_primary=phone_number_sec).exists() or \
+                    FileUpload.objects.filter(phone_no_secondary=phone_number_sec).exists()  or \
+                    Members.objects.filter(phone_no_secondary_user=phone_number_sec).exists() or\
+                    Members.objects.filter(phone_no_secondary_user_secondary=phone_number_sec).exists() :
+               
+                    data = {
+                        'status': False,
+                        'message':"Phone number already registered"
+                    }
+                    data['response'] = serializer.errors
+
+                    return Response(data, status=status.HTTP_400_BAD_REQUEST)
+                try:
+                    member=Members.objects.get(phone_no_secondary_user=request.user.username)
+                    member.phone_no_secondary_user_secondary = phone_number_sec
+                    member.save()
+                    request.user.auth_token.delete()
+                except:
+                    data = {
+                        'status': False,
+                        'message':"You have no permission to do this action"
+                    }
+                    data['response'] = serializer.errors
+
+                    return Response(data, status=status.HTTP_400_BAD_REQUEST)
+                success_data = {
+                    'status': True,
+                    "message": "Member Phone number Updated Successfully"
+                }
+                success_data['response'] = serializer.data
+
+                return Response(success_data, status=status.HTTP_201_CREATED)
+            else:
+                pass
+
+            
+        data = {
+            'status': False
+        }
+        data['response'] = serializer.errors
+
+        return Response(data, status=status.HTTP_400_BAD_REQUEST)
+
+
+class PrimaryToSecondaryViewset(CreateAPIView):
+    queryset = PrimaryToSecondary.objects.all()
+    serializer_class = PrimaryToSecondarySerializer
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        request_from = request.POST.get('request_from', False)
+        request_to = request.POST.get('request_to', False)
+
+        usertype_from = request.POST.get('usertype_from', False)
+        if not request_from and not request_to and not  usertype_from :
+            return Response({'success': False,'message': 'You should fill all the fields'}, status=HTTP_400_BAD_REQUEST)
+        else :
+            try:
+                if usertype_from == 'PRIMARY' :
+                    if FileUpload.objects.filter(primary_user_id=int(request_from)).exists():
+                        primary_user = FileUpload.objects.get(primary_user_id=request_from)
+                        sec_user = Members.objects.get(secondary_user_id=request_to)
+                        if primary_user.primary_user_id == sec_user.primary_user_id.primary_user_id:
+                            obj,created = PrimaryToSecondary.objects.get_or_create(request_from=request_from,request_to=sec_user.secondary_user_id,usertype_from='PRIMARY')
+                            try:
+                                from_user = FileUpload.objects.get(phone_no_primary=request.user.username)
+                            except:
+                                from_user = FileUpload.objects.get(phone_no_secondary=request.user.username)
+
+                            user_details={
+                                "notification_id":obj.id,
+                                "from_id":from_user.primary_user_id,
+                                "from_usertype":'PRIMARY',
+                                "from_user":from_user.name,
+                                "from_phone_number":from_user.phone_no_primary,
+                                "to_user":sec_user.member_name,
+                                "to_id":sec_user.secondary_user_id,
+                                "send_time":str(tz.now()),
+                                "type":"status_change_primary_to_secondary",
+                            }
+
+                            user_details_str=str(user_details)
+                            notification = Notification.objects.create(
+                                created_by_primary=primary_user, 
+                                message=user_details_str
+                            )
+
+                            admin_profiles = AdminProfile.objects.all()
+
+                            for admin_profile in admin_profiles:
+                                NoticeReadAdmin.objects.create(notification=notification, user_to=admin_profile)
+                            
+
+                            success_data = {
+                                'status': True,
+                                "message": "Status change request is send successfully.Wait admin to approve/reject"
+                            }
+                            success_data['response'] = user_details
+                            return Response(success_data, status=status.HTTP_201_CREATED)
+                        else:
+
+                            data = {
+                                'status': False,
+                                'message':"You have no permission to do this action"
+                            }
+                            data['response'] = {}
+
+                            return Response(data, status=status.HTTP_400_BAD_REQUEST)
+                    else:
+                        data = {
+                            'status': False,
+                            'message':"Primary member doesnot exist"
+                        }
+                        data['response'] = {}
+
+                        return Response(data, status=status.HTTP_400_BAD_REQUEST)
+
+                elif usertype_from == 'SECONDARY' :
+
+                    if Members.objects.filter(secondary_user_id=int(request_from)).exists():
+                        primary_user = FileUpload.objects.get(primary_user_id=request_to)
+                        sec_user = Members.objects.get(secondary_user_id=request_from)
+                        if primary_user.in_memory == True :
+                            if primary_user.primary_user_id == sec_user.primary_user_id.primary_user_id:
+                                obj,created=PrimaryToSecondary.objects.get_or_create(request_from=request_from,request_to=primary_user.primary_user_id,usertype_from='SECONDARY')
+                                try:
+                                    from_user = Members.objects.get(phone_no_secondary_user=request.user.username)
+                                    if from_user.phone_no_secondary_user:
+                                        from_user_phone = from_user.phone_no_secondary_user
+                                    else:
+                                        from_user_phone = None
+                                except:
+                                    from_user = Members.objects.get(phone_no_secondary_user_secondary=request.user.username)
+                                    if from_user.phone_no_secondary_user_secondary:
+                                        from_user_phone = from_user.phone_no_secondary_user_secondary
+                                    else:
+                                        from_user_phone = None
+                                user_details={
+                                    "notification_id":obj.id,
+                                    "from_id":from_user.secondary_user_id,
+                                    "from_usertype":'SECONDARY',
+                                    "from_user":from_user.member_name,
+                                    "from_phone_number":from_user_phone,
+                                    "to_user":primary_user.name,
+                                    "to_id":primary_user.primary_user_id,
+                                    "send_time":str(tz.now()),
+                                    "type":"status_change_after_beraevement",
+                                }
+
+                                user_details_str=str(user_details)
+                                notification = Notification.objects.create(
+                                    created_by_secondary=sec_user, 
+                                    message=user_details_str
+                                )
+
+                                admin_profiles = AdminProfile.objects.all()
+
+                                for admin_profile in admin_profiles:
+                                    NoticeReadAdmin.objects.create(notification=notification, user_to=admin_profile)
+                                
+
+                                success_data = {
+                                    'status': True,
+                                    "message": "Status change request is send successfully.Wait admin to approve/reject"
+                                }
+                                success_data['response'] = user_details
+                                return Response(success_data, status=status.HTTP_201_CREATED)
+                            else:
+
+                                data = {
+                                    'status': False,
+                                    'message':"You have no permission to do this action"
+                                }
+                                data['response'] = {}
+
+                                return Response(data, status=status.HTTP_400_BAD_REQUEST)
+                        else:        
+                            data = {
+                                'status': False,
+                                'message':"You have no permission to do this action"
+                            }
+                            data['response'] = {}
+
+                            return Response(data, status=status.HTTP_400_BAD_REQUEST)
+                    else:
+                        data = {
+                            'status': False,
+                            'message':"Member doesnot exist"
+                        }
+                        data['response'] = serializer.errors
+
+                        return Response(data, status=status.HTTP_400_BAD_REQUEST)
+                else:
+                    return Response({'success': False}, status=status.HTTP_400_BAD_REQUEST)
+            except:
+                return Response({'success': False,'message': 'Something Went Wrong'}, status=status.HTTP_400_BAD_REQUEST)
+                
+class StatusChangeAcceptView(mixins.CreateModelMixin,
+                        mixins.ListModelMixin,
+                        mixins.RetrieveModelMixin,
+                        mixins.UpdateModelMixin,
+                        viewsets.GenericViewSet):
+    queryset = PrimaryToSecondary.objects.all()
+    serializer_class = PrimaryToSecondarySerializer
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        data ={
+            "success": True,
+            "code": 200,
+        }
+
+        data['response'] = serializer.data
+
+        return Response(data)
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+
+        data ={
+            "success": True,
+            "code": 200,
+        }
+
+        data['response'] = serializer.data
+
+        return Response(data)
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        if getattr(instance, '_prefetched_objects_cache', None):
+            # If 'prefetch_related' has been applied to a queryset, we need to
+            # forcibly invalidate the prefetch cache on the instance.
+            instance._prefetched_objects_cache = {}
+
+        data ={
+            "success": True,
+            "code": 200,
+        }
+
+        data['response'] = serializer.data
+
+        return Response(data)
+
+    # @action(methods=['get'], detail=True, url_path='approve-member',
+    #     permission_classes=[IsAuthenticated, AdminPermission])
+    # def approve_member(self, request, pk=None):
+    #     # import pdb;pdb.set_trace()
+    #     member = self.get_object()
+
+    #     data = UnapprovedMemberSerializer(member).data
+    #     data.pop('secondary_user_id')
+    #     data.pop('rejected')
+    #     try:
+    #         img_name = data.get('image').split('/')[-1]
+    #         img_path = 'members/'+img_name
+    #         data['image'] = img_path
+    #     except:
+    #         pass
+    #     edit_user = data.pop('edit_user')
+
+    #     if edit_user:
+    #         Members.objects.filter(secondary_user_id=edit_user).update(**data)
+    #     else:
+    #         primary_user = FileUpload.objects.get(pk=data.pop('primary_user_id'))
+
+    #         Members.objects.create(primary_user_id=primary_user, **data)
+    #         try:
+    #             user_details_str = "Your request to add %s has been accepted. The profile is listed in your family."%(member.member_name)
+    #             not_obj = Notification.objects.create(created_by_primary=primary_user,
+    #                       message=user_details_str)
+    #             NoticeReadPrimary.objects.create(notification=not_obj, user_to=primary_user)
+    #         except:
+    #             pass
+
+
+    #     member.delete()
+
+    #     return Response({'success': True})
+
+    # @action(methods=['get'], detail=True, url_path='reject-member',
+    #     permission_classes=[IsAuthenticated, AdminPermission])
+    # def reject_member(self, request, pk=None):
+    #     member = self.get_object()
+    #     try:
+    #         user_details_str = user_details_str = 'Admin has rejected your request to add %s to your family list.Please contact admin for further information.'%(member.member_name)
+    #         not_obj = Notification.objects.create(created_by_primary=member.primary_user_id,
+    #                   message=user_details_str)
+    #         NoticeReadPrimary.objects.create(notification=not_obj, user_to=member.primary_user_id)
+    #     except:
+    #         pass       
+    #     member.rejected = True
+    #     member.save()
+
+    #     return Response({'success': True})

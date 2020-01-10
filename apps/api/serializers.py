@@ -5,7 +5,7 @@ import requests
 from apps.church.models import UserProfile, ChurchDetails, FileUpload, OtpModels, \
     OtpVerify, PrayerGroup, Notification, Family, Members, Notice, NoticeBereavement, \
     UnapprovedMember, NoticeReadPrimary, NoticeReadSecondary, NoticeReadAdmin, ViewRequestNumber, PrivacyPolicy, \
-    PhoneVersion, Images
+    PhoneVersion, Images, PrimaryToSecondary
 from rest_framework.serializers import CharField
 from apps.api.token_create import get_tokens_for_user
 from django.utils.crypto import get_random_string
@@ -553,7 +553,7 @@ class UnapprovedMemberSerializer(serializers.ModelSerializer):
             message="User %s added a family member %s. Verify and approve to reflect changes"%(primary_user, unapproved_member)
         )
 
-        admin_profiles = UserProfile.objects.all()
+        admin_profiles = AdminProfile.objects.all()
 
         for admin_profile in admin_profiles:
             NoticeReadAdmin.objects.create(notification=notification, user_to=admin_profile)
@@ -575,7 +575,7 @@ class UnapprovedMemberSerializer(serializers.ModelSerializer):
             message="User %s updated a family member %s. Verify and approve to reflect changes"%(primary_user, instance)
         )
 
-        admin_profiles = UserProfile.objects.all()
+        admin_profiles = AdminProfile.objects.all()
         
         for admin_profile in admin_profiles:
             NoticeReadAdmin.objects.create(notification=notification, user_to=admin_profile)
@@ -770,3 +770,31 @@ class CommonUserSerializer(serializers.Serializer):
     user_type=serializers.CharField()
     relation=serializers.CharField()
     primary_user_id=serializers.IntegerField()
+
+
+class MemberNumberSerializer(serializers.Serializer):
+    phone_no_secondary_user=serializers.CharField(required=False)
+    phone_no_secondary_user_secondary=serializers.CharField(required=False)
+    class Meta:
+        model = Members
+        fields = '__all__'
+
+
+class PrimaryToSecondarySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PrimaryToSecondary
+        fields = ['request_from', 'request_to','usertype_from','id']
+        read_only_fields = ['id']
+
+    # def to_representation(self, obj):
+
+    #     data = super().to_representation(obj)
+
+    #     request = self.context['request']
+
+    #     try:
+    #         data['request_from_name'] = obj.request_from.name.title()
+    #     except:
+    #         data['request_from_name'] = obj.request_from.member.title()
+
+    #     return data
