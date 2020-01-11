@@ -36,10 +36,10 @@ from apps.api.serializers import ChurchHistorySerializer, ChurchImagesSerializer
     UserByadminSerializer, FamilyByadminSerializer, PrimaryNotificationSerializer, SecondaryNotificationSerializer, \
     ViewRequestNumberSerializer, RequestAcceptNumberSerializer, AdminNotificationSerializer, PhoneVersionSerializer, \
     GalleryImagesSerializer, FamilyDetailSerializer, FamilyEditSerializer, GalleryImagesCreateSerializer, \
-    OTPVeifySerializerUserId, CommonUserSerializer, MemberNumberSerializer, PrimaryToSecondarySerializer
+    OTPVeifySerializerUserId, CommonUserSerializer, MemberNumberSerializer, PrimaryToSecondarySerializer, NumberChangePrimarySerializer
 from apps.church.models import Members, Family, UserProfile, ChurchDetails, FileUpload, OtpModels, \
     PrayerGroup, Notification, Notice, NoticeBereavement, UnapprovedMember, NoticeReadPrimary, NoticeReadSecondary, \
-    ViewRequestNumber, NoticeReadAdmin, PrivacyPolicy, PhoneVersion, Images, PrimaryToSecondary
+    ViewRequestNumber, NoticeReadAdmin, PrivacyPolicy, PhoneVersion, Images, PrimaryToSecondary, NumberChangePrimary
 
 from apps.api.models import AdminProfile
 from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_400_BAD_REQUEST, HTTP_401_UNAUTHORIZED, \
@@ -2801,6 +2801,9 @@ class EachUserNotification(APIView):
         for index, notif in enumerate(notice_section):
             beri_flag = False
             notice_flag = False
+            status_beri_flag = False
+            status_prim_flag = False
+            change_prim_num_flag =  False
             if notif.notification.is_json == True :
                 dump_value = json.dumps(messages.data[index])
                 v1 = json.loads(dump_value)
@@ -2825,17 +2828,20 @@ class EachUserNotification(APIView):
                     elif data_final['type'] == 'notice' :
                         data_obj.append(data_final)
                         notice_flag = True
-                    # elif data_final['type'] == 'status_change_after_beraevement'
-                    #     data_obj.append(data_final)
-                    #     status_beri_flag = True
-                    # elif data_final['type'] == 'status_change_after_beraevement'
-                    #     data_obj.append(data_final)
-                    #     status_beri_flag = True
+                    elif data_final['type'] == 'status_change_after_beraevement':
+                        data_obj.append(data_final)
+                        status_beri_flag = True
+                    elif data_final['type'] == 'status_change_primary_to_secondary':
+                        data_obj.append(data_final)
+                        status_prim_flag = True
+                    elif data_final['type'] == 'number_change_primary':
+                        data_obj.append(data_final)
+                        change_prim_num_flag = True
                     else:
                         pass
                 except:
                     pass
-                if not (beri_flag or notice_flag):
+                if not (beri_flag or notice_flag or status_beri_flag or status_prim_flag or change_prim_num_flag):
                     messages.data[index].update({"type":"Default notification"})
                     data_obj.append(messages.data[index])
         data['response'] = data_obj
@@ -3831,7 +3837,6 @@ class StatusChangeAcceptView(mixins.CreateModelMixin,
 
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
-
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.get_serializer(page, many=True)
@@ -3882,54 +3887,378 @@ class StatusChangeAcceptView(mixins.CreateModelMixin,
 
         return Response(data)
 
-    # @action(methods=['get'], detail=True, url_path='approve-member',
-    #     permission_classes=[IsAuthenticated, AdminPermission])
-    # def approve_member(self, request, pk=None):
-    #     # import pdb;pdb.set_trace()
-    #     member = self.get_object()
+    @action(methods=['get'], detail=True, url_path='approve-primary',
+        permission_classes=[IsAuthenticated, AdminPermission])
+    def approve_primary(self, request, pk=None):
+        # import pdb;pdb.set_trace()
+        member = self.get_object()
+        if member:
+            try:  
+                if member.usertype_from == 'PRIMARY':
+                    prim_obj = FileUpload.objects.get(primary_user_id = int(member.request_from))
+                    sec_obj = Members.objects.get(secondary_user_id = int(member.request_to))
+                    if prim_obj and sec_obj:
 
-    #     data = UnapprovedMemberSerializer(member).data
-    #     data.pop('secondary_user_id')
-    #     data.pop('rejected')
-    #     try:
-    #         img_name = data.get('image').split('/')[-1]
-    #         img_path = 'members/'+img_name
-    #         data['image'] = img_path
-    #     except:
-    #         pass
-    #     edit_user = data.pop('edit_user')
+                        name1 = sec_obj.member_name
+                        sec_obj.member_name = prim_obj.name
+                        prim_obj.name = name1
 
-    #     if edit_user:
-    #         Members.objects.filter(secondary_user_id=edit_user).update(**data)
-    #     else:
-    #         primary_user = FileUpload.objects.get(pk=data.pop('primary_user_id'))
+                        image1 = sec_obj.image
+                        sec_obj.image = prim_obj.image
+                        prim_obj.image = image1
 
-    #         Members.objects.create(primary_user_id=primary_user, **data)
-    #         try:
-    #             user_details_str = "Your request to add %s has been accepted. The profile is listed in your family."%(member.member_name)
-    #             not_obj = Notification.objects.create(created_by_primary=primary_user,
-    #                       message=user_details_str)
-    #             NoticeReadPrimary.objects.create(notification=not_obj, user_to=primary_user)
-    #         except:
-    #             pass
+                        # address1 = sec_obj.address
+                        # sec_obj.address = prim_obj.address
+                        # prim_obj.address = address1
+
+                        phone1 = sec_obj.phone_no_secondary_user
+                        sec_obj.phone_no_secondary_user = prim_obj.phone_no_primary
+                        prim_obj.phone_no_primary = phone1
+
+                        phone2 = sec_obj.phone_no_secondary_user_secondary
+                        sec_obj.phone_no_secondary_user_secondary = prim_obj.phone_no_secondary
+                        prim_obj.phone_no_secondary = phone2
+
+                        dob1 = sec_obj.dob
+                        sec_obj.dob = prim_obj.dob
+                        prim_obj.dob = dob1
+
+                        dom1= sec_obj.dom
+                        sec_obj.dom = prim_obj.dom
+                        prim_obj.dom = dom1
+
+                        blood_group1= sec_obj.blood_group
+                        sec_obj.blood_group = prim_obj.blood_group
+                        prim_obj.blood_group = blood_group1
+
+                        email1= sec_obj.email
+                        sec_obj.email = prim_obj.email
+                        prim_obj.email = email1
+
+                        occupation1= sec_obj.occupation
+                        sec_obj.occupation = prim_obj.occupation
+                        prim_obj.occupation = occupation1
+
+                        about1= sec_obj.about
+                        sec_obj.about = prim_obj.about
+                        prim_obj.about = about1
+
+                        marital_status1= sec_obj.marital_status
+                        sec_obj.marital_status = prim_obj.marital_status
+                        prim_obj.marital_status = marital_status1
+
+                        marrige_date1= sec_obj.marrige_date
+                        sec_obj.marrige_date = prim_obj.marrige_date
+                        prim_obj.marrige_date = marrige_date1
+
+                        in_memory1= sec_obj.in_memory
+                        sec_obj.in_memory = prim_obj.in_memory
+                        prim_obj.in_memory = in_memory1
+
+                        in_memory_date1= sec_obj.in_memory_date
+                        sec_obj.in_memory_date = prim_obj.in_memory_date
+                        prim_obj.in_memory_date= in_memory_date1
+
+                        relation1= sec_obj.relation
+                        sec_obj.relation = prim_obj.relation
+                        prim_obj.relation= relation1
+
+                        try:
+                            temp_num = prim_obj.phone_no_primary
+                            token_obj = Token.objects.get(user__username=temp_num)
+                            token_obj.delete()
+                        except:
+                            temp_num = sec_obj.phone_no_secondary_user
+                            token_obj = Token.objects.get(user__username=temp_num)
+                            token_obj.delete()
+                        prim_obj.save()
+                        sec_obj.save()
+
+                elif member.usertype_from == 'SECONDARY':
+                    prim_obj = FileUpload.objects.get(primary_user_id = int(member.request_to))
+                    sec_obj = Members.objects.get(secondary_user_id = int(member.request_from))
+                    if prim_obj and sec_obj:
+
+                        name1 = sec_obj.member_name
+                        sec_obj.member_name = prim_obj.name
+                        prim_obj.name = name1
+
+                        image1 = sec_obj.image
+                        sec_obj.image = prim_obj.image
+                        prim_obj.image = image1
+
+                        # address1 = sec_obj.address
+                        # sec_obj.address = prim_obj.address
+                        # prim_obj.address = address1
+
+                        phone1 = sec_obj.phone_no_secondary_user
+                        sec_obj.phone_no_secondary_user = prim_obj.phone_no_primary
+                        prim_obj.phone_no_primary = phone1
+
+                        phone2 = sec_obj.phone_no_secondary_user_secondary
+                        sec_obj.phone_no_secondary_user_secondary = prim_obj.phone_no_secondary
+                        prim_obj.phone_no_secondary = phone2
+
+                        dob1 = sec_obj.dob
+                        sec_obj.dob = prim_obj.dob
+                        prim_obj.dob = dob1
+
+                        dom1= sec_obj.dom
+                        sec_obj.dom = prim_obj.dom
+                        prim_obj.dom = dom1
+
+                        blood_group1= sec_obj.blood_group
+                        sec_obj.blood_group = prim_obj.blood_group
+                        prim_obj.blood_group = blood_group1
+
+                        email1= sec_obj.email
+                        sec_obj.email = prim_obj.email
+                        prim_obj.email = email1
+
+                        occupation1= sec_obj.occupation
+                        sec_obj.occupation = prim_obj.occupation
+                        prim_obj.occupation = occupation1
+
+                        about1= sec_obj.about
+                        sec_obj.about = prim_obj.about
+                        prim_obj.about = about1
+
+                        marital_status1= sec_obj.marital_status
+                        sec_obj.marital_status = prim_obj.marital_status
+                        prim_obj.marital_status = marital_status1
+
+                        marrige_date1= sec_obj.marrige_date
+                        sec_obj.marrige_date = prim_obj.marrige_date
+                        prim_obj.marrige_date = marrige_date1
+
+                        in_memory1= sec_obj.in_memory
+                        sec_obj.in_memory = prim_obj.in_memory
+                        prim_obj.in_memory = in_memory1
+
+                        in_memory_date1= sec_obj.in_memory_date
+                        sec_obj.in_memory_date = prim_obj.in_memory_date
+                        prim_obj.in_memory_date= in_memory_date1
+
+                        relation1= sec_obj.relation
+                        sec_obj.relation = prim_obj.relation
+                        prim_obj.relation= relation1
+
+                        try:
+                            temp_num = prim_obj.phone_no_primary
+                            token_obj = Token.objects.get(user__username=temp_num)
+                            token_obj.delete()
+                        except:
+                            temp_num = sec_obj.phone_no_secondary_user
+                            token_obj = Token.objects.get(user__username=temp_num)
+                            token_obj.delete()
+
+                        sec_obj.save()
+                        prim_obj.save()
+            except:
+                pass
 
 
-    #     member.delete()
+        try:
+            user_details_str = "Your request for status change has been accepted"
+            not_obj = Notification.objects.create(created_by_primary=prim_obj,
+                      message=user_details_str)
+            NoticeReadPrimary.objects.create(notification=not_obj, user_to=prim_obj)
+        except:
+            pass
+        member.delete()
+        return Response({'success': True})
 
-    #     return Response({'success': True})
+    @action(methods=['get'], detail=True, url_path='reject-primary',
+        permission_classes=[IsAuthenticated, AdminPermission])
+    def reject_primary(self, request, pk=None):
+        member = self.get_object()  
+        member.is_accepted = True
+        member.save()
+        return Response({'success': True})
 
-    # @action(methods=['get'], detail=True, url_path='reject-member',
-    #     permission_classes=[IsAuthenticated, AdminPermission])
-    # def reject_member(self, request, pk=None):
-    #     member = self.get_object()
-    #     try:
-    #         user_details_str = user_details_str = 'Admin has rejected your request to add %s to your family list.Please contact admin for further information.'%(member.member_name)
-    #         not_obj = Notification.objects.create(created_by_primary=member.primary_user_id,
-    #                   message=user_details_str)
-    #         NoticeReadPrimary.objects.create(notification=not_obj, user_to=member.primary_user_id)
-    #     except:
-    #         pass       
-    #     member.rejected = True
-    #     member.save()
+#Phone number change
 
-    #     return Response({'success': True})
+class PrimaryNumberChangeViewset(CreateAPIView):
+    queryset = NumberChangePrimary.objects.all()
+    serializer_class = NumberChangePrimarySerializer
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        request_from_primary = request.POST.get('request_from_primary', False)
+        number_from = request.POST.get('number_from', False)
+        number_to = request.POST.get('number_to', False)
+        if not request_from_primary and not number_from and not  number_to :
+            return Response({'success': False,'message': 'You should fill all the fields'}, status=HTTP_400_BAD_REQUEST)
+        else :
+            try:
+                if FileUpload.objects.filter(primary_user_id=int(request_from_primary)).exists():
+                    primary_user = FileUpload.objects.get(primary_user_id=request_from_primary)
+                    if primary_user.phone_no_primary == number_from or primary_user.phone_no_secondary == number_from:
+                        obj,created = NumberChangePrimary.objects.get_or_create(request_from_primary=request_from_primary,number_to=number_to,number_from=number_from)
+                        try:
+                            from_user = FileUpload.objects.get(phone_no_primary=request.user.username)
+                        except:
+                            from_user = FileUpload.objects.get(phone_no_secondary=request.user.username)
+
+                        user_details={
+                            "notification_id":obj.id,
+                            "primary_user_id":from_user.primary_user_id,
+                            "name":from_user.name,
+                            "phone_number_primary":from_user.phone_no_primary,
+                            "number_from": number_from,
+                            "number_to": number_to,
+                            "send_time":str(tz.now()),
+                            "type":"number_change_primary",
+                        }
+
+                        user_details_str=str(user_details)
+                        notification = Notification.objects.create(
+                            created_by_primary=primary_user, 
+                            message=user_details_str
+                        )
+
+                        admin_profiles = AdminProfile.objects.all()
+
+                        for admin_profile in admin_profiles:
+                            NoticeReadAdmin.objects.create(notification=notification, user_to=admin_profile)
+                        
+
+                        success_data = {
+                            'status': True,
+                            "message": "Primary number change request is send successfully.Wait admin to approve/reject"
+                        }
+                        success_data['response'] = user_details
+                        return Response(success_data, status=status.HTTP_201_CREATED)
+                    else:
+
+                        data = {
+                            'status': False,
+                            'message':"You have no permission to do this action"
+                        }
+                        data['response'] = {}
+
+                        return Response(data, status=status.HTTP_400_BAD_REQUEST)
+                else:
+                    data = {
+                        'status': False,
+                        'message':"Primary member doesnot exist"
+                    }
+                    data['response'] = {}
+
+                    return Response(data, status=status.HTTP_400_BAD_REQUEST)
+
+            except:
+                return Response({'success': False,'message': 'Something Went Wrong'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class PrimaryNumberChangeAcceptView(mixins.CreateModelMixin,
+                        mixins.ListModelMixin,
+                        mixins.RetrieveModelMixin,
+                        mixins.UpdateModelMixin,
+                        viewsets.GenericViewSet):
+    queryset = NumberChangePrimary.objects.all()
+    serializer_class = NumberChangePrimarySerializer
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        data ={
+            "success": True,
+            "code": 200,
+        }
+
+        data['response'] = serializer.data
+
+        return Response(data)
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+
+        data ={
+            "success": True,
+            "code": 200,
+        }
+
+        data['response'] = serializer.data
+
+        return Response(data)
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        if getattr(instance, '_prefetched_objects_cache', None):
+            # If 'prefetch_related' has been applied to a queryset, we need to
+            # forcibly invalidate the prefetch cache on the instance.
+            instance._prefetched_objects_cache = {}
+
+        data ={
+            "success": True,
+            "code": 200,
+        }
+
+        data['response'] = serializer.data
+
+        return Response(data)
+
+    @action(methods=['get'], detail=True, url_path='approve-primary-number',
+        permission_classes=[IsAuthenticated, AdminPermission])
+    def approve_primary(self, request, pk=None):
+        member = self.get_object()
+        if member:
+            try:
+
+                prim_obj = FileUpload.objects.get(primary_user_id = int(member.request_from_primary))
+                if prim_obj.phone_no_primary == member.number_from: 
+                    temp_num = prim_obj.phone_no_primary  
+                    prim_obj.phone_no_primary = member.number_to
+                    try:
+                        token_obj = Token.objects.get(user__username=temp_num)
+                        token_obj.delete()
+                    except:
+                        pass
+                    prim_obj.save()
+                elif (prim_obj.phone_no_secondary == member.number_from):
+                    temp_num = prim_obj.phone_no_secondary
+                    prim_obj.phone_no_secondary = member.number_to
+                    try:
+                        token_obj = Token.objects.get(user__username=temp_num)
+                        token_obj.delete()
+                    except:
+                        pass
+                    prim_obj.save()
+                else:
+                    return Response({'success': False})
+            except:
+                pass
+        try:
+            user_details_str = "Your request for number change has been accepted"
+            not_obj = Notification.objects.create(created_by_primary=prim_obj,
+                      message=user_details_str)
+            NoticeReadPrimary.objects.create(notification=not_obj, user_to=prim_obj)
+        except:
+            pass
+        member.delete()
+        return Response({'success': True})
+
+    @action(methods=['get'], detail=True, url_path='reject-primary-number',
+        permission_classes=[IsAuthenticated, AdminPermission])
+    def reject_primary(self, request, pk=None):
+        member = self.get_object()  
+        member.is_accepted = True
+        member.save()
+        return Response({'success': True})

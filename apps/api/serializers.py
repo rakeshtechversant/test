@@ -5,7 +5,7 @@ import requests
 from apps.church.models import UserProfile, ChurchDetails, FileUpload, OtpModels, \
     OtpVerify, PrayerGroup, Notification, Family, Members, Notice, NoticeBereavement, \
     UnapprovedMember, NoticeReadPrimary, NoticeReadSecondary, NoticeReadAdmin, ViewRequestNumber, PrivacyPolicy, \
-    PhoneVersion, Images, PrimaryToSecondary
+    PhoneVersion, Images, PrimaryToSecondary, NumberChangePrimary
 from rest_framework.serializers import CharField
 from apps.api.token_create import get_tokens_for_user
 from django.utils.crypto import get_random_string
@@ -786,15 +786,46 @@ class PrimaryToSecondarySerializer(serializers.ModelSerializer):
         fields = ['request_from', 'request_to','usertype_from','id']
         read_only_fields = ['id']
 
-    # def to_representation(self, obj):
+    def to_representation(self, obj):
 
-    #     data = super().to_representation(obj)
+        data = super().to_representation(obj)
 
-    #     request = self.context['request']
+        request = self.context['request']
 
-    #     try:
-    #         data['request_from_name'] = obj.request_from.name.title()
-    #     except:
-    #         data['request_from_name'] = obj.request_from.member.title()
+        try:
+            # import pdb;pdb.set_trace()
+            if obj.usertype_from == 'PRIMARY':
+                from_id = obj.request_from
+                to_id = obj.request_to
+                
+                data['request_from_name'] = FileUpload.objects.get(primary_user_id=int(from_id)).name
+                data['request_to_name'] = Members.objects.get(secondary_user_id=int(to_id)).member_name
+            elif(obj.usertype_from == 'SECONDARY'):
+                from_id = obj.request_from
+                to_id = obj.request_to
+                data['request_from_name'] = Members.objects.get(secondary_user_id=int(from_id)).member_name
+                data['request_to_name'] = FileUpload.objects.get(primary_user_id=int(to_id)).name
+        except:
+            data['request_from_name'] = None
 
-    #     return data
+        data['rejected'] = obj.is_accepted
+        return data
+
+
+class NumberChangePrimarySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = NumberChangePrimary
+        fields = ['request_from_primary', 'number_from','number_to','id']
+        read_only_fields = ['id']
+
+    def to_representation(self, obj):
+        data = super().to_representation(obj)
+        request = self.context['request']
+        request_from = obj.request_from_primary
+        try:
+            data['name'] = FileUpload.objects.get(primary_user_id=int(request_from)).name
+        except:
+            data['name'] = None
+
+        data['rejected'] = obj.is_accepted
+        return data
