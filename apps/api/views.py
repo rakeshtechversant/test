@@ -3600,7 +3600,7 @@ class UpdatePhoneNumberSecondary(APIView):
                
                     data = {
                         'status': False,
-                        'message':"Phone number already registered"
+                        'message':"This phone number already registered.Please use another number"
                     }
                     data['response'] = serializer.errors
 

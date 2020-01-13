@@ -372,7 +372,17 @@ class PrimaryUserProfileSerializer(serializers.ModelSerializer):
             data['name'] = instance.name.title()
         except:
             pass
+        try:
+            data['family_name'] = instance.get_file_upload.first().name
+        except:
+            data['family_name'] = None
+        try:
+            data['family_id'] = instance.get_file_upload.first().id
+        except:
+            data['family_id'] = None
+
         return data
+
 
 
 class NoticeBereavementSerializer(serializers.ModelSerializer):
