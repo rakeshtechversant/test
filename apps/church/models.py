@@ -281,6 +281,7 @@ class PrimaryToSecondary(models.Model):
     request_from = models.CharField(max_length=200, null=True, blank=True)
     usertype_from = models.CharField(max_length=200, null=True, blank=True)
     request_to = models.CharField(max_length=200, null=True, blank=True)
+    status = models.CharField(max_length=200, null=True, blank=True)
     is_accepted = models.BooleanField(default=False)
     date=models.DateTimeField(default=datetime.now, blank=True)
 
@@ -288,5 +289,6 @@ class NumberChangePrimary(models.Model):
     request_from_primary = models.CharField(max_length=200, null=True, blank=True)
     number_from = models.CharField(max_length=12, null=True, blank=True)
     number_to = models.CharField(max_length=12, null=True, blank=True)
+    status = models.CharField(max_length=200, null=True, blank=True)
     is_accepted = models.BooleanField(default=False)
     date=models.DateTimeField(default=datetime.now, blank=True)
