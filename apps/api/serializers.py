@@ -820,6 +820,16 @@ class PrimaryToSecondarySerializer(serializers.ModelSerializer):
             data['request_from_name'] = None
 
         data['rejected'] = obj.is_accepted
+
+        try:
+            if obj.status:
+                data['status'] = obj.status
+            else:
+                data['status'] = 'Pending'
+        except:
+            data['status'] = 'Pending'
+
+        return data
         return data
 
 
@@ -842,8 +852,15 @@ class NumberChangePrimarySerializer(serializers.ModelSerializer):
         except:
             data['type'] = None
 
-        
         data['rejected'] = obj.is_accepted
+        
+        try:
+            if obj.status:
+                data['status'] = obj.status
+            else:
+                data['status'] = 'Pending'
+        except:
+            data['status'] = 'Pending'
         return data
 
 
