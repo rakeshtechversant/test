@@ -4066,7 +4066,8 @@ class StatusChangeAcceptView(mixins.CreateModelMixin,
             NoticeReadPrimary.objects.create(notification=not_obj, user_to=prim_obj)
         except:
             pass
-        # member.delete()
+        member.status = 'Accepted'
+        member.save()
         return Response({'success': True})
 
     @action(methods=['get'], detail=True, url_path='reject-primary',
@@ -4074,6 +4075,7 @@ class StatusChangeAcceptView(mixins.CreateModelMixin,
     def reject_primary(self, request, pk=None):
         member = self.get_object()  
         member.is_accepted = True
+        member.status  = 'Rejected'
         member.save()
         return Response({'success': True})
 
@@ -4253,6 +4255,8 @@ class PrimaryNumberChangeAcceptView(mixins.CreateModelMixin,
             NoticeReadPrimary.objects.create(notification=not_obj, user_to=prim_obj)
         except:
             pass
+        member.status = 'Accepted'
+        member.save()
         # member.delete()
         return Response({'success': True})
 
@@ -4261,6 +4265,7 @@ class PrimaryNumberChangeAcceptView(mixins.CreateModelMixin,
     def reject_primary(self, request, pk=None):
         member = self.get_object()  
         member.is_accepted = True
+        member.status  = 'Rejected'
         member.save()
         return Response({'success': True})
 

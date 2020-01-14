@@ -869,4 +869,11 @@ class AdminRequestSerializer(serializers.ModelSerializer):
             data['type'] = None
 
         data['rejected'] = obj.is_accepted
+        try:
+            if obj.status:
+                data['status'] = obj.status
+            else:
+                data['status'] = 'Pending'
+        except:
+            data['status'] = 'Pending'
         return data
