@@ -800,7 +800,7 @@ class PrimaryToSecondarySerializer(serializers.ModelSerializer):
 
         data = super().to_representation(obj)
 
-        request = self.context['request']
+        # request = self.context['request']
 
         try:
             # import pdb;pdb.set_trace()
@@ -827,6 +827,27 @@ class NumberChangePrimarySerializer(serializers.ModelSerializer):
         model = NumberChangePrimary
         fields = ['request_from_primary', 'number_from','number_to','id']
         read_only_fields = ['id']
+
+    def to_representation(self, obj):
+        data = super().to_representation(obj)
+        request = self.context['request']
+        request_from = obj.request_from_primary
+        try:
+            data['name'] = FileUpload.objects.get(primary_user_id=int(request_from)).name
+        except:
+            data['name'] = None
+
+        data['rejected'] = obj.is_accepted
+        return data
+
+
+class AdminRequestSerializer(serializers.ModelSerializer):
+    status_change = PrimaryToSecondarySerializer(many=True,read_only=True)
+
+    class Meta:
+        model = NumberChangePrimary
+        fields = ['request_from_primary', 'number_from','number_to','id','status_change']
+        read_only_fields = ['id'] 
 
     def to_representation(self, obj):
         data = super().to_representation(obj)

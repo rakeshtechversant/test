@@ -8,7 +8,7 @@ import json
 from rest_framework import mixins
 from rest_framework import exceptions
 from rest_framework.views import APIView
-from rest_framework.viewsets import GenericViewSet, ModelViewSet
+from rest_framework.viewsets import GenericViewSet, ModelViewSet,ViewSet
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from rest_framework.generics import ListCreateAPIView, ListAPIView, RetrieveAPIView, RetrieveUpdateAPIView, \
@@ -36,7 +36,8 @@ from apps.api.serializers import ChurchHistorySerializer, ChurchImagesSerializer
     UserByadminSerializer, FamilyByadminSerializer, PrimaryNotificationSerializer, SecondaryNotificationSerializer, \
     ViewRequestNumberSerializer, RequestAcceptNumberSerializer, AdminNotificationSerializer, PhoneVersionSerializer, \
     GalleryImagesSerializer, FamilyDetailSerializer, FamilyEditSerializer, GalleryImagesCreateSerializer, \
-    OTPVeifySerializerUserId, CommonUserSerializer, MemberNumberSerializer, PrimaryToSecondarySerializer, NumberChangePrimarySerializer
+    OTPVeifySerializerUserId, CommonUserSerializer, MemberNumberSerializer, PrimaryToSecondarySerializer, NumberChangePrimarySerializer ,\
+    AdminRequestSerializer
 from apps.church.models import Members, Family, UserProfile, ChurchDetails, FileUpload, OtpModels, \
     PrayerGroup, Notification, Notice, NoticeBereavement, UnapprovedMember, NoticeReadPrimary, NoticeReadSecondary, \
     ViewRequestNumber, NoticeReadAdmin, PrivacyPolicy, PhoneVersion, Images, PrimaryToSecondary, NumberChangePrimary
@@ -4065,7 +4066,7 @@ class StatusChangeAcceptView(mixins.CreateModelMixin,
             NoticeReadPrimary.objects.create(notification=not_obj, user_to=prim_obj)
         except:
             pass
-        member.delete()
+        # member.delete()
         return Response({'success': True})
 
     @action(methods=['get'], detail=True, url_path='reject-primary',
@@ -4252,7 +4253,7 @@ class PrimaryNumberChangeAcceptView(mixins.CreateModelMixin,
             NoticeReadPrimary.objects.create(notification=not_obj, user_to=prim_obj)
         except:
             pass
-        member.delete()
+        # member.delete()
         return Response({'success': True})
 
     @action(methods=['get'], detail=True, url_path='reject-primary-number',
@@ -4262,3 +4263,24 @@ class PrimaryNumberChangeAcceptView(mixins.CreateModelMixin,
         member.is_accepted = True
         member.save()
         return Response({'success': True})
+
+
+class AdminRequestSectionView(ModelViewSet):
+    queryset = NumberChangePrimary.objects.all()
+    serializer_class = AdminRequestSerializer
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def list(self, request, *args, **kwargs):
+
+        obj = PrimaryToSecondary.objects.all()
+        serializerdata = PrimaryToSecondarySerializer(obj,many=True)
+        queryset = self.filter_queryset(self.get_queryset())
+        serializer = self.get_serializer(queryset,many=True)
+        data ={
+            "success": True,
+            "code": 200,
+        }
+        response ={}
+        data['response'] = {'number_requests':serializer.data,'status_change':serializerdata.data}
+        return Response(data)
