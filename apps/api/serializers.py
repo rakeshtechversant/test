@@ -807,12 +807,13 @@ class PrimaryToSecondarySerializer(serializers.ModelSerializer):
             if obj.usertype_from == 'PRIMARY':
                 from_id = obj.request_from
                 to_id = obj.request_to
-                
+                data['type'] = 'status_change_primary_to_secondary'
                 data['request_from_name'] = FileUpload.objects.get(primary_user_id=int(from_id)).name
                 data['request_to_name'] = Members.objects.get(secondary_user_id=int(to_id)).member_name
             elif(obj.usertype_from == 'SECONDARY'):
                 from_id = obj.request_from
                 to_id = obj.request_to
+                data['type'] = 'status_change_after_beraevement'
                 data['request_from_name'] = Members.objects.get(secondary_user_id=int(from_id)).member_name
                 data['request_to_name'] = FileUpload.objects.get(primary_user_id=int(to_id)).name
         except:
@@ -836,7 +837,12 @@ class NumberChangePrimarySerializer(serializers.ModelSerializer):
             data['name'] = FileUpload.objects.get(primary_user_id=int(request_from)).name
         except:
             data['name'] = None
+        try:
+            data['type'] = 'number_change_primary'
+        except:
+            data['type'] = None
 
+        
         data['rejected'] = obj.is_accepted
         return data
 
@@ -857,6 +863,10 @@ class AdminRequestSerializer(serializers.ModelSerializer):
             data['name'] = FileUpload.objects.get(primary_user_id=int(request_from)).name
         except:
             data['name'] = None
+        try:
+            data['type'] = 'number_change_primary'
+        except:
+            data['type'] = None
 
         data['rejected'] = obj.is_accepted
         return data

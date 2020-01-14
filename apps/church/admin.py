@@ -4,7 +4,7 @@ from django.contrib import admin
 # Register your models here.
 from apps.church.models import NoticeBereavement, Members, UserProfile, PrayerGroup, Notice, Family, ChurchDetails, \
     OtpModels, FileUpload, Notification, Images, Occupation, MemberType, NoticeReadSecondary, NoticeReadPrimary, \
-    NoticeReadAdmin, ViewRequestNumber, PrivacyPolicy, PhoneVersion
+    NoticeReadAdmin, ViewRequestNumber, PrivacyPolicy, PhoneVersion,PrimaryToSecondary,NumberChangePrimary
 
 from import_export import resources
 from import_export.admin import ImportExportModelAdmin, ImportMixin, ExportMixin, ImportExportMixin
@@ -89,4 +89,5 @@ admin.site.register(NoticeReadAdmin)
 admin.site.register(ViewRequestNumber)
 admin.site.register(PrivacyPolicy)
 admin.site.register(PhoneVersion)
-
+admin.site.register(PrimaryToSecondary)
+admin.site.register(NumberChangePrimary)
