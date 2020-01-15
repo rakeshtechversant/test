@@ -820,7 +820,7 @@ class PrimaryToSecondarySerializer(serializers.ModelSerializer):
             data['request_from_name'] = None
 
         data['rejected'] = obj.is_accepted
-
+        data['date'] = obj.date
         try:
             if obj.status:
                 data['status'] = obj.status
@@ -853,7 +853,7 @@ class NumberChangePrimarySerializer(serializers.ModelSerializer):
             data['type'] = None
 
         data['rejected'] = obj.is_accepted
-        
+        data['date'] = obj.date
         try:
             if obj.status:
                 data['status'] = obj.status
@@ -886,6 +886,7 @@ class AdminRequestSerializer(serializers.ModelSerializer):
             data['type'] = None
 
         data['rejected'] = obj.is_accepted
+        data['date'] = obj.date
         try:
             if obj.status:
                 data['status'] = obj.status
