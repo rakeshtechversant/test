@@ -4286,6 +4286,13 @@ class AdminRequestSectionView(ModelViewSet):
             "success": True,
             "code": 200,
         }
-        response ={}
-        data['response'] = {'number_requests':serializer.data,'status_change':serializerdata.data}
+        response =[]
+        # response.append(serializer.data[0])
+        # if serializerdata.data:
+        #     response.append(serializerdata.data)
+        for numlist in serializer.data:
+            response.append(numlist)
+        for statuslist in serializerdata.data:
+            response.append(statuslist)
+        data['response'] = response
         return Response(data)
