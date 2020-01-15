@@ -3705,6 +3705,8 @@ class PrimaryToSecondaryViewset(CreateAPIView):
                                 "from_phone_number":from_user.phone_no_primary,
                                 "to_user":sec_user.member_name,
                                 "to_id":sec_user.secondary_user_id,
+                                "family_name":from_user.get_file_upload.first().name,
+                                "prayer_group_name":from_user.get_file_upload_prayergroup.first().name,
                                 "send_time":str(tz.now()),
                                 "type":"status_change_primary_to_secondary",
                             }
@@ -3773,6 +3775,8 @@ class PrimaryToSecondaryViewset(CreateAPIView):
                                     "from_phone_number":from_user_phone,
                                     "to_user":primary_user.name,
                                     "to_id":primary_user.primary_user_id,
+                                    "family_name":primary_user.get_file_upload.first().name,
+                                    "prayer_group_name":primary_user.get_file_upload_prayergroup.first().name,
                                     "send_time":str(tz.now()),
                                     "type":"status_change_after_beraevement",
                                 }
@@ -4111,6 +4115,8 @@ class PrimaryNumberChangeViewset(CreateAPIView):
                             "phone_number_primary":from_user.phone_no_primary,
                             "number_from": number_from,
                             "number_to": number_to,
+                            "family_name":from_user.get_file_upload.first().name,
+                            "prayer_group_name":from_user.get_file_upload_prayergroup.first().name,
                             "send_time":str(tz.now()),
                             "type":"number_change_primary",
                         }
