@@ -423,6 +423,11 @@ class MemberProfileSerializer(serializers.ModelSerializer):
             data['phone_no_secondary'] = instance.phone_no_secondary_user_secondary
         except:
             data['phone_no_secondary'] = None
+
+        try :
+            data['primary_in_memory'] = instance.primary_user_id.in_memory
+        except:
+            data['primary_in_memory'] = None
         return data
 
 
