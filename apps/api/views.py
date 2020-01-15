@@ -1100,7 +1100,8 @@ class UserDetailView(APIView):
                     'marrige_date':date_om,
                     'in_memory':user_details.in_memory,
                     'in_memory_date':user_details.in_memory_date,
-                    'image':image
+                    'image':image,
+                    'primary_in_memory':user_details.primary_user_id.in_memory
 
                 }
                 return Response({'success': True,'message':'Profile found successfully','user_details':data}, status=HTTP_200_OK)
