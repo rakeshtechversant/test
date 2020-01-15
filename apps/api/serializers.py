@@ -810,12 +810,18 @@ class PrimaryToSecondarySerializer(serializers.ModelSerializer):
                 data['type'] = 'status_change_primary_to_secondary'
                 data['request_from_name'] = FileUpload.objects.get(primary_user_id=int(from_id)).name
                 data['request_to_name'] = Members.objects.get(secondary_user_id=int(to_id)).member_name
+                data['family_name'] = FileUpload.objects.get(primary_user_id=int(from_id)).get_file_upload.first().name
+                data['prayer_group_name'] = FileUpload.objects.get(primary_user_id=int(from_id)).get_file_upload_prayergroup.first().name
+
             elif(obj.usertype_from == 'SECONDARY'):
                 from_id = obj.request_from
                 to_id = obj.request_to
                 data['type'] = 'status_change_after_beraevement'
                 data['request_from_name'] = Members.objects.get(secondary_user_id=int(from_id)).member_name
                 data['request_to_name'] = FileUpload.objects.get(primary_user_id=int(to_id)).name
+                data['family_name'] = FileUpload.objects.get(primary_user_id=int(to_id)).get_file_upload.first().name
+                data['prayer_group_name'] = FileUpload.objects.get(primary_user_id=int(to_id)).get_file_upload_prayergroup.first().name
+
         except:
             data['request_from_name'] = None
 
@@ -880,6 +886,16 @@ class AdminRequestSerializer(serializers.ModelSerializer):
             data['name'] = FileUpload.objects.get(primary_user_id=int(request_from)).name
         except:
             data['name'] = None
+        try:
+            data['family_name'] = FileUpload.objects.get(primary_user_id=int(request_from)).get_file_upload.first().name
+        except:
+            data['family_name'] = None
+
+        try:
+            data['prayer_group_name'] = FileUpload.objects.get(primary_user_id=int(request_from)).get_file_upload_prayergroup.first().name
+        except:
+            data['prayer_group_name'] = None
+
         try:
             data['type'] = 'number_change_primary'
         except:
