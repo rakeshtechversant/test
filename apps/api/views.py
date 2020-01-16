@@ -3691,45 +3691,55 @@ class PrimaryToSecondaryViewset(CreateAPIView):
                     if FileUpload.objects.filter(primary_user_id=int(request_from)).exists():
                         primary_user = FileUpload.objects.get(primary_user_id=request_from)
                         sec_user = Members.objects.get(secondary_user_id=request_to)
+                        # import pdb;pdb.set_trace()
                         if primary_user.primary_user_id == sec_user.primary_user_id.primary_user_id:
-                            obj,created = PrimaryToSecondary.objects.get_or_create(request_from=request_from,request_to=sec_user.secondary_user_id,usertype_from='PRIMARY')
-                            try:
-                                from_user = FileUpload.objects.get(phone_no_primary=request.user.username)
-                            except:
-                                from_user = FileUpload.objects.get(phone_no_secondary=request.user.username)
+                            if PrimaryToSecondary.objects.filter(request_from=request_from,request_to=sec_user.secondary_user_id,usertype_from='PRIMARY',status=None).exists():
+                                data = {
+                                    'status': False,
+                                    'message':"You are already requested for status change"
+                                }
+                                data['response'] = {}
 
-                            user_details={
-                                "notification_id":obj.id,
-                                "from_id":from_user.primary_user_id,
-                                "from_usertype":'PRIMARY',
-                                "from_user":from_user.name,
-                                "from_phone_number":from_user.phone_no_primary,
-                                "to_user":sec_user.member_name,
-                                "to_id":sec_user.secondary_user_id,
-                                "family_name":from_user.get_file_upload.first().name,
-                                "prayer_group_name":from_user.get_file_upload_prayergroup.first().name,
-                                "send_time":str(tz.now()),
-                                "type":"status_change_primary_to_secondary",
-                            }
+                                return Response(data, status=status.HTTP_400_BAD_REQUEST)
+                            else:
+                                obj,created = PrimaryToSecondary.objects.get_or_create(request_from=request_from,request_to=sec_user.secondary_user_id,usertype_from='PRIMARY')
+                                try:
+                                    from_user = FileUpload.objects.get(phone_no_primary=request.user.username)
+                                except:
+                                    from_user = FileUpload.objects.get(phone_no_secondary=request.user.username)
 
-                            user_details_str=str(user_details)
-                            notification = Notification.objects.create(
-                                created_by_primary=primary_user, 
-                                message=user_details_str
-                            )
+                                user_details={
+                                    "notification_id":obj.id,
+                                    "from_id":from_user.primary_user_id,
+                                    "from_usertype":'PRIMARY',
+                                    "from_user":from_user.name,
+                                    "from_phone_number":from_user.phone_no_primary,
+                                    "to_user":sec_user.member_name,
+                                    "to_id":sec_user.secondary_user_id,
+                                    "family_name":from_user.get_file_upload.first().name,
+                                    "prayer_group_name":from_user.get_file_upload_prayergroup.first().name,
+                                    "send_time":str(tz.now()),
+                                    "type":"status_change_primary_to_secondary",
+                                }
 
-                            admin_profiles = AdminProfile.objects.all()
+                                user_details_str=str(user_details)
+                                notification = Notification.objects.create(
+                                    created_by_primary=primary_user, 
+                                    message=user_details_str
+                                )
 
-                            for admin_profile in admin_profiles:
-                                NoticeReadAdmin.objects.create(notification=notification, user_to=admin_profile)
-                            
+                                admin_profiles = AdminProfile.objects.all()
 
-                            success_data = {
-                                'status': True,
-                                "message": "Status change request is send successfully.Wait admin to approve/reject"
-                            }
-                            success_data['response'] = user_details
-                            return Response(success_data, status=status.HTTP_201_CREATED)
+                                for admin_profile in admin_profiles:
+                                    NoticeReadAdmin.objects.create(notification=notification, user_to=admin_profile)
+                                
+
+                                success_data = {
+                                    'status': True,
+                                    "message": "Status change request is send successfully.Wait admin to approve/reject"
+                                }
+                                success_data['response'] = user_details
+                                return Response(success_data, status=status.HTTP_201_CREATED)
                         else:
 
                             data = {
@@ -3755,51 +3765,60 @@ class PrimaryToSecondaryViewset(CreateAPIView):
                         sec_user = Members.objects.get(secondary_user_id=request_from)
                         if primary_user.in_memory == True :
                             if primary_user.primary_user_id == sec_user.primary_user_id.primary_user_id:
-                                obj,created=PrimaryToSecondary.objects.get_or_create(request_from=request_from,request_to=primary_user.primary_user_id,usertype_from='SECONDARY')
-                                try:
-                                    from_user = Members.objects.get(phone_no_secondary_user=request.user.username)
-                                    if from_user.phone_no_secondary_user:
-                                        from_user_phone = from_user.phone_no_secondary_user
-                                    else:
-                                        from_user_phone = None
-                                except:
-                                    from_user = Members.objects.get(phone_no_secondary_user_secondary=request.user.username)
-                                    if from_user.phone_no_secondary_user_secondary:
-                                        from_user_phone = from_user.phone_no_secondary_user_secondary
-                                    else:
-                                        from_user_phone = None
-                                user_details={
-                                    "notification_id":obj.id,
-                                    "from_id":from_user.secondary_user_id,
-                                    "from_usertype":'SECONDARY',
-                                    "from_user":from_user.member_name,
-                                    "from_phone_number":from_user_phone,
-                                    "to_user":primary_user.name,
-                                    "to_id":primary_user.primary_user_id,
-                                    "family_name":primary_user.get_file_upload.first().name,
-                                    "prayer_group_name":primary_user.get_file_upload_prayergroup.first().name,
-                                    "send_time":str(tz.now()),
-                                    "type":"status_change_after_beraevement",
-                                }
+                                if PrimaryToSecondary.objects.filter(request_from=request_from,request_to=primary_user.primary_user_id,usertype_from='SECONDARY',status=None).exists():
+                                    data = {
+                                        'status': False,
+                                        'message':"You are already requested for status change"
+                                    }
+                                    data['response'] = {}
 
-                                user_details_str=str(user_details)
-                                notification = Notification.objects.create(
-                                    created_by_secondary=sec_user, 
-                                    message=user_details_str
-                                )
+                                    return Response(data, status=status.HTTP_400_BAD_REQUEST)
+                                else:
+                                    obj,created=PrimaryToSecondary.objects.get_or_create(request_from=request_from,request_to=primary_user.primary_user_id,usertype_from='SECONDARY')
+                                    try:
+                                        from_user = Members.objects.get(phone_no_secondary_user=request.user.username)
+                                        if from_user.phone_no_secondary_user:
+                                            from_user_phone = from_user.phone_no_secondary_user
+                                        else:
+                                            from_user_phone = None
+                                    except:
+                                        from_user = Members.objects.get(phone_no_secondary_user_secondary=request.user.username)
+                                        if from_user.phone_no_secondary_user_secondary:
+                                            from_user_phone = from_user.phone_no_secondary_user_secondary
+                                        else:
+                                            from_user_phone = None
+                                    user_details={
+                                        "notification_id":obj.id,
+                                        "from_id":from_user.secondary_user_id,
+                                        "from_usertype":'SECONDARY',
+                                        "from_user":from_user.member_name,
+                                        "from_phone_number":from_user_phone,
+                                        "to_user":primary_user.name,
+                                        "to_id":primary_user.primary_user_id,
+                                        "family_name":primary_user.get_file_upload.first().name,
+                                        "prayer_group_name":primary_user.get_file_upload_prayergroup.first().name,
+                                        "send_time":str(tz.now()),
+                                        "type":"status_change_after_beraevement",
+                                    }
 
-                                admin_profiles = AdminProfile.objects.all()
+                                    user_details_str=str(user_details)
+                                    notification = Notification.objects.create(
+                                        created_by_secondary=sec_user, 
+                                        message=user_details_str
+                                    )
 
-                                for admin_profile in admin_profiles:
-                                    NoticeReadAdmin.objects.create(notification=notification, user_to=admin_profile)
-                                
+                                    admin_profiles = AdminProfile.objects.all()
 
-                                success_data = {
-                                    'status': True,
-                                    "message": "Status change request is send successfully.Wait admin to approve/reject"
-                                }
-                                success_data['response'] = user_details
-                                return Response(success_data, status=status.HTTP_201_CREATED)
+                                    for admin_profile in admin_profiles:
+                                        NoticeReadAdmin.objects.create(notification=notification, user_to=admin_profile)
+                                    
+
+                                    success_data = {
+                                        'status': True,
+                                        "message": "Status change request is send successfully.Wait admin to approve/reject"
+                                    }
+                                    success_data['response'] = user_details
+                                    return Response(success_data, status=status.HTTP_201_CREATED)
                             else:
 
                                 data = {
@@ -4103,43 +4122,52 @@ class PrimaryNumberChangeViewset(CreateAPIView):
                 if FileUpload.objects.filter(primary_user_id=int(request_from_primary)).exists():
                     primary_user = FileUpload.objects.get(primary_user_id=request_from_primary)
                     if primary_user.phone_no_primary == number_from or primary_user.phone_no_secondary == number_from:
-                        obj,created = NumberChangePrimary.objects.get_or_create(request_from_primary=request_from_primary,number_to=number_to,number_from=number_from)
-                        try:
-                            from_user = FileUpload.objects.get(phone_no_primary=request.user.username)
-                        except:
-                            from_user = FileUpload.objects.get(phone_no_secondary=request.user.username)
+                        if NumberChangePrimary.objects.filter(request_from_primary=request_from_primary,number_to=number_to,number_from=number_from,status=None).exists():
+                            data = {
+                                'status': False,
+                                'message':"You are already requested for number change"
+                            }
+                            data['response'] = {}
 
-                        user_details={
-                            "notification_id":obj.id,
-                            "primary_user_id":from_user.primary_user_id,
-                            "name":from_user.name,
-                            "phone_number_primary":from_user.phone_no_primary,
-                            "number_from": number_from,
-                            "number_to": number_to,
-                            "family_name":from_user.get_file_upload.first().name,
-                            "prayer_group_name":from_user.get_file_upload_prayergroup.first().name,
-                            "send_time":str(tz.now()),
-                            "type":"number_change_primary",
-                        }
+                            return Response(data, status=status.HTTP_400_BAD_REQUEST)
+                        else:
+                            obj,created = NumberChangePrimary.objects.get_or_create(request_from_primary=request_from_primary,number_to=number_to,number_from=number_from)
+                            try:
+                                from_user = FileUpload.objects.get(phone_no_primary=request.user.username)
+                            except:
+                                from_user = FileUpload.objects.get(phone_no_secondary=request.user.username)
 
-                        user_details_str=str(user_details)
-                        notification = Notification.objects.create(
-                            created_by_primary=primary_user, 
-                            message=user_details_str
-                        )
+                            user_details={
+                                "notification_id":obj.id,
+                                "primary_user_id":from_user.primary_user_id,
+                                "name":from_user.name,
+                                "phone_number_primary":from_user.phone_no_primary,
+                                "number_from": number_from,
+                                "number_to": number_to,
+                                "family_name":from_user.get_file_upload.first().name,
+                                "prayer_group_name":from_user.get_file_upload_prayergroup.first().name,
+                                "send_time":str(tz.now()),
+                                "type":"number_change_primary",
+                            }
 
-                        admin_profiles = AdminProfile.objects.all()
+                            user_details_str=str(user_details)
+                            notification = Notification.objects.create(
+                                created_by_primary=primary_user, 
+                                message=user_details_str
+                            )
 
-                        for admin_profile in admin_profiles:
-                            NoticeReadAdmin.objects.create(notification=notification, user_to=admin_profile)
-                        
+                            admin_profiles = AdminProfile.objects.all()
 
-                        success_data = {
-                            'status': True,
-                            "message": "Primary number change request is send successfully.Wait admin to approve/reject"
-                        }
-                        success_data['response'] = user_details
-                        return Response(success_data, status=status.HTTP_201_CREATED)
+                            for admin_profile in admin_profiles:
+                                NoticeReadAdmin.objects.create(notification=notification, user_to=admin_profile)
+                            
+
+                            success_data = {
+                                'status': True,
+                                "message": "Primary number change request is send successfully.Wait admin to approve/reject"
+                            }
+                            success_data['response'] = user_details
+                            return Response(success_data, status=status.HTTP_201_CREATED)
                     else:
 
                         data = {
