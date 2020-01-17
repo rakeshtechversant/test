@@ -3702,7 +3702,7 @@ class PrimaryToSecondaryViewset(CreateAPIView):
 
                                 return Response(data, status=status.HTTP_400_BAD_REQUEST)
                             else:
-                                obj,created = PrimaryToSecondary.objects.get_or_create(request_from=request_from,request_to=sec_user.secondary_user_id,usertype_from='PRIMARY')
+                                obj = PrimaryToSecondary.objects.create(request_from=request_from,request_to=sec_user.secondary_user_id,usertype_from='PRIMARY')
                                 try:
                                     from_user = FileUpload.objects.get(phone_no_primary=request.user.username)
                                 except:
@@ -3774,7 +3774,7 @@ class PrimaryToSecondaryViewset(CreateAPIView):
 
                                     return Response(data, status=status.HTTP_400_BAD_REQUEST)
                                 else:
-                                    obj,created=PrimaryToSecondary.objects.get_or_create(request_from=request_from,request_to=primary_user.primary_user_id,usertype_from='SECONDARY')
+                                    obj=PrimaryToSecondary.objects.create(request_from=request_from,request_to=primary_user.primary_user_id,usertype_from='SECONDARY')
                                     try:
                                         from_user = Members.objects.get(phone_no_secondary_user=request.user.username)
                                         if from_user.phone_no_secondary_user:
@@ -4131,7 +4131,7 @@ class PrimaryNumberChangeViewset(CreateAPIView):
 
                             return Response(data, status=status.HTTP_400_BAD_REQUEST)
                         else:
-                            obj,created = NumberChangePrimary.objects.get_or_create(request_from_primary=request_from_primary,number_to=number_to,number_from=number_from)
+                            obj = NumberChangePrimary.objects.create(request_from_primary=request_from_primary,number_to=number_to,number_from=number_from)
                             try:
                                 from_user = FileUpload.objects.get(phone_no_primary=request.user.username)
                             except:
