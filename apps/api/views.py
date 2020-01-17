@@ -4306,14 +4306,14 @@ class PrimaryNumberChangeAcceptView(mixins.CreateModelMixin,
 
 
 class AdminRequestSectionView(ModelViewSet):
-    queryset = NumberChangePrimary.objects.all()
+    queryset = NumberChangePrimary.objects.all().order_by('date').reverse()
     serializer_class = AdminRequestSerializer
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
     def list(self, request, *args, **kwargs):
 
-        obj = PrimaryToSecondary.objects.all()
+        obj = PrimaryToSecondary.objects.all().order_by('date').reverse()
         serializerdata = PrimaryToSecondarySerializer(obj,many=True)
         queryset = self.filter_queryset(self.get_queryset())
         serializer = self.get_serializer(queryset,many=True)
