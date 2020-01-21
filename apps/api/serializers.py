@@ -911,6 +911,17 @@ class AdminRequestSerializer(serializers.ModelSerializer):
         except:
             data['type'] = None
 
+        try:
+            user_obj = FileUpload.objects.get(primary_user_id=int(request_from))
+            if user_obj.phone_no_primary == obj.number_from:
+                data['number_type'] = 'PRIMARY NUMBER'
+            elif user_obj.phone_no_secondary == obj.number_from:
+                data['number_type'] = 'SECONDARY NUMBER'
+            else:
+                data['number_type'] = None  
+        except:
+            data['number_type'] = None  
+              
         data['rejected'] = obj.is_accepted
         data['date'] = obj.date
         try:
