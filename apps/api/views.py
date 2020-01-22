@@ -3681,7 +3681,6 @@ class PrimaryToSecondaryViewset(CreateAPIView):
     def post(self, request):
         request_from = request.POST.get('request_from', False)
         request_to = request.POST.get('request_to', False)
-
         usertype_from = request.POST.get('usertype_from', False)
         if not request_from and not request_to and not  usertype_from :
             return Response({'success': False,'message': 'You should fill all the fields'}, status=HTTP_400_BAD_REQUEST)
@@ -4329,5 +4328,6 @@ class AdminRequestSectionView(ModelViewSet):
             response.append(numlist)
         for statuslist in serializerdata.data:
             response.append(statuslist)
+        response.sort(key=lambda item:item['date'], reverse=True)
         data['response'] = response
         return Response(data)
