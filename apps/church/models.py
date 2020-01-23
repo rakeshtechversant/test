@@ -99,7 +99,9 @@ class UnapprovedMember(models.Model):
     in_memory_date = models.DateTimeField(null=True, blank=True)
     rejected = models.BooleanField(default=False)
     edit_user = models.IntegerField(null=True, blank=True)
-
+    status = models.CharField(max_length=200, null=True, blank=True)
+    date=models.DateTimeField(default=datetime.now, blank=True)
+    
     def __str__(self):
         return self.member_name
 

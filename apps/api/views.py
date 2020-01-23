@@ -2002,6 +2002,10 @@ class UnapprovedMemberView(mixins.CreateModelMixin,
         data = UnapprovedMemberSerializer(member).data
         data.pop('secondary_user_id')
         data.pop('rejected')
+        data.pop('status')
+        data.pop('date')
+        data.pop('type')
+        data.pop('primary_user_number')
         try:
             img_name = data.get('image').split('/')[-1]
             img_path = 'members/'+img_name
@@ -2009,7 +2013,6 @@ class UnapprovedMemberView(mixins.CreateModelMixin,
         except:
             pass
         edit_user = data.pop('edit_user')
-
         if edit_user:
             Members.objects.filter(secondary_user_id=edit_user).update(**data)
         else:
@@ -2021,11 +2024,11 @@ class UnapprovedMemberView(mixins.CreateModelMixin,
                 not_obj = Notification.objects.create(created_by_primary=primary_user,
                           message=user_details_str)
                 NoticeReadPrimary.objects.create(notification=not_obj, user_to=primary_user)
+                member.status = 'Accepted'
+                member.save() 
             except:
                 pass
-
-
-        member.delete()
+        # member.delete()
 
         return Response({'success': True})
 
@@ -2041,8 +2044,8 @@ class UnapprovedMemberView(mixins.CreateModelMixin,
         except:
             pass       
         member.rejected = True
+        member.status  = 'Rejected'
         member.save()
-
         return Response({'success': True})
 
 class FamilyDetailView(ListAPIView):
@@ -2806,6 +2809,7 @@ class EachUserNotification(APIView):
             status_beri_flag = False
             status_prim_flag = False
             change_prim_num_flag =  False
+            sec_add_flag = False
             if notif.notification.is_json == True :
                 dump_value = json.dumps(messages.data[index])
                 v1 = json.loads(dump_value)
@@ -2839,11 +2843,15 @@ class EachUserNotification(APIView):
                     elif data_final['type'] == 'number_change_primary':
                         data_obj.append(data_final)
                         change_prim_num_flag = True
+                    elif data_final['type'] == 'primary_add_secondary':
+                        data_obj.append(data_final)
+                        sec_add_flag = True
+
                     else:
                         pass
                 except:
                     pass
-                if not (beri_flag or notice_flag or status_beri_flag or status_prim_flag or change_prim_num_flag):
+                if not (beri_flag or notice_flag or status_beri_flag or status_prim_flag or change_prim_num_flag or sec_add_flag):
                     messages.data[index].update({"type":"Default notification"})
                     data_obj.append(messages.data[index])
         data['response'] = data_obj
@@ -4314,6 +4322,11 @@ class AdminRequestSectionView(ModelViewSet):
 
         obj = PrimaryToSecondary.objects.all().order_by('date').reverse()
         serializerdata = PrimaryToSecondarySerializer(obj,many=True)
+
+        obj_unapprove = UnapprovedMember.objects.all().order_by('date').reverse()
+        serializerdata_unapprove = UnapprovedMemberSerializer(obj_unapprove,many=True)
+
+
         queryset = self.filter_queryset(self.get_queryset())
         serializer = self.get_serializer(queryset,many=True)
         data ={
@@ -4328,6 +4341,8 @@ class AdminRequestSectionView(ModelViewSet):
             response.append(numlist)
         for statuslist in serializerdata.data:
             response.append(statuslist)
+        for unapprovelists in serializerdata_unapprove.data:
+            response.append(unapprovelists)
         response.sort(key=lambda item:item['date'], reverse=True)
         data['response'] = response
         return Response(data)

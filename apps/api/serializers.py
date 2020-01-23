@@ -563,11 +563,27 @@ class UnapprovedMemberSerializer(serializers.ModelSerializer):
         unapproved_member.primary_user_id = primary_user
         unapproved_member.save()
 
+        # notification = Notification.objects.create(
+        #     created_by_primary=primary_user, 
+        #     message="User %s added a family member %s. Verify and approve to reflect changes"%(primary_user, unapproved_member)
+        # )
+        user_details={
+            "notification_id":unapproved_member.secondary_user_id,
+            "primary_name":primary_user.name,
+            "primary_id":primary_user.primary_user_id,
+            "secondary_name":unapproved_member.member_name,
+            "primary_phone_number":primary_user.phone_no_primary,
+            "family_name":primary_user.get_file_upload.first().name,
+            "prayer_group_name":primary_user.get_file_upload_prayergroup.first().name,
+            "send_time":str(tz.now()),
+            "type":"primary_add_secondary",
+        }
+
+        user_details_str=str(user_details)
         notification = Notification.objects.create(
             created_by_primary=primary_user, 
-            message="User %s added a family member %s. Verify and approve to reflect changes"%(primary_user, unapproved_member)
+            message=user_details_str
         )
-
         admin_profiles = AdminProfile.objects.all()
 
         for admin_profile in admin_profiles:
@@ -601,8 +617,21 @@ class UnapprovedMemberSerializer(serializers.ModelSerializer):
         data = super().to_representation(obj)
         data['rejected'] = obj.rejected
         data['primary_user_id'] = obj.primary_user_id.primary_user_id
+        data['primary_user_number'] = obj.primary_user_id.phone_no_primary
         data['edit_user'] = obj.edit_user
+        try:
+            data['type'] = 'primary_add_secondary'
+        except:
+            data['type'] = None
 
+        data['date'] = obj.date
+        try:
+            if obj.status:
+                data['status'] = obj.status
+            else:
+                data['status'] = 'Pending'
+        except:
+            data['status'] = 'Pending'
         return data
 
 
