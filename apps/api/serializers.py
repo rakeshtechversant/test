@@ -618,7 +618,18 @@ class UnapprovedMemberSerializer(serializers.ModelSerializer):
         data['rejected'] = obj.rejected
         data['primary_user_id'] = obj.primary_user_id.primary_user_id
         data['primary_user_number'] = obj.primary_user_id.phone_no_primary
+        data['primary_user_name'] = obj.primary_user_id.name
         data['edit_user'] = obj.edit_user
+        try:
+            data['family_name'] = FileUpload.objects.get(primary_user_id=obj.primary_user_id.primary_user_id).get_file_upload.first().name
+        except:
+            data['family_name'] = None
+
+        try:
+            data['prayer_group_name'] = FileUpload.objects.get(primary_user_id=obj.primary_user_id.primary_user_id).get_file_upload_prayergroup.first().name
+        except:
+            data['prayer_group_name'] = None
+
         try:
             data['type'] = 'primary_add_secondary'
         except:

@@ -2006,6 +2006,10 @@ class UnapprovedMemberView(mixins.CreateModelMixin,
         data.pop('date')
         data.pop('type')
         data.pop('primary_user_number')
+        data.pop('primary_user_name')
+        data.pop('family_name')
+        data.pop('prayer_group_name')
+        
         try:
             img_name = data.get('image').split('/')[-1]
             img_path = 'members/'+img_name
