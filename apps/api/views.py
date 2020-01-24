@@ -3623,7 +3623,7 @@ class UpdatePhoneNumberSecondary(APIView):
                     member=Members.objects.get(phone_no_secondary_user=request.user.username)
                     member.phone_no_secondary_user = phone_number
                     member.save()
-                    request.user.auth_token.delete()
+                    # request.user.auth_token.delete()
                 except:
                     data = {
                         'status': False,
@@ -3656,7 +3656,7 @@ class UpdatePhoneNumberSecondary(APIView):
                     member=Members.objects.get(phone_no_secondary_user=request.user.username)
                     member.phone_no_secondary_user_secondary = phone_number_sec
                     member.save()
-                    request.user.auth_token.delete()
+                    # request.user.auth_token.delete()
                 except:
                     data = {
                         'status': False,
