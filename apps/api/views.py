@@ -3200,7 +3200,7 @@ class EachUserUnreadCount(APIView):
             count_unread=len(notice_unread_section)
         except:
             try:
-                member=Members.objects.filter(phone_no_secondary_user=user)
+                member=Members.objects.get(phone_no_secondary_user=user)
                 notice_read_section=NoticeReadSecondary.objects.filter(user_to=member,is_read=True)
                 notice_unread_section=NoticeReadSecondary.objects.filter(user_to=member,is_read=False)
                 count_read=len(notice_read_section)
