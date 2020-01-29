@@ -459,6 +459,7 @@ class UserDetailsRetrieveSerializer(serializers.ModelSerializer):
             data['name'] = instance.name.title()
         except:
             pass
+        data['user_type'] = 'PRIMARY'
         try :
             if instance.marrige_date :
                 data['dom'] = instance.marrige_date
