@@ -123,7 +123,7 @@ class UserRetrieveSerializer(serializers.ModelSerializer):
         try :
             data['image'] = request.build_absolute_uri(instance.image.url)
         except:
-             data['image'] = None
+            data['image'] = None
         return data
 
 
@@ -367,7 +367,7 @@ class PrimaryUserProfileSerializer(serializers.ModelSerializer):
         try :
             data['image'] = request.build_absolute_uri(instance.image.url)
         except:
-             data['image'] = None
+            data['image'] = None
         try :
             data['name'] = instance.name.title()
         except:
@@ -413,6 +413,11 @@ class MemberProfileSerializer(serializers.ModelSerializer):
             data['name'] = instance.member_name.title()
         except:
             data['name'] = None
+
+        try :
+            data['primary_name'] = instance.primary_user_id.name
+        except:
+            data['primary_name'] = None
             
         try :
             data['phone_no_primary'] = instance.phone_no_secondary_user
