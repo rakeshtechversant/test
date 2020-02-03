@@ -863,6 +863,13 @@ class PrimaryToSecondarySerializer(serializers.ModelSerializer):
                 data['family_name'] = FileUpload.objects.get(primary_user_id=int(from_id)).get_file_upload.first().name
                 data['prayer_group_name'] = FileUpload.objects.get(primary_user_id=int(from_id)).get_file_upload_prayergroup.first().name
                 data['from_phone_number'] = FileUpload.objects.get(primary_user_id=int(from_id)).phone_no_primary
+                try:
+                    if Members.objects.get(secondary_user_id=int(to_id)).phone_no_secondary_user : 
+                        data['to_phone_number'] = Members.objects.get(secondary_user_id=int(to_id)).phone_no_secondary_user
+                    else:
+                        data['to_phone_number'] = None
+                except:
+                    data['to_phone_number'] = None
             elif(obj.usertype_from == 'SECONDARY'):
                 from_id = obj.request_from
                 to_id = obj.request_to
@@ -878,6 +885,14 @@ class PrimaryToSecondarySerializer(serializers.ModelSerializer):
                         data['from_phone_number'] = None
                 except:
                     data['from_phone_number'] = None
+
+                try:
+                    if FileUpload.objects.get(primary_user_id=int(to_id)).phone_no_primary : 
+                        data['to_phone_number'] =FileUpload.objects.get(primary_user_id=int(to_id)).phone_no_primary
+                    else:
+                        data['to_phone_number'] = None
+                except:
+                    data['to_phone_number'] = None
         except:
             data['request_from_name'] = None
 
