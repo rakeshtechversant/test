@@ -3645,8 +3645,8 @@ class UpdatePhoneNumberSecondary(APIView):
                     'status': True,
                     "message": "Member Phone number Updated Successfully"
                 }
-                success_data = serializer.data
-                data1.update(serializer.data)
+                success_data.update(serializer.data)
+                data1.update(success_data)
                 success_data['response'] = data1
                 # success_data['user_details'] = data1
 
@@ -3690,8 +3690,8 @@ class UpdatePhoneNumberSecondary(APIView):
                     'status': True,
                     "message": "Member Phone number Updated Successfully"
                 }
-                success_data = serializer.data
-                data1.update(serializer.data)
+                success_data.update(serializer.data)
+                data1.update(success_data)
                 success_data['response'] = data1
                 # success_data['user_details'] = data1
                 return Response(success_data, status=status.HTTP_201_CREATED)
