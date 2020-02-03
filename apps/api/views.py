@@ -4095,10 +4095,22 @@ class StatusChangeAcceptView(mixins.CreateModelMixin,
 
 
         try:
-            user_details_str = "Your request for status change has been accepted"
-            not_obj = Notification.objects.create(created_by_primary=prim_obj,
-                      message=user_details_str)
-            NoticeReadPrimary.objects.create(notification=not_obj, user_to=prim_obj)
+            if member.usertype_from == 'PRIMARY':
+                prim_obj = FileUpload.objects.get(primary_user_id = int(member.request_from))
+                # sec_obj = Members.objects.get(secondary_user_id = int(member.request_to))
+                user_details_str = "Your request for status change has been accepted"
+                not_obj = Notification.objects.create(created_by_primary=prim_obj,
+                          message=user_details_str)
+                NoticeReadPrimary.objects.create(notification=not_obj, user_to=prim_obj)
+            elif member.usertype_from == 'SECONDARY':
+                # prim_obj = FileUpload.objects.get(primary_user_id = int(member.request_to))
+                sec_obj = Members.objects.get(secondary_user_id = int(member.request_from))     
+                user_details_str = "Your request for status change has been accepted"
+                not_obj = Notification.objects.create(created_by_secondary=sec_obj,
+                          message=user_details_str)
+                NoticeReadPrimary.objects.create(notification=not_obj, user_to=sec_obj)
+            else:
+                pass
         except:
             pass
         member.status = 'Accepted'
@@ -4108,7 +4120,26 @@ class StatusChangeAcceptView(mixins.CreateModelMixin,
     @action(methods=['get'], detail=True, url_path='reject-primary',
         permission_classes=[IsAuthenticated, AdminPermission])
     def reject_primary(self, request, pk=None):
-        member = self.get_object()  
+        member = self.get_object()
+        try:
+            if member.usertype_from == 'PRIMARY':
+                prim_obj = FileUpload.objects.get(primary_user_id = int(member.request_from))
+                # sec_obj = Members.objects.get(secondary_user_id = int(member.request_to))
+                user_details_str = "Your request for status change has been rejected"
+                not_obj = Notification.objects.create(created_by_primary=prim_obj,
+                          message=user_details_str)
+                NoticeReadPrimary.objects.create(notification=not_obj, user_to=prim_obj)
+            elif member.usertype_from == 'SECONDARY':
+                # prim_obj = FileUpload.objects.get(primary_user_id = int(member.request_to))
+                sec_obj = Members.objects.get(secondary_user_id = int(member.request_from))     
+                user_details_str = "Your request for status change has been rejected"
+                not_obj = Notification.objects.create(created_by_secondary=sec_obj,
+                          message=user_details_str)
+                NoticeReadPrimary.objects.create(notification=not_obj, user_to=sec_obj)
+            else:
+                pass
+        except:
+            pass
         member.is_accepted = True
         member.status  = 'Rejected'
         member.save()
@@ -4126,9 +4157,11 @@ class PrimaryNumberChangeViewset(CreateAPIView):
         request_from_primary = request.POST.get('request_from_primary', False)
         number_from = request.POST.get('number_from', False)
         number_to = request.POST.get('number_to', False)
+
         if not request_from_primary and not number_from and not  number_to :
             return Response({'success': False,'message': 'You should fill all the fields'}, status=HTTP_400_BAD_REQUEST)
         else :
+            # import pdb;pdb.set_trace()
             try:
                 if FileUpload.objects.filter(primary_user_id=int(request_from_primary)).exists():
                     primary_user = FileUpload.objects.get(primary_user_id=request_from_primary)
@@ -4310,6 +4343,14 @@ class PrimaryNumberChangeAcceptView(mixins.CreateModelMixin,
         permission_classes=[IsAuthenticated, AdminPermission])
     def reject_primary(self, request, pk=None):
         member = self.get_object()  
+        try:
+            prim_obj = FileUpload.objects.get(primary_user_id = int(member.request_from_primary))
+            user_details_str = "Your request for number change has been rejected"
+            not_obj = Notification.objects.create(created_by_primary=prim_obj,
+                      message=user_details_str)
+            NoticeReadPrimary.objects.create(notification=not_obj, user_to=prim_obj)
+        except:
+            pass
         member.is_accepted = True
         member.status  = 'Rejected'
         member.save()
