@@ -2065,13 +2065,12 @@ class FamilyDetailView(ListAPIView):
             raise exceptions.NotFound(detail="Family does not exist")
 
         self.primary_user = family.primary_user_id
-
+        self.family_obj = family
         members = Members.objects.filter(primary_user_id=family.primary_user_id)
         return members
 
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
-
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.get_serializer(page, many=True)
@@ -2109,16 +2108,28 @@ class FamilyDetailView(ListAPIView):
         except:
             family_image = None
 
-        data['response'] = {
-            'family_members':serializer.data,
-            'family_name':self.primary_user.get_file_upload.first().name,
-            'family_about':self.primary_user.get_file_upload.first().about,
-            'family_image':family_image
+        try:
+            family_images = request.build_absolute_uri(self.family_obj.image.url)
+        except:
+            family_images = None
+        # import pdb;pdb.set_trace()
+        try:
+            if self.primary_user.get_file_upload.first() :
+                data['response'] = {
+                    'family_members':serializer.data,
+                    'family_name':self.primary_user.get_file_upload.first().name,
+                    'family_about':self.primary_user.get_file_upload.first().about,
+                    'family_image':family_image
+                    }
+                data['response']['family_members'].insert(0, primary_user_id)
+
+        except:
+            data['response'] = {
+                'family_members':[],
+                'family_name':self.family_obj.name,
+                'family_about':self.family_obj.about,
+                'family_image':family_images
             }
-        data['response']['family_members'].insert(0, primary_user_id)
-
-
-
 
         return Response(data)
 
