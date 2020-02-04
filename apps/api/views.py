@@ -3442,7 +3442,9 @@ class FamilyListPaginatedView(ListAPIView):
         try:
             term = request.GET['term']
             if term:
-                queryset = Family.objects.filter(name__icontains=term).order_by('name')
+                term = term.replace(" ", "")
+                term.lower()
+                queryset = Family.objects.filter(name__nospaces__icontains=term).order_by('name')
             else:
                 queryset = self.filter_queryset(self.get_queryset())
         except:
@@ -3498,7 +3500,9 @@ class PrayerGroupBasedFamilyPaginatedView(ListAPIView):
         try:
             term = request.GET['term']
             if term:
-                queryset = queryset.filter(name__icontains=term).order_by('name')
+                term = term.replace(" ", "")
+                term.lower()
+                queryset = queryset.filter(name__nospaces__icontains=term).order_by('name')
             else:
                 queryset = self.filter_queryset(self.get_queryset())
         except:
