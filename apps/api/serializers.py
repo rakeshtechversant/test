@@ -643,6 +643,7 @@ class UnapprovedMemberSerializer(serializers.ModelSerializer):
             data['type'] = None
 
         data['date'] = obj.date
+        data['date-format'] = tz.localtime(obj.date, pytz.timezone('Asia/Kolkata')).strftime("%d/%m/%Y, %H:%M:%S %p")
         try:
             if obj.status:
                 data['status'] = obj.status
@@ -899,6 +900,7 @@ class PrimaryToSecondarySerializer(serializers.ModelSerializer):
 
         data['rejected'] = obj.is_accepted
         data['date'] = obj.date
+        data['date-format'] = tz.localtime(obj.date, pytz.timezone('Asia/Kolkata')).strftime("%d/%m/%Y, %H:%M:%S %p")
         try:
             if obj.status:
                 data['status'] = obj.status
@@ -932,6 +934,7 @@ class NumberChangePrimarySerializer(serializers.ModelSerializer):
 
         data['rejected'] = obj.is_accepted
         data['date'] = obj.date
+        data['date-format'] = tz.localtime(obj.date, pytz.timezone('Asia/Kolkata')).strftime("%d/%m/%Y, %H:%M:%S %p")
         try:
             if obj.status:
                 data['status'] = obj.status
