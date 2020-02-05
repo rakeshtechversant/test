@@ -16,6 +16,7 @@ from django.urls import reverse_lazy
 from rest_framework import status
 from rest_framework.response import Response
 from datetime import datetime
+import pytz
 from apps.api.models import AdminProfile
 from django.utils import timezone as tz
 
@@ -985,6 +986,8 @@ class AdminRequestSerializer(serializers.ModelSerializer):
               
         data['rejected'] = obj.is_accepted
         data['date'] = obj.date
+        data['date-format'] = tz.localtime(obj.date, pytz.timezone('Asia/Kolkata')).strftime("%d/%m/%Y, %H:%M:%S %p")
+
         try:
             if obj.status:
                 data['status'] = obj.status
