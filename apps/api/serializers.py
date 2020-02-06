@@ -261,6 +261,10 @@ class MembersSerializer(serializers.ModelSerializer):
             data['member_name'] = obj.member_name.title()
         except:
             pass
+        try:
+            data['about'] = instance.about
+        except:
+            pass
         try :
             data['image'] = request.build_absolute_uri(instance.image.url)
         except:
@@ -989,7 +993,7 @@ class AdminRequestSerializer(serializers.ModelSerializer):
               
         data['rejected'] = obj.is_accepted
         data['date'] = obj.date
-        data['date_format'] = tz.localtime(obj.date, pytz.timezone('Asia/Kolkata')).strftime("%d/%m/%Y, %H:%M:%S %p")
+        data['date_format'] = tz.localtime(obj.date, pytz.timezone('Asia/Kolkata')).strftime("%d/%m/%Y, %I:%M:%S %p")
 
         try:
             if obj.status:
