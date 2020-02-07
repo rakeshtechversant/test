@@ -644,15 +644,26 @@ class OtpVerifyUserCheckNumberViewSet(CreateAPIView):
             
             elif user_type == "PRIMARY":
                 try:
-                    user_profile = FileUpload.objects.get(Q(phone_no_secondary=otp_obj.mobile_number) | Q(phone_no_primary=otp_obj.mobile_number))
-                    user = otp_obj.mobile_number
-                    mobile = user_profile.phone_no_primary if user_profile.phone_no_primary else user_profile.phone_no_secondary
-                    data = {
-                        'mobile': mobile,
-                        'user_type': 'PRIMARY',
-                        'name': user_profile.name.title(),
-                        'primary_user_id': user_profile.primary_user_id
-                    }
+                    if user_id:
+                        user_profile = FileUpload.objects.get(Q(phone_no_secondary=otp_obj.mobile_number) | Q(phone_no_primary=otp_obj.mobile_number),primary_user_id=user_id)
+                        user = otp_obj.mobile_number
+                        mobile = user_profile.phone_no_primary if user_profile.phone_no_primary else user_profile.phone_no_secondary
+                        data = {
+                            'mobile': mobile,
+                            'user_type': 'PRIMARY',
+                            'name': user_profile.name.title(),
+                            'primary_user_id': user_profile.primary_user_id
+                        }
+                    else:
+                        user_profile = FileUpload.objects.get(Q(phone_no_secondary=otp_obj.mobile_number) | Q(phone_no_primary=otp_obj.mobile_number))
+                        user = otp_obj.mobile_number
+                        mobile = user_profile.phone_no_primary if user_profile.phone_no_primary else user_profile.phone_no_secondary
+                        data = {
+                            'mobile': mobile,
+                            'user_type': 'PRIMARY',
+                            'name': user_profile.name.title(),
+                            'primary_user_id': user_profile.primary_user_id
+                        }
                 except FileUpload.DoesNotExist:
                     return Response({'success': False, 'message': 'Primary account does not exist'}, status=HTTP_404_NOT_FOUND)
 
