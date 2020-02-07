@@ -1263,7 +1263,7 @@ class PrayerGroupMemberaddView(RetrieveUpdateAPIView):
 
 
 class PrayerGrouplistView(ListAPIView):
-    queryset = PrayerGroup.objects.all()
+    queryset = PrayerGroup.objects.all().order_by('name')
     serializer_class = PrayerGroupAddSerializer
 
     def list(self, request, *args, **kwargs):
