@@ -3596,6 +3596,7 @@ class PrayerGroupBasedMembersPaginatedView(ListAPIView):
 
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
+        term = None
         try:
             term = request.GET['term']
             if term:
@@ -3635,7 +3636,13 @@ class PrayerGroupBasedMembersPaginatedView(ListAPIView):
 
             response.insert(0, primary_user_id)
 
-        response_query = sorted(response, key = lambda i: i['name']) 
+        if term:
+            res = sorted([x for x in response if (x['name'].lower()).startswith(term.lower())], key = lambda i: i['name'])
+            names = list(map(itemgetter('name'), res)) 
+            response_query = res + sorted([x for x in response if x['name'] not in names], key = lambda i: i['name'])
+        else:
+            response_query = sorted(response, key = lambda i: i['name']) 
+            
         page = self.paginate_queryset(response_query)
         if page is not None:
             # serializer = CommonUserSerializer(responses,many=True)
