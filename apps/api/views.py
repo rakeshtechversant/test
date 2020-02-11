@@ -1055,6 +1055,10 @@ class UserDetailView(APIView):
                     family_id = user_details.primary_user_id.get_file_upload.first().id
                 except:
                     family_id = None
+                try:
+                    family_name = user_details.primary_user_id.get_file_upload.first().name
+                except:
+                    family_name = None
                 data={
                     'name':user_details.member_name,
                     'relation':user_details.relation,
@@ -1076,7 +1080,8 @@ class UserDetailView(APIView):
                     'in_memory_date':user_details.in_memory_date,
                     'image':image,
                     'primary_in_memory':user_details.primary_user_id.in_memory,
-                    'family_id':family_id
+                    'family_id':family_id,
+                    'family_name':family_name
 
                 }
                 return Response({'success': True,'message':'Profile found successfully','user_details':data}, status=HTTP_200_OK)
@@ -1110,6 +1115,12 @@ class UserDetailView(APIView):
                         family_id = user_details.get_file_upload.first().id
                     except:
                         family_id = None
+
+                    try:
+                        family_name = user_details.get_file_upload.first().name
+                    except:
+                        family_name = None
+
                     data={
                        'member_name':user_details.primary_user_id,
                        'name':user_details.name,
@@ -1129,7 +1140,8 @@ class UserDetailView(APIView):
                        'in_memory_date':user_details.in_memory_date,
                        'image':image,
                        'relation':user_details.relation,
-                       'family_id':family_id
+                       'family_id':family_id,
+                       'family_name':family_name
                     }
                     return Response({'success': True,'message':'Profile found successfully','user_details':data}, status=HTTP_200_OK)
                 except:
