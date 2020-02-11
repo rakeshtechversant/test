@@ -1051,6 +1051,11 @@ class UserDetailView(APIView):
                         pass
                 except:
                     date_om = None
+
+                try:
+                    family_id = user_details.primary_user_id.get_file_upload.first().id
+                except:
+                    family_id = None
                 data={
                     'name':user_details.member_name,
                     'relation':user_details.relation,
@@ -1071,7 +1076,8 @@ class UserDetailView(APIView):
                     'in_memory':user_details.in_memory,
                     'in_memory_date':user_details.in_memory_date,
                     'image':image,
-                    'primary_in_memory':user_details.primary_user_id.in_memory
+                    'primary_in_memory':user_details.primary_user_id.in_memory,
+                    'family_id':family_id
 
                 }
                 return Response({'success': True,'message':'Profile found successfully','user_details':data}, status=HTTP_200_OK)
@@ -1100,6 +1106,11 @@ class UserDetailView(APIView):
                             pass
                     except:
                         date_om = None
+
+                    try:
+                        family_id = user_details.get_file_upload.first().id
+                    except:
+                        family_id = None
                     data={
                        'member_name':user_details.primary_user_id,
                        'name':user_details.name,
@@ -1118,7 +1129,8 @@ class UserDetailView(APIView):
                        'in_memory':user_details.in_memory,
                        'in_memory_date':user_details.in_memory_date,
                        'image':image,
-                       'relation':user_details.relation
+                       'relation':user_details.relation,
+                       'family_id':family_id
                     }
                     return Response({'success': True,'message':'Profile found successfully','user_details':data}, status=HTTP_200_OK)
                 except:
