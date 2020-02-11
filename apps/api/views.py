@@ -38,7 +38,7 @@ from apps.api.serializers import ChurchHistorySerializer, ChurchImagesSerializer
     ViewRequestNumberSerializer, RequestAcceptNumberSerializer, AdminNotificationSerializer, PhoneVersionSerializer, \
     GalleryImagesSerializer, FamilyDetailSerializer, FamilyEditSerializer, GalleryImagesCreateSerializer, \
     OTPVeifySerializerUserId, CommonUserSerializer, MemberNumberSerializer, PrimaryToSecondarySerializer, NumberChangePrimarySerializer ,\
-    AdminRequestSerializer
+    AdminRequestSerializer, PrimaryUserSerializerPage, MembersSerializerPage
 from apps.church.models import Members, Family, UserProfile, ChurchDetails, FileUpload, OtpModels, \
     PrayerGroup, Notification, Notice, NoticeBereavement, UnapprovedMember, NoticeReadPrimary, NoticeReadSecondary, \
     ViewRequestNumber, NoticeReadAdmin, PrivacyPolicy, PhoneVersion, Images, PrimaryToSecondary, NumberChangePrimary
@@ -899,105 +899,32 @@ class UserListCommonView(ListAPIView):
             'request': request
         }
         term = None
+        # import pdb;pdb.set_trace()
         try:
             term = request.GET['term']
             if term:
                 term = term.replace(" ", "")
                 term.lower()
-                queryset_primary = PrimaryUserSerializer(FileUpload.objects.filter(Q(name__nospaces__icontains =term)|Q(occupation__icontains=term)), many=True, context=context).data
-                queryset_secondary = MemberSerializer(Members.objects.filter(Q(member_name__nospaces__icontains=term)|Q(occupation__icontains=term)), many=True, context=context).data
+                queryset_primary = PrimaryUserSerializerPage(FileUpload.objects.filter(Q(name__nospaces__icontains =term)|Q(occupation__icontains=term)), many=True, context=context).data
+                queryset_secondary = MembersSerializerPage(Members.objects.filter(Q(member_name__nospaces__icontains=term)|Q(occupation__icontains=term)), many=True, context=context).data
             else:
-                queryset_primary = PrimaryUserSerializer(FileUpload.objects.all().order_by('name'), many=True, context=context).data
-                queryset_secondary = MemberSerializer(Members.objects.all().order_by('member_name'), many=True, context=context).data
+                queryset_primary = PrimaryUserSerializerPage(FileUpload.objects.all().order_by('name'), many=True, context=context).data
+                queryset_secondary = MembersSerializerPage(Members.objects.all().order_by('member_name'), many=True, context=context).data
         except:
-            queryset_primary = PrimaryUserSerializer(FileUpload.objects.all().order_by('name'), many=True, context=context).data
-            queryset_secondary = MemberSerializer(Members.objects.all().order_by('member_name'), many=True, context=context).data
+            queryset_primary = PrimaryUserSerializerPage(FileUpload.objects.all().order_by('name'), many=True, context=context).data
+            queryset_secondary = MembersSerializerPage(Members.objects.all().order_by('member_name'), many=True, context=context).data
+        try:
+            response = queryset_primary + queryset_secondary
+        except:
+            response =[]
 
-        response = []
-        for primary in queryset_primary:
-            # name_pri=primary['primary_user_id']
-            primary.update({'user_id' : primary['primary_user_id']})
-
-            # new_data={ 
-            #     'user_id' : primary['primary_user_id'],
-            #     'name': primary['name'],
-            #     'image': primary['image'],
-            #     'address': primary['address'],
-            #     'phone_no_primary': primary['phone_no_primary'],
-            #     'phone_no_secondary': primary['phone_no_secondary'],
-            #     'dob': primary['dob'],
-            #     'dom': primary['dom'],
-            #     'blood_group': primary['blood_group'],
-            #     'email': primary['email'],
-            #     'occupation': primary['occupation'],
-            #     'about': primary['about'],
-            #     'marital_status': primary['marital_status'],
-            #     'in_memory': primary['in_memory'],
-            #     'in_memory_date': primary['in_memory_date'],
-            #     'family_name': primary['family_name'],
-            #     'user_type': primary['user_type'],
-            #     'relation' : primary['relation'],
-            #     'primary_user_id': primary['primary_user_id']
-            # }
-
-            # response.append(new_data)
-        response.extend(list(queryset_primary))
-        for secondary in queryset_secondary:
-            # name_sec=secondary['secondary_user_id']
-
-            secondary.update({'user_id' : secondary['secondary_user_id'],
-                              'name': secondary['member_name'],
-                              'address' : '',
-                              'phone_no_primary': secondary['phone_no_secondary_user'],
-                              'phone_no_secondary': secondary['phone_no_secondary_user_secondary'],
-                              })
-            # new_data={
-            #     'user_id' : secondary['secondary_user_id'],
-            #     'name': secondary['member_name'],
-            #     'image': secondary['image'],
-            #     'address' : '',
-            #     'phone_no_primary': secondary['phone_no_secondary_user'],
-            #     'phone_no_secondary': secondary['phone_no_secondary_user_secondary'],
-            #     'dob': secondary['dob'],
-            #     'dom': secondary['dom'],
-            #     'blood_group': secondary['blood_group'],
-            #     'email': secondary['email'],
-            #     'occupation': secondary['occupation'],
-            #     'about': secondary['about'],
-            #     'marital_status': secondary['marital_status'],
-            #     'in_memory': secondary['in_memory'],
-            #     'in_memory_date': secondary['in_memory_date'],
-            #     'family_name': secondary['family_name'],
-            #     'user_type': secondary['user_type'],
-            #     'relation': secondary['relation'],
-            #     'primary_user_id': secondary['primary_user_id']
-            # }
-        
-            # response.append(new_data)
-        response.extend(list(queryset_secondary))
         if term:
-            # fullmatches = list(filter(lambda x: x["name"].lower().strip() == term, response)
-            # response_query = response
-            # import pdb;pdb.set_trace()
-            # order = "abcdefghijklmnopqrstuvwxyz";
-            # order_dict = dict([(x, order.index(x)+1) for x in order])
-            # order_dict.update({term.lower():0})
-            # # r1 = [i['name'] if i['name'].split(" ")[0].lower() == term.split(" ")[0].lower() else None for i in response]
-            # response_query = list(map(lambda i: True if i['name'].split(" ")[0] == term.split(" ")[0] else False, response))
-            # response_query = sorted(response, key = lambda i: i['name']) 
-
-            # response_query = sorted(response, key = lambda i: i['name'].lower().index(term.lower()))
-            # response_query = sorted(response, key = lambda i: [order_dict.get(c) if c == term.lower() else order_dict.get(c[0]) for c in i['name'].split(" ")[0].lower()])
-#             response_query = sorted(response,key=lambda i: (len(i['name'].split()) > 1, i['name'])
-# )           
-#             print(response_query)
-
             res = sorted([x for x in response if (x['name'].lower()).startswith(term.lower())], key = lambda i: i['name'])
             names = list(map(itemgetter('name'), res)) 
             response_query = res + sorted([x for x in response if x['name'] not in names], key = lambda i: i['name'])
 
         else:
-            response_query = sorted(response, key = lambda i: i['name']) 
+            response_query = sorted(response, key = lambda i: i.get('name')) 
         responses = self.paginate_queryset(response_query)
         if responses is not None:
             serializer = CommonUserSerializer(responses,many=True)

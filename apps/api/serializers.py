@@ -659,6 +659,7 @@ class UnapprovedMemberSerializer(serializers.ModelSerializer):
 
 
 class MemberSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = Members
         fields = '__all__'
@@ -1002,4 +1003,115 @@ class AdminRequestSerializer(serializers.ModelSerializer):
                 data['status'] = 'Pending'
         except:
             data['status'] = 'Pending'
+        return data
+
+#searching
+
+class MembersSerializerPage(serializers.ModelSerializer):
+    # phone_no_primary = serializers.SerializerMethodField()
+    in_memory_date = serializers.SerializerMethodField()
+
+    # family_
+
+    class Meta:
+        model = Members
+        fields = ['image','dob','dom','blood_group','email','occupation','about','marital_status',\
+        'in_memory','in_memory_date','relation','primary_user_id']
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        # data['name'] = data.pop('member_name')
+        data['user_type'] = 'SECONDARY'
+        data['user_id'] = instance.secondary_user_id
+        request = self.context['request']
+        try:
+            data['name'] = instance.member_name.title()
+        except:
+            data['name'] = None
+        try:
+            data['about'] = instance.about
+        except:
+            pass
+        try :
+            data['image'] = request.build_absolute_uri(instance.image.url)
+        except:
+            data['image'] = None
+        try :
+            data['address'] = ''
+        except:
+            data['address'] = None
+
+        try:
+            data['phone_no_primary'] = instance.phone_no_secondary_user
+        except:
+            data['phone_no_primary'] = None
+
+        try:
+            data['phone_no_secondary'] = instance.phone_no_secondary_user_secondary
+        except:
+            data['phone_no_secondary'] = None
+
+        try:
+            data['family_name'] = instance.primary_user_id.get_file_upload.first().name.title()
+        except:
+            data['family_name'] = ''
+        return data
+
+
+
+    def get_in_memory_date(self, obj):
+        date = obj.in_memory_date
+        if date:
+            return date
+        else:
+            return None
+
+    # def get_primary_name(self, obj):
+    #     name = obj.primary_user_id.name
+    #     if name:
+    #         serializer = UserRetrieveSerializerPage(name,context=self.context)
+    #         return name
+    #     return None
+
+    # def get_phone_no_primary(self, obj):
+    #     primary_number = obj.primary_user_id.phone_no_primary
+    #     if primary_number:
+    #         serializer = UserRetrieveSerializerPage(primary_number)
+    #         return primary_number
+    #     return None
+
+class PrimaryUserSerializerPage(serializers.ModelSerializer):
+    class Meta:
+        model = FileUpload
+        fields =['name','image','address','phone_no_primary','phone_no_secondary','dob','dom','blood_group','email','occupation','about','marital_status',\
+        'in_memory','in_memory_date','relation','primary_user_id']
+        read_only_fields = ['primary_user_id']
+
+    def to_representation(self, obj):
+
+        data = super().to_representation(obj)
+
+        request = self.context['request']
+
+        if obj.get_file_upload.first():
+            data['family_name'] = obj.get_file_upload.first().name.title()
+        else:
+            data['family_name'] = ''
+
+        try:
+            data['name'] = obj.name.title()
+        except:
+            pass
+        try:
+            data['user_id'] = obj.primary_user_id
+        except:
+            pass
+        if obj.image:
+            try :
+                data['image'] = request.build_absolute_uri(obj.image.url)
+            except:
+                data['image'] = None
+
+        data['user_type'] = 'PRIMARY'
+
         return data
