@@ -438,6 +438,15 @@ class MemberProfileSerializer(serializers.ModelSerializer):
             data['primary_in_memory'] = instance.primary_user_id.in_memory
         except:
             data['primary_in_memory'] = None
+
+        try:
+            data['family_name'] = instance.primary_user_id.get_file_upload.first().name
+        except:
+            data['family_name'] = None
+        try:
+            data['family_id'] = instance.primary_user_id.get_file_upload.first().id
+        except:
+            data['family_id'] = None
         return data
 
 
