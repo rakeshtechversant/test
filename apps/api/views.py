@@ -899,7 +899,6 @@ class UserListCommonView(ListAPIView):
             'request': request
         }
         term = None
-        # import pdb;pdb.set_trace()
         try:
             term = request.GET['term']
             if term:
