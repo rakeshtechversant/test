@@ -2188,13 +2188,13 @@ class NoticeBereavementCreate(CreateAPIView):
                             family_name = ''
 
                         if family_name:
-                            body = {"message":"Bearevement announcement of %s belonging to %s"%(member_id.member_name,family_name),
+                            body = {"message":"Funeral announcement of %s belonging to %s"%(member_id.member_name,family_name),
                             "user_type": "SECONDARY",
                             "type":"bereavement",
                             "id":str(beri_obj.id)
                             }
                         else:
-                            body = {"message":"Bearevement announcement of %s"%(member_id.member_name),
+                            body = {"message":"Funeral announcement of %s"%(member_id.member_name),
                             "user_type": "SECONDARY",
                             "type":"bereavement",
                             "id":str(beri_obj.id)
@@ -2230,13 +2230,13 @@ class NoticeBereavementCreate(CreateAPIView):
                             family_name = ''
                         if family_name :
 
-                            body = {"message":"Bearevement announcement of %s belonging to %s"%(member_id.name,family_name),
+                            body = {"message":"Funeral announcement of %s belonging to %s"%(member_id.name,family_name),
                             "user_type": "PRIMARY",
                             "type":"bereavement",
                             "id":str(beri_obj.id)
                             }
                         else:
-                            body = {"message":"Bearevement announcement of %s "%(member_id.name),
+                            body = {"message":"Funeral announcement of %s "%(member_id.name),
                             "user_type": "PRIMARY",
                             "type":"bereavement",
                             "id":str(beri_obj.id)
