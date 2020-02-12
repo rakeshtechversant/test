@@ -912,14 +912,15 @@ class UserListCommonView(ListAPIView):
         except:
             queryset_primary = PrimaryUserSerializerPage(FileUpload.objects.all().order_by('name'), many=True, context=context).data
             queryset_secondary = MembersSerializerPage(Members.objects.all().order_by('member_name'), many=True, context=context).data
+        # import pdb;pdb.set_trace()
         try:
             response = queryset_primary + queryset_secondary
         except:
             response =[]
 
         if term:
-            res = sorted([x for x in response if (x['name'].lower()).startswith(term.lower())], key = lambda i: i['name'])
-            names = list(map(itemgetter('name'), res)) 
+            res = sorted([x for x in response if (x['name'].replace(" ","").lower()).startswith(term.lower())], key = lambda i: i['name'])
+            names = list(map(itemgetter('name'), res))
             response_query = res + sorted([x for x in response if x['name'] not in names], key = lambda i: i['name'])
 
         else:
@@ -3587,7 +3588,7 @@ class PrayerGroupBasedMembersPaginatedView(ListAPIView):
             response.insert(0, primary_user_id)
 
         if term:
-            res = sorted([x for x in response if (x['name'].lower()).startswith(term.lower())], key = lambda i: i['name'])
+            res = sorted([x for x in response if (x['name'].replace(" ","").lower()).startswith(term.lower())], key = lambda i: i['name'])
             names = list(map(itemgetter('name'), res)) 
             response_query = res + sorted([x for x in response if x['name'] not in names], key = lambda i: i['name'])
         else:
