@@ -125,6 +125,10 @@ class UserRetrieveSerializer(serializers.ModelSerializer):
             data['image'] = request.build_absolute_uri(instance.image.url)
         except:
             data['image'] = None
+        try:
+           data['family_id'] = instance.get_file_upload.get().id
+        except:
+            data['family_id'] = None
         return data
 
 
@@ -269,6 +273,14 @@ class MembersSerializer(serializers.ModelSerializer):
             data['image'] = request.build_absolute_uri(instance.image.url)
         except:
             data['image'] = None
+        try:
+            data['family_id'] = instance.primary_user_id.get_file_upload.get().id
+        except:
+            data['family_id'] = None
+        try:
+            data['family_name'] = instance.primary_user_id.get_file_upload.get().name
+        except:
+            data['family_name'] = None
         return data
 
 
