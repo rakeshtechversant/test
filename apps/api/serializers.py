@@ -668,7 +668,10 @@ class UnapprovedMemberSerializer(serializers.ModelSerializer):
             data['type'] = None
 
         data['date'] = obj.date
-        data['date_format'] = tz.localtime(obj.date, pytz.timezone('Asia/Kolkata')).strftime("%d/%m/%Y, %H:%M:%S %p")
+        try:
+            data['date_format'] = tz.localtime(obj.date, pytz.timezone('Asia/Kolkata')).strftime("%d/%m/%Y, %H:%M:%S %p")
+        except:
+            data['date_format'] = obj.date
         try:
             if obj.status:
                 data['status'] = obj.status
