@@ -2267,6 +2267,18 @@ class NoticeBereavementDelete(DestroyAPIView):
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
+        try:
+            if instance.primary_member:
+                instance.primary_member.in_memory = False
+                instance.primary_member.save()
+            elif instance.secondary_member:
+                instance.secondary_member.in_memory = False
+                instance.secondary_member.save()
+            else:
+                pass
+        except:
+            pass
+
         self.perform_destroy(instance)
         data = {
             'code': 200,
