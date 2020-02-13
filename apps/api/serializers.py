@@ -671,7 +671,7 @@ class UnapprovedMemberSerializer(serializers.ModelSerializer):
         try:
             data['date_format'] = tz.localtime(obj.date, pytz.timezone('Asia/Kolkata')).strftime("%d/%m/%Y, %H:%M:%S %p")
         except:
-            data['date_format'] = obj.date
+            data['date_format'] = obj.date.strftime("%d/%m/%Y, %H:%M:%S %p")
         try:
             if obj.status:
                 data['status'] = obj.status
@@ -932,7 +932,7 @@ class PrimaryToSecondarySerializer(serializers.ModelSerializer):
         try:
             data['date_format'] = tz.localtime(obj.date, pytz.timezone('Asia/Kolkata')).strftime("%d/%m/%Y, %H:%M:%S %p")
         except:
-            data['date_format'] = obj.date
+            data['date_format'] = obj.date.strftime("%d/%m/%Y, %H:%M:%S %p")
         try:
             if obj.status:
                 data['status'] = obj.status
@@ -969,7 +969,7 @@ class NumberChangePrimarySerializer(serializers.ModelSerializer):
         try:
             data['date_format'] = tz.localtime(obj.date, pytz.timezone('Asia/Kolkata')).strftime("%d/%m/%Y, %H:%M:%S %p")
         except:
-            data['date_format'] = obj.date
+            data['date_format'] = obj.date.strftime("%d/%m/%Y, %H:%M:%S %p")
         try:
             if obj.status:
                 data['status'] = obj.status
@@ -1027,7 +1027,7 @@ class AdminRequestSerializer(serializers.ModelSerializer):
         try:
             data['date_format'] = tz.localtime(obj.date, pytz.timezone('Asia/Kolkata')).strftime("%d/%m/%Y, %I:%M:%S %p")
         except:
-            data['date_format'] = obj.date
+            data['date_format'] = obj.date.strftime("%d/%m/%Y, %H:%M:%S %p")
         try:
             if obj.status:
                 data['status'] = obj.status
