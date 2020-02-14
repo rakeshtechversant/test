@@ -2003,6 +2003,7 @@ class UnapprovedMemberView(mixins.CreateModelMixin,
         data.pop('primary_user_name')
         data.pop('family_name')
         data.pop('prayer_group_name')
+        data.pop('date_format')
         
         try:
             img_name = data.get('image').split('/')[-1]
