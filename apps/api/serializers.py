@@ -491,12 +491,15 @@ class UserDetailsRetrieveSerializer(serializers.ModelSerializer):
         except:
             pass
         data['user_type'] = 'PRIMARY'
-
         try:
-            data['in_memory_date_format'] = tz.localtime(instance.in_memory_date, pytz.timezone('Asia/Kolkata')).strftime("%d/%m/%Y, %H:%M:%S %p")
+            if instance.in_memory:
+                try:
+                    data['in_memory_date_format'] = tz.localtime(instance.in_memory_date, pytz.timezone('Asia/Kolkata')).strftime("%d/%m/%Y, %H:%M:%S %p")
+                except:
+                    data['in_memory_date_format'] = instance.in_memory_date.strftime("%d/%m/%Y, %H:%M:%S %p")
+            else:
+                data['in_memory_date_format'] = None
         except:
-            data['in_memory_date_format'] = instance.in_memory_date.strftime("%d/%m/%Y, %H:%M:%S %p")
-        else:
             data['in_memory_date_format'] = None
         try :
             if instance.marrige_date :
@@ -583,10 +586,14 @@ class MembersDetailsSerializer(serializers.ModelSerializer):
             data['dom'] = None
 
         try:
-            data['in_memory_date_format'] = tz.localtime(instance.in_memory_date, pytz.timezone('Asia/Kolkata')).strftime("%d/%m/%Y, %H:%M:%S %p")
+            if instance.in_memory:
+                try:
+                    data['in_memory_date_format'] = tz.localtime(instance.in_memory_date, pytz.timezone('Asia/Kolkata')).strftime("%d/%m/%Y, %H:%M:%S %p")
+                except:
+                    data['in_memory_date_format'] = instance.in_memory_date.strftime("%d/%m/%Y, %H:%M:%S %p")
+            else:
+                data['in_memory_date_format'] = None
         except:
-            data['in_memory_date_format'] = instance.in_memory_date.strftime("%d/%m/%Y, %H:%M:%S %p")
-        else:
             data['in_memory_date_format'] = None
         return data
 
