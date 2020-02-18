@@ -16,7 +16,7 @@ class UserListView(generics.ListAPIView):
     serializer_class = serializers.UserSerializer
 
 class OccupationView(viewsets.ModelViewSet):
-    queryset = models.Occupation.objects.all()
+    queryset = models.Occupation.objects.all().order_by('occupation')
     serializer_class = serializers.OccupationSerializer
     permission_classes = [IsAuthenticated]
     authentication_classes = [TokenAuthentication]
