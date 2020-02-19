@@ -1113,6 +1113,10 @@ class MembersSerializerPage(serializers.ModelSerializer):
             data['family_name'] = instance.primary_user_id.get_file_upload.first().name.title()
         except:
             data['family_name'] = ''
+        try:
+            data['family_id'] = instance.primary_user_id.get_file_upload.first().id
+        except:
+            data['family_id'] = ''
         return data
 
 
@@ -1155,7 +1159,13 @@ class PrimaryUserSerializerPage(serializers.ModelSerializer):
             data['family_name'] = obj.get_file_upload.first().name.title()
         else:
             data['family_name'] = ''
-
+        try:
+            if obj.get_file_upload.first():
+                data['family_id'] = obj.get_file_upload.first().id
+            else:
+                data['family_id'] = ''
+        except:
+            data['family_id'] = ''
         try:
             data['name'] = obj.name.title()
         except:
