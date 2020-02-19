@@ -389,6 +389,10 @@ class PrimaryUserProfileSerializer(serializers.ModelSerializer):
             data['name'] = instance.name.title()
         except:
             pass
+        try :
+            data['primary_user_name'] = instance.name.title()
+        except:
+            pass
         try:
             data['family_name'] = instance.get_file_upload.first().name
         except:
@@ -430,7 +434,10 @@ class MemberProfileSerializer(serializers.ModelSerializer):
             data['name'] = instance.member_name.title()
         except:
             data['name'] = None
-
+        try :
+            data['primary_user_name'] = instance.primary_user_id.name.title()
+        except:
+            data['primary_user_name'] = None
         try :
             data['primary_name'] = instance.primary_user_id.name
         except:
@@ -486,7 +493,7 @@ class UserDetailsRetrieveSerializer(serializers.ModelSerializer):
             data['image'] = request.build_absolute_uri(instance.image.url)
         except:
             data['image'] = None
-        try:
+        try: 
             data['name'] = instance.name.title()
         except:
             pass
