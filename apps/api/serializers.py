@@ -1161,10 +1161,7 @@ class PrimaryUserSerializerPage(serializers.ModelSerializer):
         else:
             data['family_name'] = ''
         try:
-            if obj.get_file_upload.first():
-                data['family_id'] = obj.get_file_upload.first().id
-            else:
-                data['family_id'] = ''
+            data['family_id'] = obj.get_file_upload.first().id
         except:
             data['family_id'] = ''
         try:
