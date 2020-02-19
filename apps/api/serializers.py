@@ -885,6 +885,7 @@ class CommonUserSerializer(serializers.Serializer):
     in_memory=serializers.CharField()
     in_memory_date=serializers.CharField()
     family_name=serializers.CharField()
+    family_id=serializers.IntegerField()
     user_type=serializers.CharField()
     relation=serializers.CharField()
     primary_user_id=serializers.IntegerField()
