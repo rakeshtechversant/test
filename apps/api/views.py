@@ -2573,6 +2573,7 @@ class CreateUserByAdminView(APIView):
 
                 else:
                     instance.primary_user_id  = family.primary_user_id
+                    instance.save()
 
                 family.save()
 
