@@ -274,11 +274,11 @@ class MembersSerializer(serializers.ModelSerializer):
         except:
             data['image'] = None
         try:
-            data['family_id'] = instance.primary_user_id.get_file_upload.get().id
+            data['family_id'] = instance.primary_user_id.get_file_upload.first().id
         except:
             data['family_id'] = None
         try:
-            data['family_name'] = instance.primary_user_id.get_file_upload.get().name
+            data['family_name'] = instance.primary_user_id.get_file_upload.first().name
         except:
             data['family_name'] = None
 
@@ -528,6 +528,15 @@ class UserDetailsRetrieveSerializer(serializers.ModelSerializer):
                 pass
         except:
             data['dom'] = None
+
+        try:
+            data['family_id'] = instance.get_file_upload.first().id
+        except:
+            data['family_id'] = None
+        try:
+            data['family_name'] = instance.get_file_upload.first().name
+        except:
+            data['family_name'] = None
         return data
 
     # def get_family_name(self, obj):
