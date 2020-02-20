@@ -281,6 +281,17 @@ class MembersSerializer(serializers.ModelSerializer):
             data['family_name'] = instance.primary_user_id.get_file_upload.get().name
         except:
             data['family_name'] = None
+
+        try:
+            if instance.in_memory:
+                try:
+                    data['in_memory_date_format'] = tz.localtime(instance.in_memory_date, pytz.timezone('Asia/Kolkata')).strftime("%d/%m/%Y, %H:%M:%S %p")
+                except:
+                    data['in_memory_date_format'] = instance.in_memory_date.strftime("%d/%m/%Y, %H:%M:%S %p")
+            else:
+                data['in_memory_date_format'] = None
+        except:
+            data['in_memory_date_format'] = None
         return data
 
 
