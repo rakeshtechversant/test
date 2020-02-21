@@ -412,7 +412,15 @@ class PrimaryUserProfileSerializer(serializers.ModelSerializer):
             data['family_id'] = instance.get_file_upload.first().id
         except:
             data['family_id'] = None
-
+        try :
+            if instance.marrige_date :
+                data['marrige_date'] = instance.marrige_date
+            elif instance.dom:
+                data['marrige_date'] = instance.dom
+            else:
+                pass
+        except:
+            data['marrige_date'] = None
         return data
 
 
@@ -477,6 +485,15 @@ class MemberProfileSerializer(serializers.ModelSerializer):
             data['family_id'] = instance.primary_user_id.get_file_upload.first().id
         except:
             data['family_id'] = None
+        try :
+            if instance.marrige_date :
+                data['marrige_date'] = instance.marrige_date
+            elif instance.dom:
+                data['marrige_date'] = instance.dom
+            else:
+                pass
+        except:
+            data['marrige_date'] = None
         return data
 
 
