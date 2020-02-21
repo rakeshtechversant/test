@@ -36,7 +36,7 @@ urlpatterns = [
     path('update-family-by-primary/', UpdateFamilyByPrimary.as_view(), name='update-family-by-primary'),
 
     url(r'^(?P<pk>[\w-]+)/$',UserDetailView.as_view(),name='ind_user'),
-    url(r'^api/(?P<pk>[\w-]+)/$',UserDetailViewPage.as_view(),name='ind_user'),
+    url(r'^apis/(?P<pk>[\w-]+)/$',UserDetailViewPage.as_view(),name='ind_user'),
     url(r'^update-member-own/$',UserUpdateView.as_view(),name='update_user'),
     url(r'^(?P<pk>[\w-]+)/add-users/$',SecondaryaddView.as_view(),name='add_user'),
     url(r'^(?P<pk>[\w-]+)/delete/$',UserDeleteView.as_view(),name='delete_user'),
