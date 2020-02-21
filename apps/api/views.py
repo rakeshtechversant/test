@@ -4446,3 +4446,168 @@ class AdminRequestSectionView(ModelViewSet):
         response.sort(key=lambda item:item['date'], reverse=True)
         data['response'] = response
         return Response(data)
+
+class UserDetailViewPage(APIView):
+    queryset = FileUpload.objects.all()
+    serializer_class = UserRetrieveSerializer
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
+
+    def get(self, request,*args,**kwargs):
+        usertype_to = None
+        usertype_from = None
+        request_from = None
+        request_to = None
+        is_accepted = False
+        member = None
+        date_om = None
+        
+        user_type=request.GET['user_type']
+        if not user_type:
+            return Response({'success': False,'message':'Please provide user type'}, status=HTTP_400_BAD_REQUEST)
+
+        try:
+            member=FileUpload.objects.get(phone_no_primary=self.request.user.username)
+
+            if member:
+                request_from = member
+                usertype_from = 'PRIMARY'
+        except:
+            member=Members.objects.filter(phone_no_secondary_user=self.request.user.username)
+
+            if member:
+                request_from = member
+                usertype_from = 'SECONDARY'
+
+        try:
+            if user_type=='SECONDARY':
+                user_details=Members.objects.get(secondary_user_id=self.kwargs['pk'])
+                request_to = user_details
+                usertype_to = 'SECONDARY'
+                try:
+                    phoneobj=ViewRequestNumber.objects.filter(request_from=member.pk,usertype_from=usertype_from,request_to=request_to.pk,usertype_to=usertype_to)
+                    is_accepted = phoneobj.first().is_accepted
+                except:
+                    is_accepted = False
+                try:
+                    image=request.build_absolute_uri(user_details.image.url)
+                except:
+                    image='null'
+                try :
+                    if user_details.marrige_date :
+                        date_om = user_details.marrige_date
+                    elif user_details.dom:
+                        date_om = user_details.dom
+                    else:
+                        pass
+                except:
+                    date_om = None
+
+                try:
+                    family_id = user_details.primary_user_id.get_file_upload.first().id
+                except:
+                    family_id = None
+                try:
+                    family_name = user_details.primary_user_id.get_file_upload.first().name
+                except:
+                    family_name = None
+
+                
+                data={
+                    'name':user_details.member_name,
+                    'address':user_details.primary_user_id.address,
+                    'is_accepted':is_accepted,
+                    'phone_no_primary':user_details.phone_no_secondary_user,
+                    'phone_no_secondary':user_details.phone_no_secondary_user_secondary,
+                    'dob':user_details.dob,
+                    'dom':date_om,
+                    'blood_group':user_details.blood_group,
+                    'email':user_details.email,
+                    'occupation':user_details.occupation,
+                    'about':user_details.about,
+                    'marital_status':user_details.marital_status,
+                    'marrige_date':date_om,
+                    'in_memory':user_details.in_memory,
+                    'in_memory_date':user_details.in_memory_date,
+                    'image':image,
+                    'relation':user_details.relation,
+                    'family_id':family_id,
+                    'family_name':family_name,
+                    'primary_user':user_details.primary_user_id.name,
+                    'primary_user_id':user_details.primary_user_id.primary_user_id,
+                    'primary_in_memory':user_details.primary_user_id.in_memory,
+                    'primary_user_name':user_details.primary_user_id.name
+
+                }
+                return Response({'success': True,'message':'Profile found successfully','user_details':data}, status=HTTP_200_OK)
+            else:
+                try:
+                    user_details=FileUpload.objects.get(primary_user_id=self.kwargs['pk'])
+
+                    request_to = user_details
+                    usertype_to = 'PRIMARY'
+                    try:
+                        phoneobj=ViewRequestNumber.objects.filter(request_from=member.pk, usertype_from=usertype_from,\
+                            request_to=request_to.pk, usertype_to=usertype_to)
+                        is_accepted = phoneobj.first().is_accepted
+                    except:
+                        is_accepted = False
+                    try:
+                        image=request.build_absolute_uri(user_details.image.url)
+                    except:
+                        image='null'
+                    try :
+                        if user_details.marrige_date :
+                            date_om = user_details.marrige_date
+                        elif user_details.dom:
+                            date_om = user_details.dom
+                        else:
+                            pass
+                    except:
+                        date_om = None
+
+                    try:
+                        family_id = user_details.get_file_upload.first().id
+                    except:
+                        family_id = None
+
+                    try:
+                        family_name = user_details.get_file_upload.first().name
+                    except:
+                        family_name = None
+
+                    data={
+                       'name':user_details.name,
+                       'address':user_details.address,
+                       'is_accepted':is_accepted,
+                       'phone_no_primary':user_details.phone_no_primary,
+                       'phone_no_secondary':user_details.phone_no_secondary,
+                       'dob':user_details.dob,
+                       'dom':date_om,
+                       'blood_group':user_details.blood_group,
+                       'email':user_details.email,
+                       'occupation':user_details.occupation,
+                       'about':user_details.about,
+                       'marital_status':user_details.marital_status,
+                       'marrige_date':date_om,
+                       'in_memory':user_details.in_memory,
+                       'in_memory_date':user_details.in_memory_date,
+                       'image':image,
+                       'relation':user_details.relation,
+                       'family_id':family_id,
+                       'family_name':family_name,
+                       'primary_user':user_details.name,
+                       'primary_user_id':user_details.primary_user_id,
+                       'primary_in_memory':user_details.in_memory,
+                       'primary_user_name':user_details.name
+                    }
+                    return Response({'success': True,'message':'Profile found successfully','user_details':data}, status=HTTP_200_OK)
+                except:
+                    user_details=AdminProfile.objects.get(id=self.kwargs['pk'])
+                    data={
+                        'id':user_details.user,
+                        'mobile_number':user_details.mobile_number
+                    }
+                    return Response({'success': True,'message':'Profile found successfully','user_details':data}, status=HTTP_200_OK)
+        except:
+            return Response({'success': False,'message':'Something Went Wrong'}, status=HTTP_400_BAD_REQUEST)
