@@ -1083,7 +1083,8 @@ class UserDetailView(APIView):
                     'primary_in_memory':user_details.primary_user_id.in_memory,
                     'family_id':family_id,
                     'family_name':family_name,
-                    'primary_user_name':user_details.primary_user_id.name
+                    'primary_user_name':user_details.primary_user_id.name,
+                    'user_type':'SECONDARY'
 
                 }
                 return Response({'success': True,'message':'Profile found successfully','user_details':data}, status=HTTP_200_OK)
@@ -1124,7 +1125,7 @@ class UserDetailView(APIView):
                         family_name = None
 
                     data={
-                       'member_name':user_details.primary_user_id,
+                       # 'member_name':user_details.primary_user_id,
                        'name':user_details.name,
                        'address':user_details.address,
                        'is_accepted':is_accepted,
@@ -1144,7 +1145,8 @@ class UserDetailView(APIView):
                        'relation':user_details.relation,
                        'family_id':family_id,
                        'family_name':family_name,
-                       'primary_user_name':user_details.name
+                       'primary_user_name':user_details.name,
+                       'user_type':'PRIMARY'
                     }
                     return Response({'success': True,'message':'Profile found successfully','user_details':data}, status=HTTP_200_OK)
                 except:
