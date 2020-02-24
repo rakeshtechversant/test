@@ -628,7 +628,10 @@ class MembersDetailsSerializer(serializers.ModelSerializer):
                 pass
         except:
             data['dom'] = None
-
+        try:
+            data['phone_no_secondary_user_secondary']=instance.phone_no_secondary_user_secondary
+        except:
+            data['phone_no_secondary_user_secondary'] = None
         try:
             if instance.in_memory:
                 try:
