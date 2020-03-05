@@ -929,6 +929,7 @@ class CommonUserSerializer(serializers.Serializer):
     user_type=serializers.CharField()
     relation=serializers.CharField()
     primary_user_id=serializers.IntegerField()
+    primary_name=serializers.CharField()
 
 
 class MemberNumberSerializer(serializers.Serializer):
@@ -1158,6 +1159,10 @@ class MembersSerializerPage(serializers.ModelSerializer):
             data['family_id'] = instance.primary_user_id.get_file_upload.first().id
         except:
             data['family_id'] = ''
+        try:
+            data['primary_name'] = instance.primary_user_id.name.title()
+        except:
+            data['primary_name'] = ''
         return data
 
 
@@ -1208,6 +1213,10 @@ class PrimaryUserSerializerPage(serializers.ModelSerializer):
             data['name'] = obj.name.title()
         except:
             pass
+        try:
+            data['primary_name'] = obj.name.title()
+        except:
+            pass   
         try:
             data['user_id'] = obj.primary_user_id
         except:
