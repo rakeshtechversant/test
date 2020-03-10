@@ -6,7 +6,7 @@ from apps.api.views import UserLoginView, UserLoginMobileView, UserListView, Use
     OtpVerifyViewSet, SecondaryaddView, Profile, UnapprovedMemberView, UpdateMemberByPrimary, CreateUserByAdminView, \
     UpdateUserByAdminView, AddFamilyByAdminView, GalleryImagesView, UpdateFamilyByPrimary, OtpVerifyUserIdViewSet, \
     UserLoginMobileWithOutOtpView,UserListCommonView,OtpVerifyUserCheckNumberViewSet,StatusChangeAcceptView,PrimaryNumberChangeAcceptView,\
-    AdminRequestSectionView,UserDetailViewPage
+    AdminRequestSectionView,UserDetailViewPage,UserDownloadView
 
 from rest_framework import routers
 
@@ -16,6 +16,7 @@ router.register(r'seconday-member-by-primary', UnapprovedMemberView, basename='s
 router.register(r'status-change-accept-reject', StatusChangeAcceptView, basename='status-change-accept-reject')
 router.register(r'primary-number-accept-reject', PrimaryNumberChangeAcceptView, basename='primary-number-change-accept-reject')
 router.register(r'^admin-requests-list',AdminRequestSectionView,basename='admin_requests_list'),
+router.register(r'csv-download',UserDownloadView,basename='csv-download'),
 
 urlpatterns = [
     path('login-user/', UserLoginView.as_view(),name='login'),

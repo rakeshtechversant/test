@@ -335,7 +335,7 @@ class NoticeSerializer(serializers.ModelSerializer):
                             "id":str(notice.id)
                             }
 
-        # body="You have received a new notice"
+        body="You have received a new notice"
         notifications=Notification.objects.create(created_time=tz.now(),message=body)
         primary_members=FileUpload.objects.all()
         secondary_members=Members.objects.all()
@@ -346,7 +346,7 @@ class NoticeSerializer(serializers.ModelSerializer):
         
         return notice
 
-    def update(self, request, *args, **kwargs):
+    def update(self,instance, validated_data):
 
         instance = super().update(instance, validated_data)
         instance.save()
