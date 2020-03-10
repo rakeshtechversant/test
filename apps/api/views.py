@@ -38,7 +38,7 @@ from apps.api.serializers import ChurchHistorySerializer, ChurchImagesSerializer
     ViewRequestNumberSerializer, RequestAcceptNumberSerializer, AdminNotificationSerializer, PhoneVersionSerializer, \
     GalleryImagesSerializer, FamilyDetailSerializer, FamilyEditSerializer, GalleryImagesCreateSerializer, \
     OTPVeifySerializerUserId, CommonUserSerializer, MemberNumberSerializer, PrimaryToSecondarySerializer, NumberChangePrimarySerializer ,\
-    AdminRequestSerializer, PrimaryUserSerializerPage, MembersSerializerPage
+    AdminRequestSerializer, PrimaryUserSerializerPage, MembersSerializerPage, UserMemorySerializer
 from apps.church.models import Members, Family, UserProfile, ChurchDetails, FileUpload, OtpModels, \
     PrayerGroup, Notification, Notice, NoticeBereavement, UnapprovedMember, NoticeReadPrimary, NoticeReadSecondary, \
     ViewRequestNumber, NoticeReadAdmin, PrivacyPolicy, PhoneVersion, Images, PrimaryToSecondary, NumberChangePrimary
@@ -1166,12 +1166,20 @@ class ChurchVicarView(RetrieveAPIView):
     serializer_class = ChurchVicarSerializer
     permission_classes = [AllowAny]
 
+class ChurchVicarEditView(viewsets.ModelViewSet):
+    queryset = ChurchDetails.objects.all()
+    serializer_class = ChurchVicarSerializer
+    permission_classes = [AllowAny]
 
 class ChurchHistoryView(RetrieveAPIView):
     queryset = ChurchDetails.objects.all()
     serializer_class = ChurchHistorySerializer
     permission_classes = [AllowAny]
 
+class ChurchHistoryEditView(viewsets.ModelViewSet):
+    queryset = ChurchDetails.objects.all()
+    serializer_class = ChurchHistorySerializer
+    permission_classes = [AllowAny]
 
 class ChurchImagesView(RetrieveAPIView):
     queryset = ChurchDetails.objects.all()
@@ -1551,7 +1559,7 @@ class NoticeModelViewSet(ModelViewSet):
         return Response(data)
 
     def update(self, request, *args, **kwargs):
-        
+
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
@@ -4861,3 +4869,94 @@ class UserDownloadView(ModelViewSet):
                             pass
                     return response
         return Response({'success': True,'message':'User Details downloaded successfully'}, status=HTTP_200_OK)
+
+class CreateMemoryUserView(APIView):
+    serializer_class = UserMemorySerializer
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, format=None):
+
+        serializer = UserMemorySerializer(data=request.data,context={'request':request})
+
+        if serializer.is_valid():
+
+            family = Family.objects.get(pk=serializer.data['family'])
+            
+            if family.primary_user_id and not family.primary_user_id.in_memory and serializer.data['member_type'] in ['Primary', 'primary']:
+                data = {
+                    'status': False,
+                    'message': 'Primary user already exists for this family'
+                }
+                return Response(data, status=status.HTTP_400_BAD_REQUEST)
+
+            if serializer.data['member_type'] in ['Primary', 'primary']:
+                
+                instance = FileUpload(
+                    name=serializer.data['name'],
+                    dob=serializer.data['dob'],
+                    in_memory_date=serializer.data['in_memory_date'],
+
+                )
+            else:
+                if not family.primary_user_id:
+                    data = {
+                        'status': False,
+                        'message': 'Create a primary user to add secondary users'
+                    }
+                    return Response(data, status=status.HTTP_400_BAD_REQUEST)
+
+                instance = Members(
+                    member_name=serializer.data['name'],
+                    dob=serializer.data['dob'],
+                    in_memory_date=serializer.data['in_memory_date']
+                )
+
+            if serializer.data['member_status'] == 'in_memory':
+                instance.in_memory = True
+
+            if request.FILES.get('image'):
+                instance.image = request.FILES['image']
+
+            instance.save()
+
+            if serializer.data['family']:
+
+                if serializer.data['member_type'] in ['Primary', 'primary']:
+                    family.primary_user_id = instance
+
+                else:
+                    instance.primary_user_id  = family.primary_user_id
+                    instance.save()
+
+                family.save()
+
+
+            if serializer.data['prayer_group']:
+                prayer_group = PrayerGroup.objects.get(pk=serializer.data['prayer_group'])
+                
+                if serializer.data['member_type'] in ['Primary', 'primary']:
+                    prayer_group.primary_user_id.add(instance)
+                else:
+                    prayer_group.primary_user_id.add(instance.primary_user_id)
+                
+                data ={
+                    'id': instance.pk
+                }
+                data.update(serializer.data)
+
+                response={
+                    "status": True,
+                    "message": "User Created successfully"
+                }
+
+                response['response'] = data
+
+            return Response(response)
+
+        data={
+            'status': False,
+        }
+        data['response'] = serializer.errors
+
+        return Response(data, status=status.HTTP_400_BAD_REQUEST)

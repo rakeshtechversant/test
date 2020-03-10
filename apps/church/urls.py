@@ -9,7 +9,7 @@ from apps.api.views import UserNoticeList, NoticeBereavementDelete, NoticeBereav
     ViewRequestNumberViewset, AcceptViewRequestNumberViewset, EachUserNotification, EachUserUnreadCount, PrivacyView, \
     PhoneVersionView, GalleryImagesView, GalleryImagesCreateView, SendOtpSecSave, FamilyListPaginatedView,\
     PrayerGroupBasedFamilyPaginatedView,PrayerGroupBasedMembersPaginatedView,SendWithoutOtpSecSave, UpdatePhoneNumberSecondary,\
-    PrimaryToSecondaryViewset,PrimaryNumberChangeViewset
+    PrimaryToSecondaryViewset,PrimaryNumberChangeViewset,ChurchVicarEditView,ChurchHistoryEditView
 
 router = DefaultRouter()
 
@@ -20,6 +20,8 @@ router.register(r'occupations', views.OccupationView)
 router.register(r'member-types', views.MemberTypeView)
 router.register(r'images-category',GalleryImagesView,basename='gallery_images')
 router.register(r'gallery-image-upload-admin',GalleryImagesCreateView,basename='gallery_image_upload_admin')
+router.register(r'church-vicar-edit',ChurchVicarEditView,basename='church_vicar_edit')
+router.register(r'church-history-edit',ChurchHistoryEditView,basename='church_history_edit')
 urlpatterns = [
     path('', views.UserListView.as_view()),
     path('admin/', include(router.urls)),

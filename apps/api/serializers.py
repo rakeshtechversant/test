@@ -1230,3 +1230,20 @@ class PrimaryUserSerializerPage(serializers.ModelSerializer):
         data['user_type'] = 'PRIMARY'
 
         return data
+
+class UserMemorySerializer(serializers.Serializer):
+    prayer_group = serializers.PrimaryKeyRelatedField(queryset=PrayerGroup.objects.all())
+    family = serializers.PrimaryKeyRelatedField(queryset=Family.objects.all())
+    name = serializers.CharField()
+    # blood_group = serializers.CharField()
+    dob = serializers.CharField()
+    # email = serializers.EmailField()
+    # primary_number = serializers.CharField()
+    # secondary_number = serializers.CharField()
+    # occupation = serializers.CharField()
+    # marital_status = serializers.CharField()
+    # marrige_date = serializers.CharField(allow_blank=True)
+    member_type = serializers.CharField()
+    member_status = serializers.ChoiceField(choices=['active', 'in_memory'])
+    in_memory_date = serializers.DateTimeField()
+    # about = serializers.CharField()

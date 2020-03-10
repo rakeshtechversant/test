@@ -6,7 +6,7 @@ from apps.api.views import UserLoginView, UserLoginMobileView, UserListView, Use
     OtpVerifyViewSet, SecondaryaddView, Profile, UnapprovedMemberView, UpdateMemberByPrimary, CreateUserByAdminView, \
     UpdateUserByAdminView, AddFamilyByAdminView, GalleryImagesView, UpdateFamilyByPrimary, OtpVerifyUserIdViewSet, \
     UserLoginMobileWithOutOtpView,UserListCommonView,OtpVerifyUserCheckNumberViewSet,StatusChangeAcceptView,PrimaryNumberChangeAcceptView,\
-    AdminRequestSectionView,UserDetailViewPage,UserDownloadView
+    AdminRequestSectionView,UserDetailViewPage,UserDownloadView,CreateMemoryUserView
 
 from rest_framework import routers
 
@@ -31,6 +31,8 @@ urlpatterns = [
     path('otp_verify_check/',OtpVerifyUserCheckNumberViewSet.as_view(),name='otp_verify_check'),
     path('profile/',Profile.as_view(), name='profile'),
     path('user-by-admin/', CreateUserByAdminView.as_view(), name='user_by_admin'),
+    path('create-memory-user/', CreateMemoryUserView.as_view(), name='create_memory_user'),
+    
     path('update-user-by-admin/<int:pk>/', UpdateUserByAdminView.as_view(), name='update_user_by_admin'),
     path('add-family-by-admin/<int:pk>/', AddFamilyByAdminView.as_view(), name='add_family_by_admin'),
     path('add-family-by-admin/', AddFamilyByAdminView.as_view(), name='add_family_by_admin'),
