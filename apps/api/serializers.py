@@ -525,6 +525,10 @@ class UserDetailsRetrieveSerializer(serializers.ModelSerializer):
             data['name'] = instance.name.title()
         except:
             pass
+        try: 
+            data['landline'] = instance.landline
+        except:
+            data['landline'] = None
         data['user_type'] = 'PRIMARY'
         try:
             if instance.in_memory:
@@ -618,7 +622,10 @@ class MembersDetailsSerializer(serializers.ModelSerializer):
             data['image'] = request.build_absolute_uri(instance.image.url)
         except:
             data['image'] = None
-
+        try: 
+            data['landline'] = instance.landline
+        except:
+            data['landline'] = None
         try :
             if instance.marrige_date :
                 data['dom'] = instance.marrige_date
