@@ -103,6 +103,7 @@ class UnapprovedMember(models.Model):
     edit_user = models.IntegerField(null=True, blank=True)
     status = models.CharField(max_length=200, null=True, blank=True)
     date=models.DateTimeField(default=datetime.now, blank=True)
+    landline = models.CharField(max_length=20, null=True, blank=True)
     
     def __str__(self):
         return self.member_name
