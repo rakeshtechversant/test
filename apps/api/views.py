@@ -1916,20 +1916,32 @@ class FamilyMemberDetails(ListAPIView):
             family_image=request.build_absolute_uri(family_images)
         except:
             family_image = None
+        try:
+            prayer_group_name = self.primary_user.get_file_upload_prayergroup.first().name
+            prayer_group_id = self.primary_user.get_file_upload_prayergroup.first().id
+        except:
+            prayer_group_name = None
+            prayer_group_id = None
         
         if self.primary_user.get_file_upload.first():
             data['response'] = {
                 'family_members':serializer.data,
                 'family_name':self.primary_user.get_file_upload.first().name.title(),
                 'family_about':self.primary_user.get_file_upload.first().about,
-                'family_image':family_image
+                'family_image':family_image,
+                'family_id': self.primary_user.get_file_upload.first().id,
+                'prayer_group_name' : prayer_group_name,
+                'prayer_group_id' : prayer_group_id
             }
         else:
             data['response'] = {
                 'family_members':serializer.data,
                 'family_name':None,
                 'family_about':None,
-                'family_image':family_image
+                'family_image':family_image,
+                'family_id' : None,
+                'prayer_group_name' : prayer_group_name,
+                'prayer_group_id' : prayer_group_id
             }
 
         data['response']['family_members'].insert(0, primary_user_id)
