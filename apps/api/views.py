@@ -5012,13 +5012,16 @@ class CreateFamilyMemoryUserView(CreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        prayer_group_id = request.POST.get('prayer_group_id', False)
-        family_id = request.POST.get('family_id', False)
+        prayer_group_id = request.POST.get('prayer_group', False)
+        family_id = request.POST.get('family', False)
         member_id=request.POST.get('member_id', False)
-        user_type=request.POST.get('user_type', False)
+        user_type=request.POST.get('member_type', False)
+        member_status=request.POST.get('member_status', False)
         in_memory_date = request.POST.get('in_memory_date', False)
+        dob = request.POST.get('dob', False)
         # title=request.POST.get('title', False)
-        if not prayer_group_id and not family_id and not member_id  and not in_memory_date:
+        # import pdb;pdb.set_trace()
+        if not prayer_group_id and not family_id and not member_id and not user_type and not member_status and not in_memory_date and not dob:
             return Response({'success': False,'message': 'You should fill all the fields'}, status=HTTP_400_BAD_REQUEST)
         else:
             if not prayer_group_id:
@@ -5039,15 +5042,24 @@ class CreateFamilyMemoryUserView(CreateAPIView):
                 except:
                     return Response({'success': False,'message': 'Family doesnot exist'}, status=HTTP_400_BAD_REQUEST)
 
-                if user_type=='SECONDARY':
+                if user_type=='SECONDARY' or user_type=='secondary':
                     try:
                         member_id=Members.objects.get(secondary_user_id=member_id)
                     except:
                         return Response({'success': False,'message': 'Member doesnot exist'}, status=HTTP_400_BAD_REQUEST)
                     # beri_obj=NoticeBereavement.objects.create(prayer_group=prayer_group_id,family=family_id,secondary_member=member_id,description=description)
-                    member_id.in_memory=True
-                    member_id.in_memory_date=datetime.strptime(in_memory_date, "%Y-%m-%d %H:%M:%S")
-                    member_id.save()
+                    if member_status == 'in_memory':
+                        member_id.in_memory = True
+                        member_id.in_memory_date=datetime.strptime(in_memory_date, "%Y-%m-%d %H:%M:%S")
+                        member_id.dob = dob
+                        try:
+                            if request.FILES.get('image'):
+                                member_id.image = request.FILES['image']
+                            else:
+                                pass
+                        except:
+                            pass
+                        member_id.save()
 
                     return Response({'success': True,'message':'User Updated Successfully'}, status=HTTP_201_CREATED)
                 else:
@@ -5056,7 +5068,16 @@ class CreateFamilyMemoryUserView(CreateAPIView):
                     except:
                         return Response({'success': False,'message': 'Member doesnot exist'}, status=HTTP_400_BAD_REQUEST)
                     # beri_obj = NoticeBereavement.objects.create(prayer_group=prayer_group_id,family=family_id,primary_member=member_id,description=description)
-                    member_id.in_memory=True
-                    member_id.in_memory_date=datetime.strptime(in_memory_date, "%Y-%m-%d %H:%M:%S")
-                    member_id.save()
+                    if member_status == 'in_memory':
+                        member_id.in_memory=True
+                        member_id.in_memory_date=datetime.strptime(in_memory_date, "%Y-%m-%d %H:%M:%S")
+                        member_id.dob = dob
+                        try:
+                            if request.FILES.get('image'):
+                                member_id.image = request.FILES['image']
+                            else:
+                                pass
+                        except:
+                            pass
+                        member_id.save()
                     return Response({'success': True,'message':'User Updated Successfully'}, status=HTTP_201_CREATED)
