@@ -5032,7 +5032,11 @@ class CreateFamilyMemoryUserView(CreateAPIView):
                 return Response({'success': False,'message': 'Member field shouldnot be blank'}, status=HTTP_400_BAD_REQUEST)
             if not in_memory_date:
                 return Response({'success': False,'message': 'In_memory_date field shouldnot be blank'}, status=HTTP_400_BAD_REQUEST)
-            if prayer_group_id and member_id and family_id and in_memory_date:
+            if not user_type:
+                return Response({'success': False,'message': 'Member type field shouldnot be blank'}, status=HTTP_400_BAD_REQUEST)
+            if not member_status:
+                return Response({'success': False,'message': 'Member status field shouldnot be blank'}, status=HTTP_400_BAD_REQUEST)
+            if prayer_group_id and member_id and family_id and in_memory_date and user_type and member_status:
                 try:
                     prayer_group_id=PrayerGroup.objects.get(id=prayer_group_id)
                 except:
@@ -5062,7 +5066,7 @@ class CreateFamilyMemoryUserView(CreateAPIView):
                         member_id.save()
 
                     return Response({'success': True,'message':'User Updated Successfully'}, status=HTTP_201_CREATED)
-                else:
+                elif user_type=='PRIMARY' or user_type=='primary':
                     try:
                         member_id=FileUpload.objects.get(primary_user_id=member_id)
                     except:
@@ -5081,3 +5085,5 @@ class CreateFamilyMemoryUserView(CreateAPIView):
                             pass
                         member_id.save()
                     return Response({'success': True,'message':'User Updated Successfully'}, status=HTTP_201_CREATED)
+                else:
+                    return Response({'success': False,'message': 'Invalid User'}, status=HTTP_400_BAD_REQUEST)
