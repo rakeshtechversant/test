@@ -5004,3 +5004,59 @@ class CreateMemoryUserView(APIView):
         data['response'] = serializer.errors
 
         return Response(data, status=status.HTTP_400_BAD_REQUEST)
+
+
+class CreateFamilyMemoryUserView(CreateAPIView):
+    # queryset = NoticeBereavement.objects.all()
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        prayer_group_id = request.POST.get('prayer_group_id', False)
+        family_id = request.POST.get('family_id', False)
+        member_id=request.POST.get('member_id', False)
+        user_type=request.POST.get('user_type', False)
+        in_memory_date = request.POST.get('in_memory_date', False)
+        # title=request.POST.get('title', False)
+        if not prayer_group_id and not family_id and not member_id  and not in_memory_date:
+            return Response({'success': False,'message': 'You should fill all the fields'}, status=HTTP_400_BAD_REQUEST)
+        else:
+            if not prayer_group_id:
+                return Response({'success': False,'message': 'Prayer group field shouldnot be blank'}, status=HTTP_400_BAD_REQUEST)
+            if not family_id:
+                return Response({'success': False,'message': 'Family field shouldnot be blank'}, status=HTTP_400_BAD_REQUEST)
+            if not member_id:
+                return Response({'success': False,'message': 'Member field shouldnot be blank'}, status=HTTP_400_BAD_REQUEST)
+            if not in_memory_date:
+                return Response({'success': False,'message': 'In_memory_date field shouldnot be blank'}, status=HTTP_400_BAD_REQUEST)
+            if prayer_group_id and member_id and family_id and in_memory_date:
+                try:
+                    prayer_group_id=PrayerGroup.objects.get(id=prayer_group_id)
+                except:
+                    return Response({'success': False,'message': 'Prayer Group doesnot exist'}, status=HTTP_400_BAD_REQUEST)
+                try:
+                    family_id=Family.objects.get(id=family_id)
+                except:
+                    return Response({'success': False,'message': 'Family doesnot exist'}, status=HTTP_400_BAD_REQUEST)
+
+                if user_type=='SECONDARY':
+                    try:
+                        member_id=Members.objects.get(secondary_user_id=member_id)
+                    except:
+                        return Response({'success': False,'message': 'Member doesnot exist'}, status=HTTP_400_BAD_REQUEST)
+                    # beri_obj=NoticeBereavement.objects.create(prayer_group=prayer_group_id,family=family_id,secondary_member=member_id,description=description)
+                    member_id.in_memory=True
+                    member_id.in_memory_date=datetime.strptime(in_memory_date, "%Y-%m-%d %H:%M:%S")
+                    member_id.save()
+
+                    return Response({'success': True,'message':'User Updated Successfully'}, status=HTTP_201_CREATED)
+                else:
+                    try:
+                        member_id=FileUpload.objects.get(primary_user_id=member_id)
+                    except:
+                        return Response({'success': False,'message': 'Member doesnot exist'}, status=HTTP_400_BAD_REQUEST)
+                    # beri_obj = NoticeBereavement.objects.create(prayer_group=prayer_group_id,family=family_id,primary_member=member_id,description=description)
+                    member_id.in_memory=True
+                    member_id.in_memory_date=datetime.strptime(in_memory_date, "%Y-%m-%d %H:%M:%S")
+                    member_id.save()
+                    return Response({'success': True,'message':'User Updated Successfully'}, status=HTTP_201_CREATED)
