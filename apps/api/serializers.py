@@ -285,9 +285,9 @@ class MembersSerializer(serializers.ModelSerializer):
         try:
             if instance.in_memory:
                 try:
-                    data['in_memory_date_format'] = tz.localtime(instance.in_memory_date, pytz.timezone('Asia/Kolkata')).strftime("%d/%m/%Y, %H:%M:%S %p")
+                    data['in_memory_date_format'] = tz.localtime(instance.in_memory_date, pytz.timezone('Asia/Kolkata')).strftime("%d/%m/%Y")
                 except:
-                    data['in_memory_date_format'] = instance.in_memory_date.strftime("%d/%m/%Y, %H:%M:%S %p")
+                    data['in_memory_date_format'] = instance.in_memory_date.strftime("%d/%m/%Y")
             else:
                 data['in_memory_date_format'] = None
         except:
@@ -533,9 +533,9 @@ class UserDetailsRetrieveSerializer(serializers.ModelSerializer):
         try:
             if instance.in_memory:
                 try:
-                    data['in_memory_date_format'] = tz.localtime(instance.in_memory_date, pytz.timezone('Asia/Kolkata')).strftime("%d/%m/%Y, %H:%M:%S %p")
+                    data['in_memory_date_format'] = tz.localtime(instance.in_memory_date, pytz.timezone('Asia/Kolkata')).strftime("%d/%m/%Y")
                 except:
-                    data['in_memory_date_format'] = instance.in_memory_date.strftime("%d/%m/%Y, %H:%M:%S %p")
+                    data['in_memory_date_format'] = instance.in_memory_date.strftime("%d/%m/%Y")
             else:
                 data['in_memory_date_format'] = None
         except:
@@ -642,9 +642,9 @@ class MembersDetailsSerializer(serializers.ModelSerializer):
         try:
             if instance.in_memory:
                 try:
-                    data['in_memory_date_format'] = tz.localtime(instance.in_memory_date, pytz.timezone('Asia/Kolkata')).strftime("%d/%m/%Y, %H:%M:%S %p")
+                    data['in_memory_date_format'] = tz.localtime(instance.in_memory_date, pytz.timezone('Asia/Kolkata')).strftime("%d/%m/%Y")
                 except:
-                    data['in_memory_date_format'] = instance.in_memory_date.strftime("%d/%m/%Y, %H:%M:%S %p")
+                    data['in_memory_date_format'] = instance.in_memory_date.strftime("%d/%m/%Y")
             else:
                 data['in_memory_date_format'] = None
         except:
