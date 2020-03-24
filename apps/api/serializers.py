@@ -283,6 +283,11 @@ class MembersSerializer(serializers.ModelSerializer):
             data['family_name'] = None
 
         try:
+            data['phone_no_secondary_user_secondary'] = instance.phone_no_secondary_user
+        except:
+            data['phone_no_secondary_user_secondary'] = None
+
+        try:
             if instance.in_memory:
                 try:
                     data['in_memory_date_format'] = tz.localtime(instance.in_memory_date, pytz.timezone('Asia/Kolkata')).strftime("%d/%m/%Y")
