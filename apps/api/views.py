@@ -38,7 +38,7 @@ from apps.api.serializers import ChurchHistorySerializer, ChurchImagesSerializer
     ViewRequestNumberSerializer, RequestAcceptNumberSerializer, AdminNotificationSerializer, PhoneVersionSerializer, \
     GalleryImagesSerializer, FamilyDetailSerializer, FamilyEditSerializer, GalleryImagesCreateSerializer, \
     OTPVeifySerializerUserId, CommonUserSerializer, MemberNumberSerializer, PrimaryToSecondarySerializer, NumberChangePrimarySerializer ,\
-    AdminRequestSerializer, PrimaryUserSerializerPage, MembersSerializerPage, UserMemorySerializer
+    AdminRequestSerializer, PrimaryUserSerializerPage, MembersSerializerPage, UserMemorySerializer, UserByMembersSerializer
 from apps.church.models import Members, Family, UserProfile, ChurchDetails, FileUpload, OtpModels, \
     PrayerGroup, Notification, Notice, NoticeBereavement, UnapprovedMember, NoticeReadPrimary, NoticeReadSecondary, \
     ViewRequestNumber, NoticeReadAdmin, PrivacyPolicy, PhoneVersion, Images, PrimaryToSecondary, NumberChangePrimary
@@ -2455,8 +2455,15 @@ class UpdateFamilyByPrimary(APIView):
         user=self.request.user.username
         serializer = FamilyEditSerializer(data=request.data)
         if serializer.is_valid():
+            # import pdb;pdb.set_trace()
             try:
-                user_id_primary=FileUpload.objects.get(Q(phone_no_primary=user)|Q(phone_no_secondary=user))
+                if FileUpload.objects.filter(Q(phone_no_primary=user)|Q(phone_no_secondary=user)).exists():
+                    user_id_primary=FileUpload.objects.get(Q(phone_no_primary=user)|Q(phone_no_secondary=user))
+                elif Members.objects.filter(Q(phone_no_secondary_user=user)|Q(phone_no_secondary_user_secondary=user)).exists():
+                    mem_obj = Members.objects.get(Q(phone_no_secondary_user=user)|Q(phone_no_secondary_user_secondary=user))
+                    user_id_primary = mem_obj.primary_user_id
+                else:
+                    return Response({'status': False,'message': 'No such Family'},status=HTTP_400_BAD_REQUEST)
             except:
                return Response({'status': False,'message': 'No such Family'},status=HTTP_400_BAD_REQUEST)
             else:
@@ -5087,3 +5094,131 @@ class CreateFamilyMemoryUserView(CreateAPIView):
                     return Response({'success': True,'message':'User Updated Successfully'}, status=HTTP_201_CREATED)
                 else:
                     return Response({'success': False,'message': 'Invalid User'}, status=HTTP_400_BAD_REQUEST)
+
+
+class UpdateUserByMembersView(APIView):
+    serializer_class = UserByMembersSerializer
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+   
+    def post(self, request, pk=None, format=None):
+        response_data = []
+        serializer = UserByMembersSerializer(data=request.data)
+
+        if serializer.is_valid():
+
+            prayer_group = PrayerGroup.objects.get(pk=serializer.data['prayer_group'])
+            family = Family.objects.get(pk=serializer.data['family'])
+
+            if serializer.data['member_type'] in ['Primary', 'primary','PRIMARY']:
+                instance = FileUpload.objects.get(pk=pk)
+
+                instance.name = serializer.data['name']
+                instance.dob = serializer.data['dob']
+                instance.blood_group = serializer.data['blood_group']
+                instance.email = serializer.data['email']
+                # instance.phone_no_primary = serializer.data['primary_number']
+                instance.phone_no_secondary = serializer.data['secondary_number']
+                instance.occupation = serializer.data['occupation']
+                instance.marital_status = serializer.data['marital_status']
+                instance.marrige_date = serializer.data['marrige_date']
+                instance.about = serializer.data['about']
+                instance.landline= serializer.data['landline']
+                instance.relation= serializer.data['relation']
+                instance.in_memory_date= serializer.data['in_memory_date']
+                instance.save()
+
+                previous_groups = instance.get_file_upload_prayergroup.all()
+                
+                for group in previous_groups:
+                    group.primary_user_id.remove(instance)
+                
+                prayer_group.primary_user_id.add(instance)
+
+                for pre_family in instance.get_file_upload.all():
+                    pre_family.primary_EachUserNotificationuser_id = None
+                    pre_family.save()
+
+                family.primary_user_id = instance
+                family.save()
+
+            else:
+                if serializer.data['member_type'] in ['Secondary', 'secondary','SECONDARY']:
+                    if not family.primary_user_id in prayer_group.primary_user_id.all():
+                        data = {
+                            'status': False,
+                            'message': 'Invalid prayer group for family'
+                        }
+                        return Response(data, status=status.HTTP_400_BAD_REQUEST)
+
+                    instance = Members.objects.get(pk=pk)
+                    instance.member_name = serializer.data['name']
+                    instance.dob = serializer.data['dob']
+                    instance.blood_group = serializer.data['blood_group']
+                    instance.email = serializer.data['email']
+                    instance.phone_no_secondary_user = serializer.data['primary_number']
+                    instance.phone_no_secondary_user_secondary = serializer.data['secondary_number']
+                    instance.occupation = serializer.data['occupation']
+                    instance.marital_status = serializer.data['marital_status']
+                    instance.marrige_date = serializer.data['marrige_date']
+                    instance.about = serializer.data['about']
+                    instance.landline= serializer.data['landline']
+                    instance.relation= serializer.data['relation']
+                    instance.in_memory_date= serializer.data['in_memory_date']
+                    instance.save()
+
+                    instance.primary_user_id = family.primary_user_id
+
+                    if instance.primary_user_id:
+                        previous_groups = instance.primary_user_id.get_file_upload_prayergroup.all()
+                        
+                        for group in previous_groups:
+                            group.primary_user_id.remove(instance.primary_user_id)
+
+                        prayer_group = PrayerGroup.objects.get(pk=serializer.data['prayer_group'])
+                        prayer_group.primary_user_id.add(instance.primary_user_id)
+
+
+                    instance.save()
+                else:
+                    data={
+                        'status': False,
+                        'message':"Invalid Member Type"
+                    }
+                    data['response'] = {}
+
+                    return Response(data, status=status.HTTP_400_BAD_REQUEST) 
+
+            if serializer.data['member_status'] == 'in_memory':
+                instance.in_memory = True
+
+            if serializer.data['member_status'] == 'active':
+                instance.in_memory = False
+
+            if request.FILES.get('image'):
+                instance.image = request.FILES['image']
+
+            instance.save()
+
+            data ={
+                'id': instance.pk
+            }
+            data.update(serializer.data)
+            response_data.append(data)
+
+            response={
+                "status": True,
+                "message": "User Updated by User Successfully",
+                "response":response_data
+            }
+
+            # response['response'] = data
+
+            return Response(response)
+
+        data={
+            'status': False,
+        }
+        data['response'] = serializer.errors
+
+        return Response(data, status=status.HTTP_400_BAD_REQUEST)

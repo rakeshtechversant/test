@@ -6,7 +6,7 @@ from apps.api.views import UserLoginView, UserLoginMobileView, UserListView, Use
     OtpVerifyViewSet, SecondaryaddView, Profile, UnapprovedMemberView, UpdateMemberByPrimary, CreateUserByAdminView, \
     UpdateUserByAdminView, AddFamilyByAdminView, GalleryImagesView, UpdateFamilyByPrimary, OtpVerifyUserIdViewSet, \
     UserLoginMobileWithOutOtpView,UserListCommonView,OtpVerifyUserCheckNumberViewSet,StatusChangeAcceptView,PrimaryNumberChangeAcceptView,\
-    AdminRequestSectionView,UserDetailViewPage,UserDownloadView,CreateMemoryUserView,CreateFamilyMemoryUserView
+    AdminRequestSectionView,UserDetailViewPage,UserDownloadView,CreateMemoryUserView,CreateFamilyMemoryUserView,UpdateUserByMembersView
 
 from rest_framework import routers
 
@@ -38,6 +38,7 @@ urlpatterns = [
     path('add-family-by-admin/<int:pk>/', AddFamilyByAdminView.as_view(), name='add_family_by_admin'),
     path('add-family-by-admin/', AddFamilyByAdminView.as_view(), name='add_family_by_admin'),
     path('update-family-by-primary/', UpdateFamilyByPrimary.as_view(), name='update-family-by-primary'),
+    path('update-user-by-family-members/<int:pk>/', UpdateUserByMembersView.as_view(), name='update_user_by_family_members'),
 
     url(r'^(?P<pk>[\w-]+)/$',UserDetailView.as_view(),name='ind_user'),
     url(r'^apis/(?P<pk>[\w-]+)/$',UserDetailViewPage.as_view(),name='ind_user'),

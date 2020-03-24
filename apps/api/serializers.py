@@ -847,6 +847,25 @@ class UserByadminSerializer(serializers.Serializer):
     member_status = serializers.ChoiceField(choices=['active', 'in_memory'])
     about = serializers.CharField()
 
+class UserByMembersSerializer(serializers.Serializer):
+    prayer_group = serializers.PrimaryKeyRelatedField(queryset=PrayerGroup.objects.all())
+    family = serializers.PrimaryKeyRelatedField(queryset=Family.objects.all())
+    name = serializers.CharField()
+    blood_group = serializers.CharField(allow_blank=True)
+    dob = serializers.CharField(allow_blank=True)
+    email = serializers.EmailField(allow_blank=True)
+    primary_number = serializers.CharField(allow_blank=True,required=False)
+    secondary_number = serializers.CharField(allow_blank=True)
+    occupation = serializers.CharField(allow_blank=True)
+    relation =  serializers.CharField(allow_blank=True)
+    marital_status = serializers.CharField(allow_blank=True)
+    marrige_date = serializers.CharField(allow_blank=True)
+    member_type = serializers.CharField()
+    member_status = serializers.ChoiceField(choices=['active', 'in_memory'])
+    about = serializers.CharField(allow_blank=True)
+    landline = serializers.CharField(allow_blank=True)
+    in_memory_date = serializers.DateTimeField()
+
 
 class FamilyByadminSerializer(serializers.Serializer):
     prayer_group = serializers.PrimaryKeyRelatedField(queryset=PrayerGroup.objects.all(), allow_null=True)
