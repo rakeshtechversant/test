@@ -5018,7 +5018,7 @@ class CreateFamilyMemoryUserView(CreateAPIView):
         user_type=request.POST.get('member_type', False)
         member_status=request.POST.get('member_status', False)
         in_memory_date = request.POST.get('in_memory_date', False)
-        dob = request.POST.get('dob', False)
+        dob = request.POST.get('dob', '')
         # title=request.POST.get('title', False)
         # import pdb;pdb.set_trace()
         if not prayer_group_id and not family_id and not member_id and not user_type and not member_status and not in_memory_date and not dob:
