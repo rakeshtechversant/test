@@ -57,6 +57,7 @@ from django.views.generic import TemplateView
 from rest_framework.pagination import PageNumberPagination
 from collections import OrderedDict
 import csv
+from push_notifications.models import APNSDevice, GCMDevice
 
 class UserLoginMobileView(APIView):
     queryset = UserProfile.objects.all()
@@ -2479,6 +2480,14 @@ class UpdateFamilyByPrimary(APIView):
                     except:
                         pass
                     instance.save()
+                    # token, created = Token.objects.get_or_create(user=request.user)
+                    # fcm_device = GCMDevice.objects.filter(user=request.user)
+
+                    # Send a notification message
+                    # fcm_device.send_message("This is a message")
+
+                    from push_notifications.gcm import send_message
+                    send_message(None, {"body": "family detail updated"}, to="/topics/my_topic",cloud_type="FCM")
                     data = {
                         'status': True,
                         'message': 'Family Detail Updated Successfully'

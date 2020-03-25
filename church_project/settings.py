@@ -49,12 +49,23 @@ INSTALLED_APPS = [
     'rest_auth',
     'import_export',
     'ckeditor',
+    "push_notifications",
     #project app
     'apps.church',
     'apps.api'
 ]
 
-
+PUSH_NOTIFICATIONS_SETTINGS = {
+        "FCM_API_KEY": "AIzaSyAQeuZQObUKDbQnyT6ZEM5ONgSoArHqyus",
+        "GCM_API_KEY": "[your api key]",
+        "APNS_CERTIFICATE": "/path/to/your/certificate.pem",
+        "APNS_TOPIC": "com.example.push_test",
+        "WNS_PACKAGE_SECURITY_ID": "[your package security id, e.g: 'ms-app://e-3-4-6234...']",
+        "WNS_SECRET_KEY": "[your app secret key, e.g.: 'KDiejnLKDUWodsjmewuSZkk']",
+        "WP_PRIVATE_KEY": "/path/to/your/private.pem",
+        "WP_CLAIMS": {'sub': "mailto: development@example.com"}
+}
+UPDATE_ON_DUPLICATE_REG_ID = True
 # JET_DEFAULT_THEME = 'green'
 # JET_THEMES = [
 #     {
