@@ -2480,14 +2480,12 @@ class UpdateFamilyByPrimary(APIView):
                     except:
                         pass
                     instance.save()
-                    # token, created = Token.objects.get_or_create(user=request.user)
-                    # fcm_device = GCMDevice.objects.filter(user=request.user)
+                    
+                    fcm_device = GCMDevice.objects.filter(user=request.user)
+                    fcm_device.send_message("This is a message")
 
-                    # Send a notification message
-                    # fcm_device.send_message("This is a message")
-
-                    from push_notifications.gcm import send_message
-                    send_message(None, {"body": "family detail updated"}, to="/topics/my_topic",cloud_type="FCM")
+                    # from push_notifications.gcm import send_message
+                    # send_message(None, {"body": "family detail updated"}, to="/topics/my_topic",cloud_type="FCM")
                     data = {
                         'status': True,
                         'message': 'Family Detail Updated Successfully'
