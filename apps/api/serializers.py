@@ -19,7 +19,7 @@ from datetime import datetime
 import pytz
 from apps.api.models import AdminProfile
 from django.utils import timezone as tz
-
+from push_notifications.models import APNSDevice, GCMDevice
 
 class LoginSerializer(serializers.ModelSerializer):
     class Meta:
@@ -348,7 +348,12 @@ class NoticeSerializer(serializers.ModelSerializer):
             NoticeReadPrimary.objects.create(notification=notifications,user_to=primary_member,is_read=False)
         for secondary_member in secondary_members:
             NoticeReadSecondary.objects.create(notification=notifications,user_to=secondary_member,is_read=False)
-        
+        # import pdb;pdb.set_trace()
+        try:
+            fcm_device = GCMDevice.objects.all()
+            fcm_device.send_message("You have received a new notice", extra={"title": "Notice", "id": str(notice.id)})
+        except:
+            pass
         return notice
 
     def update(self,instance, validated_data):

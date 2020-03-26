@@ -2480,9 +2480,9 @@ class UpdateFamilyByPrimary(APIView):
                     except:
                         pass
                     instance.save()
-                    
-                    fcm_device = GCMDevice.objects.filter(user=request.user)
-                    fcm_device.send_message("This is a message")
+                    # import pdb;pdb.set_trace()
+                    # fcm_device = GCMDevice.objects.filter(user=request.user)
+                    # fcm_device.send_message("Test notification", extra={"title": "Church app", "icon": "icon"})
 
                     # from push_notifications.gcm import send_message
                     # send_message(None, {"body": "family detail updated"}, to="/topics/my_topic",cloud_type="FCM")
