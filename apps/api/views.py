@@ -2484,8 +2484,12 @@ class UpdateFamilyByPrimary(APIView):
                     # fcm_device = GCMDevice.objects.filter(user=request.user)
                     # fcm_device.send_message("Test notification", extra={"title": "Church app", "icon": "icon"})
 
-                    # from push_notifications.gcm import send_message
-                    # send_message(None, {"body": "family detail updated"}, to="/topics/my_topic",cloud_type="FCM")
+                    try:
+                        fcm_device = GCMDevice.objects.filter(user=request.user)
+                        # fcm_device.send_message({ "data": { "title" : "You have a notification", "body" : "TYou have received a new notice", "id" : str(notice.id), "backgroundImage" : "assets/notifications/background.png", }, "notification" : { "alert" : "You have a notification", "title" : "You have a notification", "body" : "The body of the notification", "sound" : "default", "backgroundImage" : "assets/notifications/background.png", "backgroundImageTextColour" : "#FFFFFF" } })
+                        fcm_device.send_message("You have received a new notice", extra={"data": { "title" : "You have a notification", "body" : "TYou have received a new notice", "id" : str(notice.id), "backgroundImage" : "assets/notifications/background.png", }, "notification" : { "alert" : "You have a notification", "title" : "You have a notification", "body" : "The body of the notification", "sound" : "default", "backgroundImage" : "assets/notifications/background.png", "backgroundImageTextColour" : "#FFFFFF" }})
+                    except:
+                        pass
                     data = {
                         'status': True,
                         'message': 'Family Detail Updated Successfully'
