@@ -2487,7 +2487,7 @@ class UpdateFamilyByPrimary(APIView):
                     try:
                         fcm_device = GCMDevice.objects.filter(user=request.user)
                         # fcm_device.send_message({ "data": { "title" : "You have a notification", "body" : "TYou have received a new notice", "id" : str(notice.id), "backgroundImage" : "assets/notifications/background.png", }, "notification" : { "alert" : "You have a notification", "title" : "You have a notification", "body" : "The body of the notification", "sound" : "default", "backgroundImage" : "assets/notifications/background.png", "backgroundImageTextColour" : "#FFFFFF" } })
-                        fcm_device.send_message("You have received a new notice", extra={"data": { "title" : "You have a notification", "body" : "TYou have received a new notice", "id" : str(notice.id), "backgroundImage" : "assets/notifications/background.png", }, "notification" : { "alert" : "You have a notification", "title" : "You have a notification", "body" : "The body of the notification", "sound" : "default", "backgroundImage" : "assets/notifications/background.png", "backgroundImageTextColour" : "#FFFFFF" }})
+                        fcm_device.send_message("You have received a new notice", extra={"data": { "title" : "You have a notification", "body" : "TYou have received a new notice", "id" : 1000, "backgroundImage" : "assets/notifications/background.png", }, "notification" : { "alert" : "You have a notification", "title" : "You have a notification", "body" : "The body of the notification", "sound" : "default", "backgroundImage" : "assets/notifications/background.png", "backgroundImageTextColour" : "#FFFFFF" }})
                     except:
                         pass
                     data = {
