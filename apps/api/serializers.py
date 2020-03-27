@@ -323,6 +323,17 @@ class MembersSerializer(serializers.ModelSerializer):
         return None
 
 
+def fcm_messaging_to_all(content):
+    # import pdb;pdb.set_trace()
+    try: 
+        device = GCMDevice.objects.filter(active=True)
+        message = content['message']['data']['body']
+        title = content['message']['data']['title']
+        # del content['data']['data']['body']
+        status = device.send_message(message,title=title, extra=content['message'])
+        return status 
+    except Exception as exp: 
+        return str(exp) 
 
 class NoticeSerializer(serializers.ModelSerializer):
     created_at = serializers.DateTimeField(format="%d/%m/%Y %I:%M %p", read_only=True)
@@ -354,10 +365,22 @@ class NoticeSerializer(serializers.ModelSerializer):
         #     fcm_device.send_message("This is a enriched message", title="Notification title", badge=6)
         # except:
         #     pass
+        # try:
+        #     fcm_device = GCMDevice.objects.all()
+        #     # fcm_device.send_message("title" : "You have a notification", "body" : "TYou have received a new notice", "id" : str(notice.id), "backgroundImage" : "assets/notifications/background.png" , extra = { "alert" : "You have a notification", "title" : "You have a notification", "body" : "The body of the notification", "sound" : "default", "backgroundImage" : "assets/notifications/background.png", "backgroundImageTextColour" : "#FFFFFF" } )
+        #     fcm_device.send_message(data={"data": { "title" : "title-in", "body" : "new-notification-in", "id" : str(notice.id), "backgroundImage" : "assets/notifications/background.png", }, "notification" : { "alert" : "You have one new notice", "title" : "title-notify", "body" : "new-notification", "sound" : "default", "backgroundImage" : "assets/notifications/background.png", "backgroundImageTextColour" : "#FFFFFF" }})
+        # except:
+        #     pass
+        
+        # import pdb;pdb.set_trace()
+        try :
+            image = request.build_absolute_uri(notice.image.url)
+        except:
+            image = ""
         try:
-            fcm_device = GCMDevice.objects.all()
-            # fcm_device.send_message({ "data": { "title" : "You have a notification", "body" : "TYou have received a new notice", "id" : str(notice.id), "backgroundImage" : "assets/notifications/background.png", }, "notification" : { "alert" : "You have a notification", "title" : "You have a notification", "body" : "The body of the notification", "sound" : "default", "backgroundImage" : "assets/notifications/background.png", "backgroundImageTextColour" : "#FFFFFF" } })
-            fcm_device.send_message("You have received a notification",title="Notice Title" ,extra={"data": { "title" : "title-msg", "body" : "You have one new notice", "id" : str(notice.id), "backgroundImage" : "assets/notifications/background.png", }, "notification" : { "alert" : "You have one new notice", "title" : "via-notification", "body" : "via-notification", "sound" : "default", "backgroundImage" : "assets/notifications/background.png", "backgroundImageTextColour" : "#FFFFFF" }})
+           content = {'title':'notice title','message':{"data":{"title":"Notice","body":"You have received a new notice","notificationType":"notice","backgroundImage":"https://www.pinnaclecart.com/blog/wp-content/uploads/2018/02/push-notification.jpg"},\
+           "notification":{"alert":"This is a FCM notification","title":"Notice","body":"You have received a new notice","sound":"default","backgroundImage":"https://www.pinnaclecart.com/blog/wp-content/uploads/2018/02/push-notification.jpg","backgroundImageTextColour":"#FFFFFF"}} } 
+           resp = fcm_messaging_to_all(content) 
         except:
             pass
         return notice
