@@ -372,11 +372,7 @@ class NoticeSerializer(serializers.ModelSerializer):
         # except:
         #     pass
         
-        # import pdb;pdb.set_trace()
-        try :
-            image = request.build_absolute_uri(notice.image.url)
-        except:
-            image = ""
+        image = "https://www.pinnaclecart.com/blog/wp-content/uploads/2018/02/push-notification.jpg"
         #test
         # try:
         #    content = {'title':'notice title','message':{"data":{"title":"Notice","body":"You have received a new notice","notificationType":"notice","backgroundImage":"https://www.pinnaclecart.com/blog/wp-content/uploads/2018/02/push-notification.jpg"},\
@@ -385,6 +381,7 @@ class NoticeSerializer(serializers.ModelSerializer):
         # except:
         #     pass
         #live
+        # import pdb;pdb.set_trace()
         try:
            content = {'title':'notice title','message':{"data":{"title":"Notice","body":str(notice.notice),"notificationType":"notice","backgroundImage":image},\
            "notification":{"alert":"This is a FCM notification","title":"Notice","body":str(notice.notice),"sound":"default","backgroundImage":image,"backgroundImageTextColour":"#FFFFFF","image":image}} } 
