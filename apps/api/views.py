@@ -2278,7 +2278,6 @@ class NoticeBereavementCreate(CreateAPIView):
                             NoticeReadSecondary.objects.create(notification=notifications,user_to=secondary_member,is_read=False)
                     
                         try:
-                            request = self.context['request']
                             image= request.build_absolute_uri(member_id.image.url)
                         except:
                             image = ""
@@ -2330,9 +2329,7 @@ class NoticeBereavementCreate(CreateAPIView):
                             NoticeReadPrimary.objects.create(notification=notifications,user_to=primary_member,is_read=False)
                         for secondary_member in secondary_members:
                             NoticeReadSecondary.objects.create(notification=notifications,user_to=secondary_member,is_read=False)
-                    
                         try:
-                            request = self.context['request']
                             image= request.build_absolute_uri(member_id.image.url)
                         except:
                             image = ""
