@@ -360,29 +360,12 @@ class NoticeSerializer(serializers.ModelSerializer):
             NoticeReadPrimary.objects.create(notification=notifications,user_to=primary_member,is_read=False)
         for secondary_member in secondary_members:
             NoticeReadSecondary.objects.create(notification=notifications,user_to=secondary_member,is_read=False)
-        # import pdb;pdb.set_trace()
-        # try:
-        #     fcm_device = GCMDevice.objects.all()
-        #     fcm_device.send_message("This is a enriched message", title="Notification title", badge=6)
-        # except:
-        #     pass
-        # try:
-        #     fcm_device = GCMDevice.objects.all()
-        #     # fcm_device.send_message("title" : "You have a notification", "body" : "TYou have received a new notice", "id" : str(notice.id), "backgroundImage" : "assets/notifications/background.png" , extra = { "alert" : "You have a notification", "title" : "You have a notification", "body" : "The body of the notification", "sound" : "default", "backgroundImage" : "assets/notifications/background.png", "backgroundImageTextColour" : "#FFFFFF" } )
-        #     fcm_device.send_message(data={"data": { "title" : "title-in", "body" : "new-notification-in", "id" : str(notice.id), "backgroundImage" : "assets/notifications/background.png", }, "notification" : { "alert" : "You have one new notice", "title" : "title-notify", "body" : "new-notification", "sound" : "default", "backgroundImage" : "assets/notifications/background.png", "backgroundImageTextColour" : "#FFFFFF" }})
-        # except:
-        #     pass
-        
-        image = "https://www.pinnaclecart.com/blog/wp-content/uploads/2018/02/push-notification.jpg"
-        #test
-        # try:
-        #    content = {'title':'notice title','message':{"data":{"title":"Notice","body":"You have received a new notice","notificationType":"notice","backgroundImage":"https://www.pinnaclecart.com/blog/wp-content/uploads/2018/02/push-notification.jpg"},\
-        #    "notification":{"alert":"This is a FCM notification","title":"Notice","body":"You have received a new notice","sound":"default","backgroundImage":"https://www.pinnaclecart.com/blog/wp-content/uploads/2018/02/push-notification.jpg","backgroundImageTextColour":"#FFFFFF","image":"https://www.pinnaclecart.com/blog/wp-content/uploads/2018/02/push-notification.jpg"}} } 
-        #    resp = fcm_messaging_to_all(content) 
-        # except:
-        #     pass
-        #live
-        # import pdb;pdb.set_trace()
+            
+        try:
+            request = self.context['request']
+            image= request.build_absolute_uri(notice.image.url)
+        except:
+            image = ""
         try:
            content = {'title':'notice title','message':{"data":{"title":"Notice","body":str(notice.notice),"notificationType":"notice","backgroundImage":image},\
            "notification":{"alert":"This is a FCM notification","title":"Notice","body":str(notice.notice),"sound":"default","backgroundImage":image,"backgroundImageTextColour":"#FFFFFF","image":image,"clickAction":"notice"}} } 
