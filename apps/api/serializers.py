@@ -22,7 +22,6 @@ from django.utils import timezone as tz
 from push_notifications.models import APNSDevice, GCMDevice
 
 def fcm_messaging_to_all(content):
-    # import pdb;pdb.set_trace()
     try: 
         device = GCMDevice.objects.filter(active=True)
         message = content['message']['data']['body']
@@ -380,8 +379,8 @@ class NoticeSerializer(serializers.ModelSerializer):
         except:
             image = ""
         try:
-           content = {'title':'notice title','message':{"data":{"title":"Notice","body":str(notice.notice),"notificationType":"notice","backgroundImage":image},\
-           "notification":{"alert":"This is a FCM notification","title":"Notice","body":str(notice.notice),"sound":"default","backgroundImage":image,"backgroundImageTextColour":"#FFFFFF","image":image,"clickAction":"notice"}} } 
+           content = {'title':'notice title','message':{"data":{"title":"Notice","body":str(notice.notice),"notificationType":"notice","backgroundImage":image,"image":image},\
+           "notification":{"alert":"This is a FCM notification","title":"Notice","body":str(notice.notice),"sound":"default","backgroundImage":image,"backgroundImageTextColour":"#FFFFFF","image":image,"click_action":"notice"}} } 
            resp = fcm_messaging_to_all(content) 
         except:
             pass
@@ -742,7 +741,7 @@ class UnapprovedMemberSerializer(serializers.ModelSerializer):
         try:
             for admin_profile in admin_profiles:
                 content = {'title':'New Member Request','message':{"data":{"title":"New Member Request","body":"%s,of %s,%s has requested to add a family member %s"%(primary_user,str(primary_user.get_file_upload.first().name),str(primary_user.get_file_upload_prayergroup.first().name), unapproved_member),"notificationType":"request","backgroundImage":image},\
-                "notification":{"alert":"This is a FCM notification","title":"New Member Request","body":"%s,of %s,%s has requested to add a family member %s"%(primary_user,str(primary_user.get_file_upload.first().name),str(primary_user.get_file_upload_prayergroup.first().name),unapproved_member),"sound":"default","backgroundImage":image,"backgroundImageTextColour":"#FFFFFF","image":image,"clickAction":"request"}} } 
+                "notification":{"alert":"This is a FCM notification","title":"New Member Request","body":"%s,of %s,%s has requested to add a family member %s"%(primary_user,str(primary_user.get_file_upload.first().name),str(primary_user.get_file_upload_prayergroup.first().name),unapproved_member),"sound":"default","backgroundImage":image,"backgroundImageTextColour":"#FFFFFF","image":image,"click_action":"request"}} } 
                 resp = fcm_messaging_to_user(admin_profile.user,content) 
         except:
             pass

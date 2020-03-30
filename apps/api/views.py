@@ -2100,7 +2100,7 @@ class UnapprovedMemberView(mixins.CreateModelMixin,
                 image = ""
                 user=User.objects.get(username=primary_user.phone_no_primary)
                 content = {'title':'New Member Request','message':{"data":{"title":"New Member","body":"Your request to add %s has been accepted. The profile is listed in your family."%(member.member_name),"notificationType":"default","backgroundImage":image},\
-                "notification":{"alert":"This is a FCM notification","title":"New Member","body":"Your request to add %s has been accepted. The profile is listed in your family."%(member.member_name),"sound":"default","backgroundImage":image,"backgroundImageTextColour":"#FFFFFF","image":image,"clickAction":"default"}} } 
+                "notification":{"alert":"This is a FCM notification","title":"New Member","body":"Your request to add %s has been accepted. The profile is listed in your family."%(member.member_name),"sound":"default","backgroundImage":image,"backgroundImageTextColour":"#FFFFFF","image":image,"click_action":"default"}} } 
                 resp = fcm_messaging_to_user(user,content) 
             except:
                 pass
@@ -2118,7 +2118,15 @@ class UnapprovedMemberView(mixins.CreateModelMixin,
                       message=user_details_str)
             NoticeReadPrimary.objects.create(notification=not_obj, user_to=member.primary_user_id)
         except:
-            pass       
+            pass
+        try:
+            image = ""
+            user=User.objects.get(username=member.primary_user_id.phone_no_primary)
+            content = {'title':'New Member Request','message':{"data":{"title":"Request Rejected","body":"Admin has rejected your request to add %s to your family list.Please contact admin for further information."%(member.member_name),"notificationType":"default","backgroundImage":image},\
+            "notification":{"alert":"This is a FCM notification","title":"Request Rejected","body":"Admin has rejected your request to add %s to your family list.Please contact admin for further information."%(member.member_name),"sound":"default","backgroundImage":image,"backgroundImageTextColour":"#FFFFFF","image":image,"click_action":"default"}} } 
+            resp = fcm_messaging_to_user(user,content) 
+        except:
+            pass      
         member.rejected = True
         member.status  = 'Rejected'
         member.save()
@@ -2291,7 +2299,7 @@ class NoticeBereavementCreate(CreateAPIView):
                             image = ""
                         try:
                            content = {'title':'notice title','message':{"data":{"title":"Funeral Notice","body":"Funeral announcement of %s belonging to %s"%(member_id.member_name,family_name),"notificationType":"notice","backgroundImage":image},\
-                           "notification":{"alert":"This is a FCM notification","title":"Funeral Notice","body":"Funeral announcement of %s belonging to %s"%(member_id.member_name,family_name),"sound":"default","backgroundImage":image,"backgroundImageTextColour":"#FFFFFF","image":image,"clickAction":"notice"}} } 
+                           "notification":{"alert":"This is a FCM notification","title":"Funeral Notice","body":"Funeral announcement of %s belonging to %s"%(member_id.member_name,family_name),"sound":"default","backgroundImage":image,"backgroundImageTextColour":"#FFFFFF","image":image,"click_action":"notice"}} } 
                            resp = fcm_messaging_to_all(content) 
                         except:
                             pass
@@ -2343,7 +2351,7 @@ class NoticeBereavementCreate(CreateAPIView):
                             image = ""
                         try:
                            content = {'title':'notice title','message':{"data":{"title":"Funeral Notice","body":"Funeral announcement of %s belonging to %s"%(member_id.name,family_name),"notificationType":"notice","backgroundImage":image},\
-                           "notification":{"alert":"This is a FCM notification","title":"Funeral Notice","body":"Funeral announcement of %s belonging to %s"%(member_id.name,family_name),"sound":"default","backgroundImage":image,"backgroundImageTextColour":"#FFFFFF","image":image,"clickAction":"notice"}} } 
+                           "notification":{"alert":"This is a FCM notification","title":"Funeral Notice","body":"Funeral announcement of %s belonging to %s"%(member_id.name,family_name),"sound":"default","backgroundImage":image,"backgroundImageTextColour":"#FFFFFF","image":image,"click_action":"notice"}} } 
                            resp = fcm_messaging_to_all(content) 
                         except:
                             pass
@@ -4378,6 +4386,14 @@ class PrimaryNumberChangeViewset(CreateAPIView):
                             for admin_profile in admin_profiles:
                                 NoticeReadAdmin.objects.create(notification=notification, user_to=admin_profile)
                             
+                            try:
+                                image = ""
+                                for admin_profile in admin_profiles:
+                                    content = {'title':'Number Change Request','message':{"data":{"title":"Number Change Request","body":"%s,of %s,%s has requested to change his phone number."%(from_user.name,str(from_user.get_file_upload.first().name),str(from_user.get_file_upload_prayergroup.first().name)),"notificationType":"request","backgroundImage":image},\
+                                    "notification":{"alert":"This is a FCM notification","title":"Number Change Request","body":"%s,of %s,%s has requested to change his phone number"%(primary_user,str(primary_user.get_file_upload.first().name),str(primary_user.get_file_upload_prayergroup.first().name)),"sound":"default","backgroundImage":image,"backgroundImageTextColour":"#FFFFFF","image":image,"click_action":"request"}} } 
+                                    resp = fcm_messaging_to_user(admin_profile.user,content) 
+                            except:
+                                pass
 
                             success_data = {
                                 'status': True,
@@ -4507,6 +4523,15 @@ class PrimaryNumberChangeAcceptView(mixins.CreateModelMixin,
             NoticeReadPrimary.objects.create(notification=not_obj, user_to=prim_obj)
         except:
             pass
+
+        try:
+            image = ""
+            user=User.objects.get(username=prim_obj.phone_no_primary)
+            content = {'title':'Number Changed','message':{"data":{"title":"Number Changed","body":"Your request for number change has been accepted","notificationType":"default","backgroundImage":image},\
+            "notification":{"alert":"This is a FCM notification","title":"Number Changed","body":"Your request for number change has been accepted","sound":"default","backgroundImage":image,"backgroundImageTextColour":"#FFFFFF","image":image,"click_action":"default"}} } 
+            resp = fcm_messaging_to_user(user,content) 
+        except:
+            pass
         member.status = 'Accepted'
         member.save()
         # member.delete()
@@ -4522,6 +4547,15 @@ class PrimaryNumberChangeAcceptView(mixins.CreateModelMixin,
             not_obj = Notification.objects.create(created_by_primary=prim_obj,
                       message=user_details_str)
             NoticeReadPrimary.objects.create(notification=not_obj, user_to=prim_obj)
+        except:
+            pass
+
+        try:
+            image = ""
+            user=User.objects.get(username=prim_obj.phone_no_primary)
+            content = {'title':'Request Rejected','message':{"data":{"title":"Request Rejected","body":"Your request for number change has been rejected","notificationType":"default","backgroundImage":image},\
+            "notification":{"alert":"This is a FCM notification","title":"Request Rejected","body":"Your request for number change has been rejected","sound":"default","backgroundImage":image,"backgroundImageTextColour":"#FFFFFF","image":image,"click_action":"default"}} } 
+            resp = fcm_messaging_to_user(user,content) 
         except:
             pass
         member.is_accepted = True
