@@ -384,8 +384,8 @@ class NoticeSerializer(serializers.ModelSerializer):
         #live
         # import pdb;pdb.set_trace()
         try:
-           content = {'title':'notice title','message':{"data":{"title":"Notice","body":str(notice.notice),"notificationType":"notice","backgroundImage":image}}}
-           # "notification":{"alert":"This is a FCM notification","title":"Notice","body":str(notice.notice),"sound":"default","backgroundImage":image,"backgroundImageTextColour":"#FFFFFF","image":image}} } 
+           content = {'title':'notice title','message':{"data":{"title":"Notice","body":str(notice.notice),"notificationType":"notice","backgroundImage":image},\
+           "notification":{"alert":"This is a FCM notification","title":"Notice","body":str(notice.notice),"sound":"default","backgroundImage":image,"backgroundImageTextColour":"#FFFFFF","image":image,"clickAction":"notice"}} } 
            resp = fcm_messaging_to_all(content) 
         except:
             pass
