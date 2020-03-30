@@ -59,6 +59,32 @@ from collections import OrderedDict
 import csv
 from push_notifications.models import APNSDevice, GCMDevice
 
+def fcm_messaging_to_all(content):
+    # import pdb;pdb.set_trace()
+    try: 
+        device = GCMDevice.objects.filter(active=True)
+        message = content['message']['data']['body']
+        title = content['message']['data']['title']
+        # del content['data']['data']['body']
+        status = device.send_message(message,title=title, extra=content['message'])
+        return status 
+    except Exception as exp:
+        print("notify",exp)
+        return str(exp)
+
+def fcm_messaging_to_user(user,content):
+    # import pdb;pdb.set_trace()
+    try: 
+        device = GCMDevice.objects.filter(user=user,active=True)
+        message = content['message']['data']['body']
+        title = content['message']['data']['title']
+        # del content['data']['data']['body']
+        status = device.send_message(message,title=title, extra=content['message'])
+        return status 
+    except Exception as exp:
+        print("notify",exp)
+        return str(exp) 
+
 class UserLoginMobileView(APIView):
     queryset = UserProfile.objects.all()
     serializer_class = UserRegistrationMobileSerializer
@@ -2175,7 +2201,6 @@ class FamilyDetailView(ListAPIView):
 # class ViewRequestNumberView(APIView):
 #     queryset=
 
-
 class NoticeBereavementCreate(CreateAPIView):
     queryset = NoticeBereavement.objects.all()
     serializer_class = NoticeBereavementSerializer
@@ -2251,6 +2276,18 @@ class NoticeBereavementCreate(CreateAPIView):
                             NoticeReadPrimary.objects.create(notification=notifications,user_to=primary_member,is_read=False)
                         for secondary_member in secondary_members:
                             NoticeReadSecondary.objects.create(notification=notifications,user_to=secondary_member,is_read=False)
+                    
+                        try:
+                            request = self.context['request']
+                            image= request.build_absolute_uri(member_id.image.url)
+                        except:
+                            image = ""
+                        try:
+                           content = {'title':'notice title','message':{"data":{"title":"Funeral Notice","body":"Funeral announcement of %s belonging to %s"%(member_id.member_name,family_name),"notificationType":"notice","backgroundImage":image},\
+                           "notification":{"alert":"This is a FCM notification","title":"Funeral Notice","body":"Funeral announcement of %s belonging to %s"%(member_id.member_name,family_name),"sound":"default","backgroundImage":image,"backgroundImageTextColour":"#FFFFFF","image":image,"clickAction":"notice"}} } 
+                           resp = fcm_messaging_to_all(content) 
+                        except:
+                            pass
                     except:
                         pass
                     return Response({'success': True,'message':'Notice Created Successfully'}, status=HTTP_201_CREATED)
@@ -2293,6 +2330,18 @@ class NoticeBereavementCreate(CreateAPIView):
                             NoticeReadPrimary.objects.create(notification=notifications,user_to=primary_member,is_read=False)
                         for secondary_member in secondary_members:
                             NoticeReadSecondary.objects.create(notification=notifications,user_to=secondary_member,is_read=False)
+                    
+                        try:
+                            request = self.context['request']
+                            image= request.build_absolute_uri(member_id.image.url)
+                        except:
+                            image = ""
+                        try:
+                           content = {'title':'notice title','message':{"data":{"title":"Funeral Notice","body":"Funeral announcement of %s belonging to %s"%(member_id.name,family_name),"notificationType":"notice","backgroundImage":image},\
+                           "notification":{"alert":"This is a FCM notification","title":"Funeral Notice","body":"Funeral announcement of %s belonging to %s"%(member_id.name,family_name),"sound":"default","backgroundImage":image,"backgroundImageTextColour":"#FFFFFF","image":image,"clickAction":"notice"}} } 
+                           resp = fcm_messaging_to_all(content) 
+                        except:
+                            pass
                     except:
                         pass
                     return Response({'success': True,'message':'Notice Created Successfully'}, status=HTTP_201_CREATED)

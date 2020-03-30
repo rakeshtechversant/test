@@ -21,6 +21,32 @@ from apps.api.models import AdminProfile
 from django.utils import timezone as tz
 from push_notifications.models import APNSDevice, GCMDevice
 
+def fcm_messaging_to_all(content):
+    # import pdb;pdb.set_trace()
+    try: 
+        device = GCMDevice.objects.filter(active=True)
+        message = content['message']['data']['body']
+        title = content['message']['data']['title']
+        # del content['data']['data']['body']
+        status = device.send_message(message,title=title, extra=content['message'])
+        return status 
+    except Exception as exp:
+        print("notify",exp)
+        return str(exp) 
+
+def fcm_messaging_to_user(user,content):
+    # import pdb;pdb.set_trace()
+    try: 
+        device = GCMDevice.objects.filter(user=user,active=True)
+        message = content['message']['data']['body']
+        title = content['message']['data']['title']
+        # del content['data']['data']['body']
+        status = device.send_message(message,title=title, extra=content['message'])
+        return status 
+    except Exception as exp:
+        print("notify",exp)
+        return str(exp)
+
 class LoginSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -323,19 +349,6 @@ class MembersSerializer(serializers.ModelSerializer):
         return None
 
 
-def fcm_messaging_to_all(content):
-    # import pdb;pdb.set_trace()
-    try: 
-        device = GCMDevice.objects.filter(active=True)
-        message = content['message']['data']['body']
-        title = content['message']['data']['title']
-        # del content['data']['data']['body']
-        status = device.send_message(message,title=title, extra=content['message'])
-        return status 
-    except Exception as exp:
-        print("notify",exp)
-        return str(exp) 
-
 class NoticeSerializer(serializers.ModelSerializer):
     created_at = serializers.DateTimeField(format="%d/%m/%Y %I:%M %p", read_only=True)
     updated_at = serializers.DateTimeField(format="%d/%m/%Y %I:%M %p", read_only=True)
@@ -360,7 +373,7 @@ class NoticeSerializer(serializers.ModelSerializer):
             NoticeReadPrimary.objects.create(notification=notifications,user_to=primary_member,is_read=False)
         for secondary_member in secondary_members:
             NoticeReadSecondary.objects.create(notification=notifications,user_to=secondary_member,is_read=False)
-            
+
         try:
             request = self.context['request']
             image= request.build_absolute_uri(notice.image.url)
@@ -722,6 +735,17 @@ class UnapprovedMemberSerializer(serializers.ModelSerializer):
         for admin_profile in admin_profiles:
             NoticeReadAdmin.objects.create(notification=notification, user_to=admin_profile)
 
+        # try:
+        #     request = self.context['request']
+        #     image= request.build_absolute_uri(member_id.image.url)
+        # except:
+        #     image = ""
+        # try:
+        #    content = {'title':'notice title','message':{"data":{"title":"Request","body":"User %s requested to add a family member %s"%(primary_user, unapproved_member),"notificationType":"notice","backgroundImage":image},\
+        #    "notification":{"alert":"This is a FCM notification","title":"Request","body":"User %s requested to add a family member %s"%(primary_user, unapproved_member),"sound":"default","backgroundImage":image,"backgroundImageTextColour":"#FFFFFF","image":image,"clickAction":"notice"}} } 
+        #    resp = fcm_messaging_to_all(content) 
+        # except:
+        #     pass
         return unapproved_member
 
     def update(self, instance, validated_data):
