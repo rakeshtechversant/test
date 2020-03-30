@@ -2096,6 +2096,14 @@ class UnapprovedMemberView(mixins.CreateModelMixin,
                 member.save() 
             except:
                 pass
+            try:
+                image = ""
+                user=User.objects.get(username=primary_user.phone_no_primary)
+                content = {'title':'New Member Request','message':{"data":{"title":"New Member","body":"Your request to add %s has been accepted. The profile is listed in your family."%(member.member_name),"notificationType":"default","backgroundImage":image},\
+                "notification":{"alert":"This is a FCM notification","title":"New Member","body":"Your request to add %s has been accepted. The profile is listed in your family."%(member.member_name),"sound":"default","backgroundImage":image,"backgroundImageTextColour":"#FFFFFF","image":image,"clickAction":"default"}} } 
+                resp = fcm_messaging_to_user(user,content) 
+            except:
+                pass
         # member.delete()
 
         return Response({'success': True})

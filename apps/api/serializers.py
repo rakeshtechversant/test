@@ -734,18 +734,18 @@ class UnapprovedMemberSerializer(serializers.ModelSerializer):
 
         for admin_profile in admin_profiles:
             NoticeReadAdmin.objects.create(notification=notification, user_to=admin_profile)
-
-        # try:
-        #     request = self.context['request']
-        #     image= request.build_absolute_uri(member_id.image.url)
-        # except:
-        #     image = ""
-        # try:
-        #    content = {'title':'notice title','message':{"data":{"title":"Request","body":"User %s requested to add a family member %s"%(primary_user, unapproved_member),"notificationType":"notice","backgroundImage":image},\
-        #    "notification":{"alert":"This is a FCM notification","title":"Request","body":"User %s requested to add a family member %s"%(primary_user, unapproved_member),"sound":"default","backgroundImage":image,"backgroundImageTextColour":"#FFFFFF","image":image,"clickAction":"notice"}} } 
-        #    resp = fcm_messaging_to_all(content) 
-        # except:
-        #     pass
+        try:
+            request = self.context['request']
+            image= request.build_absolute_uri(unapproved_member.image.url)
+        except:
+            image = ""
+        try:
+            for admin_profile in admin_profiles:
+                content = {'title':'New Member Request','message':{"data":{"title":"New Member Request","body":"%s,of %s,%s has requested to add a family member %s"%(primary_user,str(primary_user.get_file_upload.first().name),str(primary_user.get_file_upload_prayergroup.first().name), unapproved_member),"notificationType":"request","backgroundImage":image},\
+                "notification":{"alert":"This is a FCM notification","title":"New Member Request","body":"%s,of %s,%s has requested to add a family member %s"%(primary_user,str(primary_user.get_file_upload.first().name),str(primary_user.get_file_upload_prayergroup.first().name),unapproved_member),"sound":"default","backgroundImage":image,"backgroundImageTextColour":"#FFFFFF","image":image,"clickAction":"request"}} } 
+                resp = fcm_messaging_to_user(admin_profile.user,content) 
+        except:
+            pass
         return unapproved_member
 
     def update(self, instance, validated_data):
