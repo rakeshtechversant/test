@@ -332,7 +332,8 @@ def fcm_messaging_to_all(content):
         # del content['data']['data']['body']
         status = device.send_message(message,title=title, extra=content['message'])
         return status 
-    except Exception as exp: 
+    except Exception as exp:
+        print("notify",exp)
         return str(exp) 
 
 class NoticeSerializer(serializers.ModelSerializer):
@@ -383,8 +384,8 @@ class NoticeSerializer(serializers.ModelSerializer):
         #live
         # import pdb;pdb.set_trace()
         try:
-           content = {'title':'notice title','message':{"data":{"title":"Notice","body":str(notice.notice),"notificationType":"notice","backgroundImage":image},\
-           "notification":{"alert":"This is a FCM notification","title":"Notice","body":str(notice.notice),"sound":"default","backgroundImage":image,"backgroundImageTextColour":"#FFFFFF","image":image}} } 
+           content = {'title':'notice title','message':{"data":{"title":"Notice","body":str(notice.notice),"notificationType":"notice","backgroundImage":image}}}
+           # "notification":{"alert":"This is a FCM notification","title":"Notice","body":str(notice.notice),"sound":"default","backgroundImage":image,"backgroundImageTextColour":"#FFFFFF","image":image}} } 
            resp = fcm_messaging_to_all(content) 
         except:
             pass
