@@ -32,17 +32,6 @@ def fcm_messaging_to_all(content):
         print("notify",exp)
         return str(exp)
 
-def apns_messaging_to_all(content_ios):
-    try: 
-        device_ios = APNSDevice.objects.filter(active=True).exclude(user__is_superuser=True)
-        message_ios = content_ios['message']['aps']['alert']['body']
-        title_ios = content_ios['message']['aps']['alert']['title']
-        device_ios.send_message(message={"title" : title_ios, "body" : message_ios}, extra=content_ios['message'])
-        return status 
-    except Exception as exp:
-        print("notify",exp)
-        return str(exp) 
-
 def fcm_messaging_to_user(user,content):
     # import pdb;pdb.set_trace()
     try: 
@@ -55,6 +44,29 @@ def fcm_messaging_to_user(user,content):
     except Exception as exp:
         print("notify",exp)
         return str(exp)
+
+def apns_messaging_to_all(content_ios):
+    try: 
+        device_ios = APNSDevice.objects.filter(active=True).exclude(user__is_superuser=True)
+        message_ios = content_ios['message']['aps']['alert']['body']
+        title_ios = content_ios['message']['aps']['alert']['title']
+        device_ios.send_message(message={"title" : title_ios, "body" : message_ios}, extra=content_ios['message'])
+        return status 
+    except Exception as exp:
+        print("notify-ios",exp)
+        return str(exp) 
+
+def apns_messaging_to_user(user,content_ios):
+    try: 
+        device_ios = APNSDevice.objects.filter(user=user,active=True)
+        message_ios = content_ios['message']['aps']['alert']['body']
+        title_ios = content_ios['message']['aps']['alert']['title']
+        device_ios.send_message(message={"title" : title_ios, "body" : message_ios}, extra=content_ios['message'])
+        return status 
+    except Exception as exp:
+        print("notify-ios",exp)
+        return str(exp) 
+
 
 class LoginSerializer(serializers.ModelSerializer):
     class Meta:
@@ -385,6 +397,7 @@ class NoticeSerializer(serializers.ModelSerializer):
 
         try:
             request = self.context['request']
+            # image = "https://cdn1.iconfinder.com/data/icons/mobile-application-2-solid/128/notification_alert_alarm-512.png"
             image= request.build_absolute_uri(notice.image.url)
         except:
             image = ""
@@ -392,7 +405,7 @@ class NoticeSerializer(serializers.ModelSerializer):
             content = {'title':'notice title','message':{"data":{"title":"Notice","body":str(notice.notice),"notificationType":"notice","backgroundImage":image,"image":image},\
             "notification":{"alert":"This is a FCM notification","title":"Notice","body":str(notice.notice),"sound":"default","backgroundImage":image,"backgroundImageTextColour":"#FFFFFF","image":image,"click_action":"notice"}}}
 
-            content_ios = {'message':{"aps":{"alert":{"title":"Notice","subtitle":"","body":str(notice.notice)},"sound":"default","category":"notice","badge":1,"mutable-content":1},"detail":{"type":"notice","image":image}}}
+            content_ios = {'message':{"aps":{"alert":{"title":"Notice","subtitle":"","body":str(notice.notice)},"sound":"default","category":"notice","badge":1,"mutable-content":1},"media-url":image}}
             resp = fcm_messaging_to_all(content)
             resp1 = apns_messaging_to_all(content_ios)
         except:
@@ -755,7 +768,10 @@ class UnapprovedMemberSerializer(serializers.ModelSerializer):
             for admin_profile in admin_profiles:
                 content = {'title':'New Member Request','message':{"data":{"title":"New Member Request","body":"%s,of %s,%s has requested to add a family member %s"%(primary_user,str(primary_user.get_file_upload.first().name),str(primary_user.get_file_upload_prayergroup.first().name), unapproved_member),"notificationType":"request","backgroundImage":image},\
                 "notification":{"alert":"This is a FCM notification","title":"New Member Request","body":"%s,of %s,%s has requested to add a family member %s"%(primary_user,str(primary_user.get_file_upload.first().name),str(primary_user.get_file_upload_prayergroup.first().name),unapproved_member),"sound":"default","backgroundImage":image,"backgroundImageTextColour":"#FFFFFF","image":image,"click_action":"request"}} } 
-                resp = fcm_messaging_to_user(admin_profile.user,content) 
+
+                content_ios = {'message':{"aps":{"alert":{"title":"New Member Request","subtitle":"","body":"%s,of %s,%s has requested to add a family member %s"%(primary_user,str(primary_user.get_file_upload.first().name),str(primary_user.get_file_upload_prayergroup.first().name), unapproved_member)},"sound":"default","category":"request","badge":1,"mutable-content":1},"media-url":image}}
+                resp = fcm_messaging_to_user(admin_profile.user,content)
+                resp1 = apns_messaging_to_user(admin_profile.user,content_ios)
         except:
             pass
         return unapproved_member
