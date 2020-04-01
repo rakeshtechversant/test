@@ -23,7 +23,7 @@ from push_notifications.models import APNSDevice, GCMDevice
 
 def fcm_messaging_to_all(content):
     try: 
-        device = GCMDevice.objects.filter(active=True)
+        device = GCMDevice.objects.filter(active=True).exclude(user__is_superuser=True)
         message = content['message']['data']['body']
         title = content['message']['data']['title']
         # del content['data']['data']['body']
@@ -380,7 +380,26 @@ class NoticeSerializer(serializers.ModelSerializer):
             image = ""
         try:
            content = {'title':'notice title','message':{"data":{"title":"Notice","body":str(notice.notice),"notificationType":"notice","backgroundImage":image,"image":image},\
-           "notification":{"alert":"This is a FCM notification","title":"Notice","body":str(notice.notice),"sound":"default","backgroundImage":image,"backgroundImageTextColour":"#FFFFFF","image":image,"click_action":"notice"}} } 
+           "notification":{"alert":"This is a FCM notification","title":"Notice","body":str(notice.notice),"sound":"default","backgroundImage":image,"backgroundImageTextColour":"#FFFFFF","image":image,"click_action":"notice"},\
+            # "apns":{"aps": {"alert":  
+            #           "title": "Notice",
+            #           "subtitle": "",
+            #           "body": str(notice.notice)
+            #         },
+            #         "sound": "default",
+            #         "category": "notice",
+            #         "badge": 1,
+            #         "mutable-content": 1
+            #       },
+            #       "detail": {
+            #         "id": "John Doe",
+            #         "image": image
+            #       }
+            #       }
+            }
+
+            } 
+          
            resp = fcm_messaging_to_all(content) 
         except:
             pass
