@@ -23,11 +23,21 @@ from push_notifications.models import APNSDevice, GCMDevice
 
 def fcm_messaging_to_all(content):
     try: 
-        device = GCMDevice.objects.filter(active=True).exclude(user__is_superuser=True)
-        message = content['message']['data']['body']
-        title = content['message']['data']['title']
-        # del content['data']['data']['body']
-        status = device.send_message(message,title=title, extra=content['message'])
+        device_android = GCMDevice.objects.filter(active=True).exclude(user__is_superuser=True)
+        message = content['message']['notification']['body']
+        title = content['message']['notification']['title']
+        device_android.send_message(message,title=title, extra=content['message'])
+        return status 
+    except Exception as exp:
+        print("notify",exp)
+        return str(exp)
+
+def apns_messaging_to_all(content_ios):
+    try: 
+        device_ios = APNSDevice.objects.filter(active=True).exclude(user__is_superuser=True)
+        message_ios = content_ios['message']['aps']['alert']['body']
+        title_ios = content_ios['message']['aps']['alert']['title']
+        device_ios.send_message(message={"title" : title_ios, "body" : message_ios}, extra=content_ios['message'])
         return status 
     except Exception as exp:
         print("notify",exp)
@@ -379,28 +389,12 @@ class NoticeSerializer(serializers.ModelSerializer):
         except:
             image = ""
         try:
-           content = {'title':'notice title','message':{"data":{"title":"Notice","body":str(notice.notice),"notificationType":"notice","backgroundImage":image,"image":image},\
-           "notification":{"alert":"This is a FCM notification","title":"Notice","body":str(notice.notice),"sound":"default","backgroundImage":image,"backgroundImageTextColour":"#FFFFFF","image":image,"click_action":"notice"},\
-            # "apns":{"aps": {"alert":  
-            #           "title": "Notice",
-            #           "subtitle": "",
-            #           "body": str(notice.notice)
-            #         },
-            #         "sound": "default",
-            #         "category": "notice",
-            #         "badge": 1,
-            #         "mutable-content": 1
-            #       },
-            #       "detail": {
-            #         "id": "John Doe",
-            #         "image": image
-            #       }
-            #       }
-            }
+            content = {'title':'notice title','message':{"data":{"title":"Notice","body":str(notice.notice),"notificationType":"notice","backgroundImage":image,"image":image},\
+            "notification":{"alert":"This is a FCM notification","title":"Notice","body":str(notice.notice),"sound":"default","backgroundImage":image,"backgroundImageTextColour":"#FFFFFF","image":image,"click_action":"notice"}}}
 
-            } 
-          
-           resp = fcm_messaging_to_all(content) 
+            content_ios = {'message':{"aps":{"alert":{"title":"Notice","subtitle":"","body":str(notice.notice)},"sound":"default","category":"notice","badge":1,"mutable-content":1},"detail":{"type":"notice","image":image}}}
+            resp = fcm_messaging_to_all(content)
+            resp1 = apns_messaging_to_all(content_ios)
         except:
             pass
         return notice
