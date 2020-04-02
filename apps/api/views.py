@@ -2323,7 +2323,7 @@ class NoticeBereavementCreate(CreateAPIView):
                         except:
                             image = ""
                         try:
-                            content = {'title':'notice title','message':{"data":{"title":"Funeral Notice","body":"Funeral announcement of %s belonging to %s"%(member_id.member_name,family_name),"notificationType":"notice","backgroundImage":image,"text_type":"long"},\
+                            content = {'title':'notice title','message':{"data":{"title":"Funeral Notice","body":"Funeral announcement of %s belonging to %s"%(member_id.member_name,family_name),"notificationType":"funeral","backgroundImage":image,"text_type":"long"},\
                             "notification":{"alert":"This is a FCM notification","title":"Funeral Notice","body":"Funeral announcement of %s belonging to %s"%(member_id.member_name,family_name),"sound":"default","backgroundImage":image,"backgroundImageTextColour":"#FFFFFF","image":image,"click_action":"notice"}} } 
                         
                             content_ios = {'message':{"aps":{"alert":{"title":"Funeral Notice","subtitle":"","body":"Funeral announcement of %s belonging to %s"%(member_id.member_name,family_name)},"sound":"default","category":"notice","badge":1,"mutable-content":1},"media-url":image}}
