@@ -5367,14 +5367,12 @@ class DeviceInactiveView(APIView):
             if cloud_message_type == 'FCM' or cloud_message_type == 'fcm' :
 
                 gcm_device = GCMDevice.objects.get(registration_id=registration_id,active=True)
-                gcm_device.active = False
-                gcm_device.save()
+                gcm_device.delete()
                 return Response({'success': True,'message':'Device deactiveted successfully'}, status=HTTP_200_OK)
 
             elif cloud_message_type == 'APNS' or cloud_message_type == 'apns' :
                 apns_device = APNSDevice.objects.get(registration_id=registration_id,active=True)
-                apns_device.active = False
-                apns_device.save()
+                apns_device.delete()
                 return Response({'success': True,'message':'Device deactiveted successfully'}, status=HTTP_200_OK)
             else:
                 return Response({'success': False,'message':'No device found'}, status=HTTP_400_BAD_REQUEST)
