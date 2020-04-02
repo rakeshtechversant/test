@@ -5351,3 +5351,32 @@ class UpdateUserByMembersView(APIView):
         data['response'] = serializer.errors
 
         return Response(data, status=status.HTTP_400_BAD_REQUEST)
+
+class DeviceInactiveView(APIView):
+    # queryset = FileUpload.objects.all()
+    # serializer_class = UserRetrieveSerializer
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
+
+    def get(self, request,*args,**kwargs):
+        registration_id = request.GET['registration_id']
+        cloud_message_type = request.GET['cloud_message_type']
+        if not registration_id and not cloud_message_type:
+            return Response({'success': False,'message':'Please provide registration_id and cloud_message_type'}, status=HTTP_400_BAD_REQUEST)
+        try:
+            if cloud_message_type == 'FCM' or cloud_message_type == 'fcm' :
+
+                gcm_device = GCMDevice.objects.get(registration_id=registration_id,active=True)
+                gcm_device.active = False
+                gcm_device.save()
+                return Response({'success': False,'message':'Device deactiveted successfully'}, status=HTTP_200_OK)
+
+            elif cloud_message_type == 'APNS' or cloud_message_type == 'apns' :
+                apns_device = APNSDevice.objects.get(registration_id=registration_id,active=True)
+                apns_device.active = False
+                apns_device.save()
+                return Response({'success': True,'message':'Device deactiveted successfully'}, status=HTTP_200_OK)
+            else:
+                return Response({'success': False,'message':'No device found'}, status=HTTP_400_BAD_REQUEST)
+        except:
+            return Response({'success': False,'message':'Invalid Details'}, status=HTTP_400_BAD_REQUEST)
