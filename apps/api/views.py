@@ -5369,7 +5369,7 @@ class DeviceInactiveView(APIView):
                 gcm_device = GCMDevice.objects.get(registration_id=registration_id,active=True)
                 gcm_device.active = False
                 gcm_device.save()
-                return Response({'success': False,'message':'Device deactiveted successfully'}, status=HTTP_200_OK)
+                return Response({'success': True,'message':'Device deactiveted successfully'}, status=HTTP_200_OK)
 
             elif cloud_message_type == 'APNS' or cloud_message_type == 'apns' :
                 apns_device = APNSDevice.objects.get(registration_id=registration_id,active=True)
