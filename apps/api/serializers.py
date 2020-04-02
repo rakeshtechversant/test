@@ -766,7 +766,7 @@ class UnapprovedMemberSerializer(serializers.ModelSerializer):
             image = ""
         try:
             for admin_profile in admin_profiles:
-                content = {'title':'New Member Request','message':{"data":{"title":"New Member Request","body":"%s,of %s,%s has requested to add a family member %s"%(primary_user,str(primary_user.get_file_upload.first().name),str(primary_user.get_file_upload_prayergroup.first().name), unapproved_member),"notificationType":"request","backgroundImage":image},\
+                content = {'title':'New Member Request','message':{"data":{"title":"New Member Request","body":"%s,of %s,%s has requested to add a family member %s"%(primary_user,str(primary_user.get_file_upload.first().name),str(primary_user.get_file_upload_prayergroup.first().name), unapproved_member),"notificationType":"request","backgroundImage":image,"text_type":"long"},\
                 "notification":{"alert":"This is a FCM notification","title":"New Member Request","body":"%s,of %s,%s has requested to add a family member %s"%(primary_user,str(primary_user.get_file_upload.first().name),str(primary_user.get_file_upload_prayergroup.first().name),unapproved_member),"sound":"default","backgroundImage":image,"backgroundImageTextColour":"#FFFFFF","image":image,"click_action":"request"}} } 
 
                 content_ios = {'message':{"aps":{"alert":{"title":"New Member Request","subtitle":"","body":"%s,of %s,%s has requested to add a family member %s"%(primary_user,str(primary_user.get_file_upload.first().name),str(primary_user.get_file_upload_prayergroup.first().name), unapproved_member)},"sound":"default","category":"request","badge":1,"mutable-content":1},"media-url":image}}

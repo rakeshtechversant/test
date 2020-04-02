@@ -2118,7 +2118,7 @@ class UnapprovedMemberView(mixins.CreateModelMixin,
             try:
                 image = ""
                 user=User.objects.get(username=primary_user.phone_no_primary)
-                content = {'title':'New Member Request','message':{"data":{"title":"New Member","body":"Your request to add %s has been accepted. The profile is listed in your family"%(member.member_name),"notificationType":"default","backgroundImage":image},\
+                content = {'title':'New Member Request','message':{"data":{"title":"New Member","body":"Your request to add %s has been accepted. The profile is listed in your family"%(member.member_name),"notificationType":"default","backgroundImage":image,"text_type":"long"},\
                 "notification":{"alert":"This is a FCM notification","title":"New Member","body":"Your request to add %s has been accepted. The profile is listed in your family."%(member.member_name),"sound":"default","backgroundImage":image,"backgroundImageTextColour":"#FFFFFF","image":image,"click_action":"default"}} } 
                 
                 content_ios = {'message':{"aps":{"alert":{"title":"New Member","subtitle":"","body":"Your request to add %s has been accepted. The profile is listed in your family"%(member.member_name)},"sound":"default","category":"default","badge":1,"mutable-content":1},"media-url":image}}
@@ -2144,7 +2144,7 @@ class UnapprovedMemberView(mixins.CreateModelMixin,
         try:
             image = ""
             user=User.objects.get(username=member.primary_user_id.phone_no_primary)
-            content = {'title':'New Member Request','message':{"data":{"title":"Request Rejected","body":"Admin has rejected your request to add %s to your family list.Please contact admin for further information"%(member.member_name),"notificationType":"default","backgroundImage":image},\
+            content = {'title':'New Member Request','message':{"data":{"title":"Request Rejected","body":"Admin has rejected your request to add %s to your family list.Please contact admin for further information"%(member.member_name),"notificationType":"default","backgroundImage":image,"text_type":"long"},\
             "notification":{"alert":"This is a FCM notification","title":"Request Rejected","body":"Admin has rejected your request to add %s to your family list.Please contact admin for further information."%(member.member_name),"sound":"default","backgroundImage":image,"backgroundImageTextColour":"#FFFFFF","image":image,"click_action":"default"}} } 
             
             content_ios = {'message':{"aps":{"alert":{"title":"Request Rejected","subtitle":"","body":"Admin has rejected your request to add %s to your family list.Please contact admin for further information"%(member.member_name)},"sound":"default","category":"default","badge":1,"mutable-content":1},"media-url":image}}
@@ -2323,7 +2323,7 @@ class NoticeBereavementCreate(CreateAPIView):
                         except:
                             image = ""
                         try:
-                            content = {'title':'notice title','message':{"data":{"title":"Funeral Notice","body":"Funeral announcement of %s belonging to %s"%(member_id.member_name,family_name),"notificationType":"notice","backgroundImage":image},\
+                            content = {'title':'notice title','message':{"data":{"title":"Funeral Notice","body":"Funeral announcement of %s belonging to %s"%(member_id.member_name,family_name),"notificationType":"notice","backgroundImage":image,"text_type":"long"},\
                             "notification":{"alert":"This is a FCM notification","title":"Funeral Notice","body":"Funeral announcement of %s belonging to %s"%(member_id.member_name,family_name),"sound":"default","backgroundImage":image,"backgroundImageTextColour":"#FFFFFF","image":image,"click_action":"notice"}} } 
                         
                             content_ios = {'message':{"aps":{"alert":{"title":"Funeral Notice","subtitle":"","body":"Funeral announcement of %s belonging to %s"%(member_id.member_name,family_name)},"sound":"default","category":"notice","badge":1,"mutable-content":1},"media-url":image}}
@@ -2378,7 +2378,7 @@ class NoticeBereavementCreate(CreateAPIView):
                         except:
                             image = ""
                         try:
-                            content = {'title':'notice title','message':{"data":{"title":"Funeral Notice","body":"Funeral announcement of %s belonging to %s"%(member_id.name,family_name),"notificationType":"notice","backgroundImage":image},\
+                            content = {'title':'notice title','message':{"data":{"title":"Funeral Notice","body":"Funeral announcement of %s belonging to %s"%(member_id.name,family_name),"notificationType":"notice","backgroundImage":image,"text_type":"long"},\
                             "notification":{"alert":"This is a FCM notification","title":"Funeral Notice","body":"Funeral announcement of %s belonging to %s"%(member_id.name,family_name),"sound":"default","backgroundImage":image,"backgroundImageTextColour":"#FFFFFF","image":image,"click_action":"notice"}} } 
                             
                             content_ios = {'message':{"aps":{"alert":{"title":"Funeral Notice","subtitle":"","body":"Funeral announcement of %s belonging to %s"%(member_id.name,family_name)},"sound":"default","category":"notice","badge":1,"mutable-content":1},"media-url":image}}
@@ -4420,7 +4420,7 @@ class PrimaryNumberChangeViewset(CreateAPIView):
                             try:
                                 image = ""
                                 for admin_profile in admin_profiles:
-                                    content = {'title':'Number Change Request','message':{"data":{"title":"Number Change Request","body":"%s,of %s,%s has requested to change his phone number."%(from_user.name,str(from_user.get_file_upload.first().name),str(from_user.get_file_upload_prayergroup.first().name)),"notificationType":"request","backgroundImage":image},\
+                                    content = {'title':'Number Change Request','message':{"data":{"title":"Number Change Request","body":"%s,of %s,%s has requested to change his phone number."%(from_user.name,str(from_user.get_file_upload.first().name),str(from_user.get_file_upload_prayergroup.first().name)),"notificationType":"request","backgroundImage":image,"text_type":"long"},\
                                     "notification":{"alert":"This is a FCM notification","title":"Number Change Request","body":"%s,of %s,%s has requested to change his phone number"%(primary_user,str(primary_user.get_file_upload.first().name),str(primary_user.get_file_upload_prayergroup.first().name)),"sound":"default","backgroundImage":image,"backgroundImageTextColour":"#FFFFFF","image":image,"click_action":"request"}} } 
                                     
                                     content_ios = {'message':{"aps":{"alert":{"title":"Number Change Request","subtitle":"","body":"%s,of %s,%s has requested to change his phone number."%(from_user.name,str(from_user.get_file_upload.first().name),str(from_user.get_file_upload_prayergroup.first().name))},"sound":"default","category":"request","badge":1,"mutable-content":1},"media-url":image}}
