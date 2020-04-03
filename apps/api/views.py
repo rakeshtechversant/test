@@ -2519,7 +2519,7 @@ class UserNoticeList(ListAPIView):
             response.append(new_data)
 
 
-
+        response_query = sorted(response, key = lambda i: i.get('created_at')) 
         data={
             'code': 200,
             'status': "OK",
@@ -2527,7 +2527,7 @@ class UserNoticeList(ListAPIView):
 
             }
         data['response'] = {
-            'notices':response,
+            'notices':response_query,
             'normal notice count':len(queryset_normal_notice),
             'bereavement notice count':len(queryset_bereavement_notice)
 
@@ -5069,7 +5069,6 @@ class CreateMemoryUserView(APIView):
                     'message': 'Primary user already exists for this family'
                 }
                 return Response(data, status=status.HTTP_400_BAD_REQUEST)
-
             if serializer.data['member_type'] in ['Primary', 'primary']:
                 
                 instance = FileUpload(
