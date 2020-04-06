@@ -2448,6 +2448,8 @@ class UserNoticeList(ListAPIView):
                 'notice' : notice['notice'],
                 'description': notice['description'],
                 'image': notice['image'],
+                'audio': notice['audio'],
+                'video': notice['video'],
                 'created_at': notice['created_at'],
                 'updated_at': notice['updated_at'],
 

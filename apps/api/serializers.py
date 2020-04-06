@@ -1342,7 +1342,7 @@ class UserMemorySerializer(serializers.Serializer):
     family = serializers.PrimaryKeyRelatedField(queryset=Family.objects.all())
     name = serializers.CharField()
     # blood_group = serializers.CharField()
-    dob = serializers.CharField()
+    dob = serializers.CharField(required=False,allow_blank=True)
     # email = serializers.EmailField()
     # primary_number = serializers.CharField()
     # secondary_number = serializers.CharField()

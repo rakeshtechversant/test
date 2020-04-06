@@ -15,6 +15,8 @@ class Notice(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
     image = models.FileField(upload_to='pan_folder/', null=True, blank=True)
+    audio = models.FileField(upload_to='audio_files/', null=True, blank=True)
+    video = models.FileField(upload_to='video_files/', null=True, blank=True)
 
 
 class FileUpload(models.Model):
@@ -131,6 +133,8 @@ class Notice(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
     image = models.FileField(upload_to='pan_folder/', null=True, blank=True)
+    audio = models.FileField(upload_to='audio_files/', null=True, blank=True)
+    video = models.FileField(upload_to='video_files/', null=True, blank=True)
 
 
 class PrayerGroup(models.Model):
