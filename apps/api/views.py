@@ -1849,7 +1849,7 @@ class Profile(APIView):
 
         if member.exists():
             serializer = MemberProfileSerializer(member.first(), data=request.data, context = {'request':request})
-            
+
         primary_user = FileUpload.objects.filter(phone_no_primary=request.user.username)
 
         if primary_user.exists():
@@ -2441,11 +2441,17 @@ class UserNoticeList(ListAPIView):
 
         response = []
         response_bereavement = []
+        not_type = None
         for notice in queryset_normal_notice:
-            
+            if notice['image'] == None and notice['video'] == None and notice['audio'] != None:
+                not_type = 'notice_audio'
+            elif notice['image'] == None and notice['audio'] == None and notice['video'] != None:
+                not_type = 'notice_video'
+            else:
+                not_type = 'notice'
             new_data ={
                 'id': notice['id'],
-                'type': 'notice',
+                'type': not_type,
                 'notice' : notice['notice'],
                 'description': notice['description'],
                 'image': notice['image'],
