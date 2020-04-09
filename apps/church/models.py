@@ -17,6 +17,7 @@ class Notice(models.Model):
     image = models.FileField(upload_to='pan_folder/', null=True, blank=True)
     audio = models.FileField(upload_to='audio_files/', null=True, blank=True)
     video = models.FileField(upload_to='video_files/', null=True, blank=True)
+    thumbnail = models.FileField(upload_to='thumbnails/', null=True, blank=True)
 
 
 class FileUpload(models.Model):
@@ -135,6 +136,7 @@ class Notice(models.Model):
     image = models.FileField(upload_to='pan_folder/', null=True, blank=True)
     audio = models.FileField(upload_to='audio_files/', null=True, blank=True)
     video = models.FileField(upload_to='video_files/', null=True, blank=True)
+    thumbnail = models.FileField(upload_to='thumbnails/', null=True, blank=True)
 
 
 class PrayerGroup(models.Model):
