@@ -2448,12 +2448,11 @@ class UserNoticeList(ListAPIView):
             elif notice['image'] == None and notice['audio'] == None and notice['video'] != None:
                 not_type = 'video'
             else:
-                not_type = 'normal'
+                not_type = 'notice'
             new_data ={
                 'id': notice['id'],
-                'type': 'notice',
+                'type': not_type,
                 'notice' : notice['notice'],
-                'notice_type' : not_type,
                 'description': notice['description'],
                 'image': notice['image'],
                 'audio': notice['audio'],
