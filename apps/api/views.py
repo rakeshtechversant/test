@@ -2443,25 +2443,43 @@ class UserNoticeList(ListAPIView):
         response_bereavement = []
         not_type = None
         for notice in queryset_normal_notice:
-            # if notice['image'] == None and notice['video'] == None and notice['audio'] != None:
-            #     not_type = 'audio'
-            # elif notice['image'] == None and notice['audio'] == None and notice['video'] != None:
-            #     not_type = 'video'
-            # else:
-            not_type = 'notice'
-            new_data ={
-                'id': notice['id'],
-                'type': not_type,
-                'notice' : notice['notice'],
-                'description': notice['description'],
-                'image': notice['image'],
-                'audio': notice['audio'],
-                'video': notice['video'],
-                'thumbnail': notice['thumbnail'],
-                'created_at': notice['created_at'],
-                'updated_at': notice['updated_at'],
+            if notice['image'] == None and notice['video'] == None and notice['audio'] != None:
+                not_type = 'audio'
+                new_data ={
+                    'id': notice['id'],
+                    'type': not_type,
+                    'notice' : notice['notice'],
+                    'description': notice['description'],
+                    'audio': notice['audio'],
+                    'created_at': notice['created_at'],
+                    'updated_at': notice['updated_at'],
 
-            }
+                }
+            elif notice['image'] == None and notice['audio'] == None and notice['video'] != None:
+                not_type = 'video'
+                new_data ={
+                    'id': notice['id'],
+                    'type': not_type,
+                    'notice' : notice['notice'],
+                    'description': notice['description'],
+                    'video': notice['video'],
+                    'thumbnail': notice['thumbnail'],
+                    'created_at': notice['created_at'],
+                    'updated_at': notice['updated_at'],
+
+                }
+            else:
+                not_type = 'notice'
+                new_data ={
+                    'id': notice['id'],
+                    'type': not_type,
+                    'notice' : notice['notice'],
+                    'description': notice['description'],
+                    'image': notice['image'],
+                    'created_at': notice['created_at'],
+                    'updated_at': notice['updated_at'],
+
+                }
 
             response.append(new_data)
 
