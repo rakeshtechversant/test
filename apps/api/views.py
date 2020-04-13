@@ -2447,7 +2447,8 @@ class UserNoticeList(ListAPIView):
                 not_type = 'audio'
                 new_data ={
                     'id': notice['id'],
-                    'type': not_type,
+                    'type': 'notice',
+                    'notice_type': not_type,
                     'notice' : notice['notice'],
                     'description': notice['description'],
                     'audio': notice['audio'],
@@ -2459,7 +2460,8 @@ class UserNoticeList(ListAPIView):
                 not_type = 'video'
                 new_data ={
                     'id': notice['id'],
-                    'type': not_type,
+                    'type': 'notice',
+                    'notice_type': not_type,
                     'notice' : notice['notice'],
                     'description': notice['description'],
                     'video': notice['video'],
@@ -2472,7 +2474,8 @@ class UserNoticeList(ListAPIView):
                 not_type = 'notice'
                 new_data ={
                     'id': notice['id'],
-                    'type': not_type,
+                    'type': 'notice',
+                    'notice_type': not_type,
                     'notice' : notice['notice'],
                     'description': notice['description'],
                     'image': notice['image'],
