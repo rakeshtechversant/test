@@ -2435,14 +2435,19 @@ class UserNoticeList(ListAPIView):
         context ={
             'request': request
         }
-
-        queryset_normal_notice = NoticeSerializer(Notice.objects.all(), many=True, context=context).data
-        queryset_bereavement_notice = NoticeBereavementSerializer(NoticeBereavement.objects.all(), many=True, context=context).data
+        #import pdb;pdb.set_trace()
+        queryset_normal_notice = NoticeSerializer(Notice.objects.all().order_by('created_at'), many=True, context=context).data
+        queryset_bereavement_notice = NoticeBereavementSerializer(NoticeBereavement.objects.all().order_by('created_at'), many=True, context=context).data
 
         response = []
         response_bereavement = []
         not_type = None
         for notice in queryset_normal_notice:
+            try:
+                notice_date_obj = notice['created_at'].split(' ')
+                date_not = str(notice_date_obj[0]+' '+notice_date_obj[2]+' '+notice_date_obj[1])
+            except:
+                date_not = notice['created_at']
             if notice['image'] == None and notice['video'] == None and notice['audio'] != None:
                 not_type = 'audio'
                 new_data ={
@@ -2454,6 +2459,7 @@ class UserNoticeList(ListAPIView):
                     'audio': notice['audio'],
                     'created_at': notice['created_at'],
                     'updated_at': notice['updated_at'],
+                    'created_date': date_not
 
                 }
             elif notice['image'] == None and notice['audio'] == None and notice['video'] != None:
@@ -2468,6 +2474,7 @@ class UserNoticeList(ListAPIView):
                     'thumbnail': notice['thumbnail'],
                     'created_at': notice['created_at'],
                     'updated_at': notice['updated_at'],
+                    'created_date':date_not
 
                 }
             else:
@@ -2481,6 +2488,7 @@ class UserNoticeList(ListAPIView):
                     'image': notice['image'],
                     'created_at': notice['created_at'],
                     'updated_at': notice['updated_at'],
+                    'created_date':date_not
 
                 }
 
@@ -2489,6 +2497,11 @@ class UserNoticeList(ListAPIView):
         for bereavement in queryset_bereavement_notice:
             prayer=PrayerGroup.objects.get(id=bereavement['prayer_group'])
             family=Family.objects.get(id=bereavement['family'])
+            try:
+                notice_date_obj = bereavement['created_at'].split(' ')
+                date_not = str(notice_date_obj[0]+' '+notice_date_obj[2]+' '+notice_date_obj[1])
+            except:
+                date_not = bereavement['created_at']
             try:
                 member=FileUpload.objects.get(primary_user_id=bereavement['primary_member'])
                 if member.image:
@@ -2510,6 +2523,7 @@ class UserNoticeList(ListAPIView):
                 'dob':member.dob,
                 'image':image,
                 'created_at': bereavement['created_at'],
+                'created_date':date_not
 
                 # 'secondary_member': member_name.member_name,
                 }
@@ -2537,7 +2551,7 @@ class UserNoticeList(ListAPIView):
                 'dob':member_name.dob,
                 'occupation':member_name.occupation,
                 'created_at': bereavement['created_at'],
-
+                'created_date':date_not
             }
 
 
@@ -2550,7 +2564,8 @@ class UserNoticeList(ListAPIView):
             response.append(new_data)
 
 
-        response_query = sorted(response, key = lambda i: i.get('created_at')) 
+        response_query = sorted(response, key = lambda i: i.get('created_date'))
+
         data={
             'code': 200,
             'status': "OK",
