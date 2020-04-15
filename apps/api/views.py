@@ -2435,7 +2435,6 @@ class UserNoticeList(ListAPIView):
         context ={
             'request': request
         }
-        #import pdb;pdb.set_trace()
         queryset_normal_notice = NoticeSerializer(Notice.objects.all().order_by('created_at'), many=True, context=context).data
         queryset_bereavement_notice = NoticeBereavementSerializer(NoticeBereavement.objects.all().order_by('created_at'), many=True, context=context).data
 
@@ -2445,7 +2444,8 @@ class UserNoticeList(ListAPIView):
         for notice in queryset_normal_notice:
             try:
                 notice_date_obj = notice['created_at'].split(' ')
-                date_not = str(notice_date_obj[0]+' '+notice_date_obj[2]+' '+notice_date_obj[1])
+                date_year=notice_date_obj[0].split('/')
+                date_not = str(date_year[2]+'/'+date_year[1]+'/'+date_year[0]+' '+notice_date_obj[2]+' '+notice_date_obj[1])
             except:
                 date_not = notice['created_at']
             if notice['image'] == None and notice['video'] == None and notice['audio'] != None:
@@ -2459,7 +2459,7 @@ class UserNoticeList(ListAPIView):
                     'audio': notice['audio'],
                     'created_at': notice['created_at'],
                     'updated_at': notice['updated_at'],
-                    'created_date': date_not
+                    'created_date':date_not
 
                 }
             elif notice['image'] == None and notice['audio'] == None and notice['video'] != None:
@@ -2498,8 +2498,10 @@ class UserNoticeList(ListAPIView):
             prayer=PrayerGroup.objects.get(id=bereavement['prayer_group'])
             family=Family.objects.get(id=bereavement['family'])
             try:
+                #import pdb;pdb.set_trace()
                 notice_date_obj = bereavement['created_at'].split(' ')
-                date_not = str(notice_date_obj[0]+' '+notice_date_obj[2]+' '+notice_date_obj[1])
+                date_year=notice_date_obj[0].split('/')
+                date_not = str(date_year[2]+'/'+date_year[1]+'/'+date_year[0]+' '+notice_date_obj[2]+' '+notice_date_obj[1])
             except:
                 date_not = bereavement['created_at']
             try:
