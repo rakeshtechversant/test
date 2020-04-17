@@ -2425,6 +2425,16 @@ class NoticeBereavementDelete(DestroyAPIView):
         data['response'] = "Successfully deleted"
         return Response(data)
 
+def convert24(str1): 
+
+    if str1[-2:] == "AM" and str1[:2] == "12": 
+        return "00" + str1[2:-2]    
+    elif str1[-2:] == "AM": 
+        return str1[:-2] 
+    elif str1[-2:] == "PM" and str1[:2] == "12": 
+        return str1[:-2]     
+    else: 
+        return str(int(str1[:2]) + 12) + str1[2:8] 
 
 class UserNoticeList(ListAPIView):
     queryset=Notice.objects.all()
@@ -2445,7 +2455,8 @@ class UserNoticeList(ListAPIView):
             try:
                 notice_date_obj = notice['created_at'].split(' ')
                 date_year=notice_date_obj[0].split('/')
-                date_not = str(date_year[2]+'/'+date_year[1]+'/'+date_year[0]+' '+notice_date_obj[2]+' '+notice_date_obj[1])
+                date_24 = convert24(notice_date_obj[1]+':00'+' '+notice_date_obj[2])
+                date_not = str(date_year[2]+'/'+date_year[1]+'/'+date_year[0]+' '+date_24)
             except:
                 date_not = notice['created_at']
             if notice['image'] == None and notice['video'] == None and notice['audio'] != None:
@@ -2501,7 +2512,8 @@ class UserNoticeList(ListAPIView):
                 #import pdb;pdb.set_trace()
                 notice_date_obj = bereavement['created_at'].split(' ')
                 date_year=notice_date_obj[0].split('/')
-                date_not = str(date_year[2]+'/'+date_year[1]+'/'+date_year[0]+' '+notice_date_obj[2]+' '+notice_date_obj[1])
+                date_24 = convert24(notice_date_obj[1]+':00'+' '+notice_date_obj[2])
+                date_not = str(date_year[2]+'/'+date_year[1]+'/'+date_year[0]+' '+date_24)
             except:
                 date_not = bereavement['created_at']
             try:
