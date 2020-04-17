@@ -56,15 +56,36 @@ INSTALLED_APPS = [
 ]
 
 PUSH_NOTIFICATIONS_SETTINGS = {
-        "FCM_API_KEY": "AIzaSyAQeuZQObUKDbQnyT6ZEM5ONgSoArHqyus",
-        "GCM_API_KEY": "[your api key]",
-        "APNS_CERTIFICATE": "/path/to/your/certificate.pem",
+        "FCM_API_KEY": "AAAAcPOq68o:APA91bFcR0_j7y3VX09kGeKAN4yiF0YOpBhSvSU21tZgwNtWwzzvIUQLZf3fKm8MY9qa4Dk3pNAP54spZAiKyzN-pNk0B5ln1iwOK34RBCasyWn4JDnUAkBASOmGeFcPVRK9bQHaSQHr",
+        "GCM_API_KEY": "AAAAcPOq68o:APA91bFcR0_j7y3VX09kGeKAN4yiF0YOpBhSvSU21tZgwNtWwzzvIUQLZf3fKm8MY9qa4Dk3pNAP54spZAiKyzN-pNk0B5ln1iwOK34RBCasyWn4JDnUAkBASOmGeFcPVRK9bQHaSQHr",
+        "APNS_CERTIFICATE": os.path.join(BASE_DIR, "pushcert.pem"),
         "APNS_TOPIC": "com.example.push_test",
         "WNS_PACKAGE_SECURITY_ID": "[your package security id, e.g: 'ms-app://e-3-4-6234...']",
         "WNS_SECRET_KEY": "[your app secret key, e.g.: 'KDiejnLKDUWodsjmewuSZkk']",
         "WP_PRIVATE_KEY": "/path/to/your/private.pem",
         "WP_CLAIMS": {'sub': "mailto: development@example.com"}
 }
+
+PUSH_NOTIFICATIONS_SETTINGS = {
+  # Load and process all PUSH_NOTIFICATIONS_SETTINGS using the AppConfig manager.
+  "CONFIG": "push_notifications.conf.AppConfig",
+
+  # collection of all defined applications
+  "APPLICATIONS": {
+    "com.techversant.churchapp": {
+      # PLATFORM (required) determines what additional settings are required.
+      "PLATFORM": "FCM",
+      "API_KEY" : "AAAAcPOq68o:APA91bFcR0_j7y3VX09kGeKAN4yiF0YOpBhSvSU21tZgwNtWwzzvIUQLZf3fKm8MY9qa4Dk3pNAP54spZAiKyzN-pNk0B5ln1iwOK34RBCasyWn4JDnUAkBASOmGeFcPVRK9bQHaSQHr",
+    },
+    "com.techversant.MukhathalaMarThomaChurch":{
+        "PLATFORM": "APNS",
+        "CERTIFICATE": os.path.join(BASE_DIR, "pushcert.pem"),
+        "USE_SANDBOX" : "api.development.push.apple.com",
+        "TOPIC" : "com.techversant.MukhathalaMarThomaChurch",
+    }
+  }
+}
+
 UPDATE_ON_DUPLICATE_REG_ID = True
 # JET_DEFAULT_THEME = 'green'
 # JET_THEMES = [
@@ -114,7 +135,7 @@ REST_FRAMEWORK = {
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
+    #'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -246,20 +267,18 @@ DJANGO_TWILIO_BLACKLIST_CHECK = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
-PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+PROJECT_PATH = os.path.abspath(os.path.dirname(__name__))
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.9/howto/static-files/
 STATIC_URL = '/static/'
+MEDIA_URL = '/cards/'
 
-# Extra places for collectstatic to find static files.
-STATICFILES_DIRS = (
-    os.path.join(PROJECT_ROOT, 'static'),
-    '/usr/local/lib/python3.6/site-packages/django/contrib/admin/static',
-)
+MEDIA_ROOT = os.path.join(BASE_DIR, "cards")
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-MEDIA_ROOT = os.path.join (BASE_DIR, 'cards')
-MEDIA_URL = os.path.join(BASE_DIR, 'cards/')
+FILE_UPLOAD_PERMISSIONS = 0O644
+#STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
 
 # CKEDITOR_BASEPATH =STATIC_ROOT + "/ckeditor/ckeditor/"
