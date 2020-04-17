@@ -58,8 +58,8 @@ INSTALLED_APPS = [
 PUSH_NOTIFICATIONS_SETTINGS = {
         "FCM_API_KEY": "AAAAcPOq68o:APA91bFcR0_j7y3VX09kGeKAN4yiF0YOpBhSvSU21tZgwNtWwzzvIUQLZf3fKm8MY9qa4Dk3pNAP54spZAiKyzN-pNk0B5ln1iwOK34RBCasyWn4JDnUAkBASOmGeFcPVRK9bQHaSQHr",
         "GCM_API_KEY": "AAAAcPOq68o:APA91bFcR0_j7y3VX09kGeKAN4yiF0YOpBhSvSU21tZgwNtWwzzvIUQLZf3fKm8MY9qa4Dk3pNAP54spZAiKyzN-pNk0B5ln1iwOK34RBCasyWn4JDnUAkBASOmGeFcPVRK9bQHaSQHr",
-        "APNS_CERTIFICATE": os.path.join(BASE_DIR, "pushcert.pem"),
-        "APNS_TOPIC": "com.example.push_test",
+        # "APNS_CERTIFICATE": os.path.join(BASE_DIR, "pushcert.pem"),
+        # "APNS_TOPIC": "com.example.push_test",
         "WNS_PACKAGE_SECURITY_ID": "[your package security id, e.g: 'ms-app://e-3-4-6234...']",
         "WNS_SECRET_KEY": "[your app secret key, e.g.: 'KDiejnLKDUWodsjmewuSZkk']",
         "WP_PRIVATE_KEY": "/path/to/your/private.pem",
@@ -77,12 +77,12 @@ PUSH_NOTIFICATIONS_SETTINGS = {
       "PLATFORM": "FCM",
       "API_KEY" : "AAAAcPOq68o:APA91bFcR0_j7y3VX09kGeKAN4yiF0YOpBhSvSU21tZgwNtWwzzvIUQLZf3fKm8MY9qa4Dk3pNAP54spZAiKyzN-pNk0B5ln1iwOK34RBCasyWn4JDnUAkBASOmGeFcPVRK9bQHaSQHr",
     },
-    "com.techversant.MukhathalaMarThomaChurch":{
-        "PLATFORM": "APNS",
-        "CERTIFICATE": os.path.join(BASE_DIR, "pushcert.pem"),
-        "USE_SANDBOX" : "api.development.push.apple.com",
-        "TOPIC" : "com.techversant.MukhathalaMarThomaChurch",
-    }
+    # "com.techversant.MukhathalaMarThomaChurch":{
+    #     "PLATFORM": "APNS",
+    #     "CERTIFICATE": os.path.join(BASE_DIR, "pushcert.pem"),
+    #     "USE_SANDBOX" : "api.development.push.apple.com",
+    #     "TOPIC" : "com.techversant.MukhathalaMarThomaChurch",
+    # }
   }
 }
 
