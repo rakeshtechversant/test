@@ -51,7 +51,7 @@ from twilio.rest import Client
 from church_project import settings
 from datetime import datetime, timezone
 from django.utils import timezone as tz
-
+import pytz
 from django.contrib.auth.models import User
 from django.views.generic import TemplateView
 from rest_framework.pagination import PageNumberPagination
@@ -2522,15 +2522,18 @@ class UserNoticeList(ListAPIView):
                     image=request.build_absolute_uri(member.image.url)
                 else:
                     image='null'
-                try:
-                    in_memory_date_format = tz.localtime(member.in_memory_date, pytz.timezone('Asia/Kolkata')).strftime("%d/%m/%Y")
-                except:
-                    try:
-                        in_memory_date_format = member.in_memory_date.strftime("%d/%m/%Y")
-                    except:
-                        in_memory_date_format = ""
+                if member.dob:
+                    dob = member.dob
+                else:
+                    dob = 'Expired'
                 import datetime as dt
                 today = dt.datetime.now()
+                try:
+                    in_memory_date_format_year = tz.localtime(member.in_memory_date, pytz.timezone('Asia/Kolkata')).strftime("%Y")
+                    in_memory_date_format_date = tz.localtime(member.in_memory_date, pytz.timezone('Asia/Kolkata')).strftime("%d/%m/%Y")
+                except:
+                    in_memory_date_format_year = today.year
+                    in_memory_date_format_date = today
                 new_data ={
                 'id': bereavement['id'],
                 'type': 'bereavement',
@@ -2540,8 +2543,9 @@ class UserNoticeList(ListAPIView):
                 'family': family.name,
                 'name': member.name,
                 'occupation':member.occupation,
-                'current_year':today.year,
-                'dob':member.dob,
+                'current_year':int(in_memory_date_format_year),
+                'current_date':in_memory_date_format_date,
+                'dob':dob,
                 'image':image,
                 'created_at': bereavement['created_at'],
                 'created_date':date_not
@@ -2558,13 +2562,16 @@ class UserNoticeList(ListAPIView):
                     image=request.build_absolute_uri(member_name.image.url)
                 else:
                     image='null'
+                if member_name.dob:
+                    dob = member_name.dob
+                else:
+                    dob = 'Expired'
                 try:
-                    in_memory_date_format = tz.localtime(member_name.in_memory_date, pytz.timezone('Asia/Kolkata')).strftime("%d/%m/%Y")
+                    in_memory_date_format_year = tz.localtime(member_name.in_memory_date, pytz.timezone('Asia/Kolkata')).strftime("%Y")
+                    in_memory_date_format_date = tz.localtime(member_name.in_memory_date, pytz.timezone('Asia/Kolkata')).strftime("%d/%m/%Y")
                 except:
-                    try:
-                        in_memory_date_format = member_name.in_memory_date.strftime("%d/%m/%Y")
-                    except:
-                        in_memory_date_format = ""
+                    in_memory_date_format_year = today.year
+                    in_memory_date_format_date = today
                 new_data ={
                 'id': bereavement['id'],
                 'type': 'bereavement',
@@ -2575,8 +2582,9 @@ class UserNoticeList(ListAPIView):
                 # 'primary_member': member.name,
                 'name': member_name.member_name,
                 'image':image,
-                'current_year':today.year,
-                'dob':member_name.dob,
+                'current_year':int(in_memory_date_format_year),
+                'current_date':in_memory_date_format_date,
+                'dob':dob,
                 'occupation':member_name.occupation,
                 'created_at': bereavement['created_at'],
                 'created_date':date_not
