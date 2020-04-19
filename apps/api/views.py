@@ -2522,6 +2522,13 @@ class UserNoticeList(ListAPIView):
                     image=request.build_absolute_uri(member.image.url)
                 else:
                     image='null'
+                try:
+                    in_memory_date_format = tz.localtime(member.in_memory_date, pytz.timezone('Asia/Kolkata')).strftime("%d/%m/%Y")
+                except:
+                    try:
+                        in_memory_date_format = member.in_memory_date.strftime("%d/%m/%Y")
+                    except:
+                        in_memory_date_format = ""
                 import datetime as dt
                 today = dt.datetime.now()
                 new_data ={
@@ -2533,7 +2540,7 @@ class UserNoticeList(ListAPIView):
                 'family': family.name,
                 'name': member.name,
                 'occupation':member.occupation,
-                'current_year':today.year,
+                'current_year':in_memory_date_format,
                 'dob':member.dob,
                 'image':image,
                 'created_at': bereavement['created_at'],
@@ -2551,6 +2558,13 @@ class UserNoticeList(ListAPIView):
                     image=request.build_absolute_uri(member_name.image.url)
                 else:
                     image='null'
+                try:
+                    in_memory_date_format = tz.localtime(member_name.in_memory_date, pytz.timezone('Asia/Kolkata')).strftime("%d/%m/%Y")
+                except:
+                    try:
+                        in_memory_date_format = member_name.in_memory_date.strftime("%d/%m/%Y")
+                    except:
+                        in_memory_date_format = ""
                 new_data ={
                 'id': bereavement['id'],
                 'type': 'bereavement',
@@ -2561,7 +2575,7 @@ class UserNoticeList(ListAPIView):
                 # 'primary_member': member.name,
                 'name': member_name.member_name,
                 'image':image,
-                'current_year':today.year,
+                'current_year':in_memory_date_format,
                 'dob':member_name.dob,
                 'occupation':member_name.occupation,
                 'created_at': bereavement['created_at'],
