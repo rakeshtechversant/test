@@ -398,7 +398,12 @@ class NoticeSerializer(serializers.ModelSerializer):
         try:
             request = self.context['request']
             # image = "https://cdn1.iconfinder.com/data/icons/mobile-application-2-solid/128/notification_alert_alarm-512.png"
-            image= request.build_absolute_uri(notice.image.url)
+            if notice.image == None and notice.video == None and notice.audio != None:
+                image = "https://cdn0.iconfinder.com/data/icons/cosmo-documents/40/file_audio-512.png"
+            elif notice.image == None and notice.audio == None and notice.video != None:
+                image= request.build_absolute_uri(notice.thumbnail.url)
+            else:
+                image= request.build_absolute_uri(notice.image.url)
         except:
             image = ""
         try:
