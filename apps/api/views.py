@@ -2254,6 +2254,7 @@ class NoticeBereavementCreate(CreateAPIView):
         member_id=request.POST.get('member_id', False)
         user_type=request.POST.get('user_type', False)
         description=request.POST.get('description', False)
+        dob = request.POST.get('dob')
         # title=request.POST.get('title', False)
         if not prayer_group_id and not family_id and not member_id and not description:
             return Response({'success': False,'message': 'You should fill all the fields'}, status=HTTP_400_BAD_REQUEST)
@@ -2286,6 +2287,8 @@ class NoticeBereavementCreate(CreateAPIView):
                     beri_obj=NoticeBereavement.objects.create(prayer_group=prayer_group_id,family=family_id,secondary_member=member_id,description=description)
                     member_id.in_memory=True
                     member_id.in_memory_date=tz.now()
+                    if dob:
+                        member_id.dob=dob
                     member_id.save()
 
                     # body = {
@@ -2343,6 +2346,8 @@ class NoticeBereavementCreate(CreateAPIView):
                     beri_obj = NoticeBereavement.objects.create(prayer_group=prayer_group_id,family=family_id,primary_member=member_id,description=description)
                     member_id.in_memory=True
                     member_id.in_memory_date=tz.now()
+                    if dob:
+                        member_id.dob=dob
                     member_id.save()
                     # body = {
                     #     "type": "Bereavement",
