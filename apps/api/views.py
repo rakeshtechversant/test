@@ -1553,17 +1553,17 @@ class FamilyMemberList(ListAPIView):
 
 
         serializer = self.get_serializer(queryset, many=True)
-
-        data = {
-            'code': 200,
-            'status': "OK",
-            'response': serializer.data
-        }
+        response = serializer.data
 
         primary_user_id = UserRetrieveSerializer(self.primary_user, context={'request':request}).data
 
-        data['response'].insert(0, primary_user_id)
-        
+        response.insert(0, primary_user_id)
+        response_query = sorted(response, key = lambda i: i['name'])
+        data = {
+            'code': 200,
+            'status': "OK",
+            'response': response_query
+        }
         return Response(data)
 
 class NoticeModelViewSet(ModelViewSet):
