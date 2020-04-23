@@ -1368,7 +1368,7 @@ class PrayerGroupBasedFamilyView(ListAPIView):
             prayer_group = PrayerGroup.objects.get(id=prayer_id)
         except PrayerGroup.DoesNotExist:
             raise exceptions.NotFound(detail="Prayer group does not exist")
-        family_list1 = prayer_group.family.all()
+        family_list1 = prayer_group.family.all().order_by('name')
         family_list1 = family_list1.filter(primary_user_id=None)
         family_list2 = Family.objects.filter(primary_user_id__in=prayer_group.primary_user_id.all())
         family_list = family_list1 | family_list2
