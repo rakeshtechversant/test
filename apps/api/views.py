@@ -21,7 +21,7 @@ from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
 from rest_framework import parsers
 from rest_framework import viewsets
 from rest_framework import mixins
-from rest_framework.authentication import TokenAuthentication
+from rest_framework.authentication import TokenAuthentication,BasicAuthentication
 from rest_framework.decorators import action
 import requests
 from apps.api.permissions import IsOwnerOrReadOnly, IsPrimaryUserOrReadOnly, AdminPermission
@@ -58,6 +58,7 @@ from rest_framework.pagination import PageNumberPagination
 from collections import OrderedDict
 import csv
 from push_notifications.models import APNSDevice, GCMDevice
+from rest_framework.renderers import TemplateHTMLRenderer
 
 def fcm_messaging_to_all(content):
     try: 
@@ -5464,3 +5465,149 @@ class DeviceInactiveView(APIView):
                 return Response({'success': False,'message':'No device found'}, status=HTTP_400_BAD_REQUEST)
         except:
             return Response({'success': False,'message':'Invalid Details'}, status=HTTP_400_BAD_REQUEST)
+
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+
+class RegisteredUsersViewAdmin(APIView):
+    queryset = FileUpload.objects.all()
+    serializer_class = UserListSerializer
+    permission_classes = [IsAdminUser]
+    authentication_classes = [BasicAuthentication]
+    pagination_class = StandardResultsSetPagination
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = 'users_list.html'
+
+    def get(self, request, *args, **kwargs):
+        page = request.GET.get('page', 1)
+        # query = request.GET.get('q')
+        context ={
+            'request': request
+        }
+        #import pdb;pdb.set_trace()
+        phone_lists = []
+        users = User.objects.filter(is_superuser = False)
+        for user_obj in users:
+            users_queryset = user_obj.username
+            phone_lists.append(users_queryset)
+        primary_queryset=FileUpload.objects.filter(Q(phone_no_primary__in=phone_lists)|Q(phone_no_secondary__in=phone_lists)).distinct()
+        secondary_queryset=Members.objects.filter(Q(phone_no_secondary_user__in=phone_lists)|Q(phone_no_secondary_user_secondary__in=phone_lists)).distinct()
+        # if query:
+        #     import pdb;pdb.set_trace()
+        #     primary_queryset.filter(name=query).distinct()
+        #     secondary_queryset.filter(member_name=query).distinct()
+        try:
+            queryset_primary = PrimaryUserSerializerPage(primary_queryset, many=True, context=context).data
+            queryset_secondary = MembersSerializerPage(secondary_queryset.order_by('member_name'), many=True, context=context).data
+        except:
+            queryset_primary = None
+            queryset_secondary = None
+        try:
+            response = queryset_primary + queryset_secondary
+            response_query = sorted(response, key = lambda i: i.get('name'))
+            count_users = len(response_query)
+            paginator = Paginator(response_query, 40)
+        except:
+            response =[]
+            paginator = Paginator(response, 40)
+        
+        try:
+            users = paginator.page(page)
+        except PageNotAnInteger:
+            users = paginator.page(1)
+        except EmptyPage:
+            users = paginator.page(paginator.num_pages)
+        return Response({'profiles': users,'count_users':count_users})
+        # responses = self.paginate_queryset(response_query)
+        # if responses is not None:
+        #     serializer = CommonUserSerializer(responses,many=True)
+        #     data = {
+        #         'code': 200,
+        #         'status': "OK",
+        #     }
+        #     page_nated_data = self.get_paginated_response(serializer.data).data
+        #     data.update(page_nated_data)
+        #     data['registered-users'] = data.pop('results')
+        #     return Response({'profiles': page_nated_data})
+           # return Response(data)
+
+        # serializer = CommonUserSerializer(response,many=True)
+        # output = serializer.data
+        # data={
+        #     'response': output
+
+        #     }
+        # data['registered-users'] = data.pop('results')
+        # return Response(data)
+
+class UnRegisteredUsersViewAdmin(APIView):
+    queryset = FileUpload.objects.all()
+    serializer_class = UserListSerializer
+    # permission_classes = [AllowAny]
+    pagination_class = StandardResultsSetPagination
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = 'unusers_list.html'
+    def get(self, request, *args, **kwargs):
+        page = request.GET.get('page', 1)
+        # query = request.GET.get('q')
+        context ={
+            'request': request
+        }
+        #import pdb;pdb.set_trace()
+        phone_lists = []
+        users = User.objects.filter(is_superuser = False)
+        for user_obj in users:
+            users_queryset = user_obj.username
+            phone_lists.append(users_queryset)
+        primary_queryset=FileUpload.objects.exclude(Q(phone_no_primary__in=phone_lists)|Q(phone_no_secondary__in=phone_lists)).distinct()
+        secondary_queryset=Members.objects.exclude(Q(phone_no_secondary_user__in=phone_lists)|Q(phone_no_secondary_user_secondary__in=phone_lists)).distinct()
+        try:
+            queryset_primary = PrimaryUserSerializerPage(primary_queryset, many=True, context=context).data
+            queryset_secondary = MembersSerializerPage(secondary_queryset.order_by('member_name'), many=True, context=context).data
+        except:
+            queryset_primary = None
+            queryset_secondary = None
+        try:
+            response = queryset_primary + queryset_secondary
+            response_query = sorted(response, key = lambda i: i.get('name'))
+            count_users = len(response_query)
+            paginator = Paginator(response_query, 40)
+        except:
+            response =[]
+            paginator = Paginator(response, 40)
+        
+        try:
+            users = paginator.page(page)
+        except PageNotAnInteger:
+            users = paginator.page(1)
+        except EmptyPage:
+            users = paginator.page(paginator.num_pages)
+        return Response({'profiles': users,'count_users':count_users})
+        # responses = self.paginate_queryset(response_query)
+        # if responses is not None:
+        #     serializer = CommonUserSerializer(responses,many=True)
+        #     data = {
+        #         'code': 200,
+        #         'status': "OK",
+        #     }
+        #     page_nated_data = self.get_paginated_response(serializer.data).data
+        #     data.update(page_nated_data)
+        #     data['unregistered-users'] = data.pop('results')
+        #     json_obj = json.dumps(data)
+        #     render(request,"users-list.html",{'users':data})
+        #     #return Response(data)
+
+        # serializer = CommonUserSerializer(response,many=True)
+        # output = serializer.data
+        # data={
+        #     'response': output
+
+        #     }
+        # data['unregistered-users'] = data.pop('results')
+        # return Response(data)
+
+class HomeViewAdmin(APIView):
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = 'home.html'
+    def get(self, request, *args, **kwargs):
+         return Response({'profiles': "",'count_users':""})
+

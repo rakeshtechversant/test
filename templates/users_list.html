@@ -1,0 +1,216 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title></title>
+
+
+
+
+   <!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+
+<!-- jQuery library -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+<!-- Latest compiled JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script> 
+<style>
+/* Style the tab */
+.tab {
+  overflow: hidden;
+  border: 1px solid #ccc;
+  background-color: #f1f1f1;
+}
+
+/* Style the buttons inside the tab */
+.tab button {
+  background-color: inherit;
+  float: left;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  padding: 14px 16px;
+  transition: 0.3s;
+  font-size: 17px;
+}
+
+/* Change background color of buttons on hover */
+.tab button:hover {
+  background-color: #ddd;
+}
+
+/* Create an active/current tablink class */
+.tab button.active {
+  background-color: #ccc;
+}
+
+/* Style the tab content */
+.tabcontent {
+  display: none;
+  padding: 6px 12px;
+  border: 1px solid #ccc;
+  border-top: none;
+}
+
+table {
+  border-collapse: separate;
+  border-spacing: 0;
+  color: #4a4a4d;
+  font: 14px/1.4 "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+th,
+td {
+  padding: 10px 15px;
+  vertical-align: middle;
+}
+thead {
+  background: #395870;
+  color: #fff;
+}
+th:first-child {
+  text-align: left;
+}
+tbody tr:nth-child(even) {
+  background: #f0f0f2;
+}
+td {
+  border-bottom: 1px solid #cecfd5;
+  border-right: 1px solid #cecfd5;
+}
+td:first-child {
+  border-left: 1px solid #cecfd5;
+}
+.book-title {
+  color: #395870;
+  display: block;
+}
+.item-stock,
+.item-qty {
+  text-align: center;
+}
+.item-price {
+  text-align: right;
+}
+.item-multiple {
+  display: block;
+}
+tfoot {
+  text-align: right;
+}
+tfoot tr:last-child {
+  background: #f0f0f2;
+}
+</style>
+</head>
+<body>
+<h1>Church APP</h1>
+<br>
+<div class="tab">
+  <button><a href="{% url 'registered-users'%}"> Registered Users</a></button>
+ <button><a href="{% url 'unregistered-users'%}"> Unregistered Users</a></button>
+</div>
+
+
+<h2>Registered Users List (Count : {{count_users}})</h2>
+
+
+ 
+<!-- <form method="GET" >
+    <div class="input-field">
+        <input type="text" name="q" value="{{ request.GET.q }}" placeholder="Search Here...">
+       <button class="btn" type="submit" name="action">Search</button>
+    </div>
+</form> -->
+<table>
+  <thead>
+    <tr>
+      <th scope="col" >Name</th>
+      <th scope="col">Family</th>
+      <th scope="col">Date of Birth</th>
+      <th scope="col">Phone Number(Primary)</th>
+      <th scope="col">Phone Number(Secondary)</th>
+      <th scope="col">Email</th>
+      <th scope="col">Occupation</th>
+      <th scope="col">User Type</th>
+    </tr>
+  </thead>
+   <tbody>
+      {% for profile in profiles %}
+    <tr>
+      <td>
+        <strong class="book-title">{{profile.name}}</strong>
+      </td>
+      <td class="item-stock">{{profile.family_name}}</td>
+
+      {% if profile.dob %}
+        <td class="item-qty">{{profile.dob}}</td>
+      {% else %}
+        <td class="item-qty"></td>
+      {%endif%}
+
+      {% if profile.phone_no_primary %}
+        <td class="item-qty">{{profile.phone_no_primary}}</td>
+      {% else %}
+        <td class="item-qty"></td>
+      {%endif%}
+
+
+            {% if profile.phone_no_secondary %}
+        <td class="item-qty">{{profile.phone_no_secondary}}</td>
+      {% else %}
+        <td class="item-qty"></td>
+      {%endif%}
+      
+            {% if profile.email %}
+        <td class="item-qty">{{profile.email}}</td>
+      {% else %}
+        <td class="item-qty"></td>
+      {%endif%}
+
+            {% if profile.occupation %}
+        <td class="item-qty">{{profile.occupation}}</td>
+      {% else %}
+        <td class="item-qty"></td>
+      {%endif%}
+
+            {% if profile.user_type %}
+        <td class="item-qty">{{profile.user_type}}</td>
+      {% else %}
+        <td class="item-qty"></td>
+      {%endif%}
+    </tr>
+      {% endfor %}
+  </tbody>
+
+  </tfoot>
+</table>
+
+
+{% if profiles.has_other_pages %}
+  <ul class="pagination">
+    {% if profiles.has_previous %}
+      <li><a href="?page={{ profiles.previous_page_number }}">&laquo;</a></li>
+    {% else %}
+      <li class="disabled"><span>&laquo;</span></li>
+    {% endif %}
+    {% for i in profiles.paginator.page_range %}
+      {% if profiles.number == i %}
+        <li class="active"><span>{{ i }} <span class="sr-only">(current)</span></span></li>
+      {% else %}
+        <li><a href="?page={{ i }}">{{ i }}</a></li>
+      {% endif %}
+    {% endfor %}
+    {% if profiles.has_next %}
+      <li><a href="?page={{ profiles.next_page_number }}">&raquo;</a></li>
+    {% else %}
+      <li class="disabled"><span>&raquo;</span></li>
+    {% endif %}
+  </ul>
+{% endif %}
+
+</body>
+</html>
+
+
+

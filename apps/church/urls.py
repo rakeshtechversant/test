@@ -9,7 +9,8 @@ from apps.api.views import UserNoticeList, NoticeBereavementDelete, NoticeBereav
     ViewRequestNumberViewset, AcceptViewRequestNumberViewset, EachUserNotification, EachUserUnreadCount, PrivacyView, \
     PhoneVersionView, GalleryImagesView, GalleryImagesCreateView, SendOtpSecSave, FamilyListPaginatedView,\
     PrayerGroupBasedFamilyPaginatedView,PrayerGroupBasedMembersPaginatedView,SendWithoutOtpSecSave, UpdatePhoneNumberSecondary,\
-    PrimaryToSecondaryViewset,PrimaryNumberChangeViewset,ChurchVicarEditView,ChurchHistoryEditView,DeviceInactiveView
+    PrimaryToSecondaryViewset,PrimaryNumberChangeViewset,ChurchVicarEditView,ChurchHistoryEditView,DeviceInactiveView,RegisteredUsersViewAdmin,\
+    UnRegisteredUsersViewAdmin,HomeViewAdmin
 from push_notifications.api.rest_framework import APNSDeviceAuthorizedViewSet, GCMDeviceAuthorizedViewSet
 router = DefaultRouter()
 
@@ -24,6 +25,9 @@ router.register(r'church-vicar-edit',ChurchVicarEditView,basename='church_vicar_
 router.register(r'church-history-edit',ChurchHistoryEditView,basename='church_history_edit')
 router.register(r'device/apns', APNSDeviceAuthorizedViewSet)
 router.register(r'device/gcm', GCMDeviceAuthorizedViewSet)
+#router.register(r'registered-users',RegisteredUsersViewAdmin,basename='users-lists')
+#router.register(r'unregistered-users',UnRegisteredUsersViewAdmin,basename='unreg-users-lists')
+
 urlpatterns = [
     path('', views.UserListView.as_view()),
     path('admin/', include(router.urls)),
@@ -64,6 +68,9 @@ urlpatterns = [
     url(r'^primary-to-secondary/$',PrimaryToSecondaryViewset.as_view(),name='primary_to_secondary'),
     url(r'^change-phone-number-primary/$',PrimaryNumberChangeViewset.as_view(),name='change_phone_number_primary'),
     url(r'^device-inactive/$',DeviceInactiveView.as_view(),name='device_inactive'),
+    url(r'^registered-users/$',RegisteredUsersViewAdmin.as_view(),name='registered-users'),
+    url(r'^unregistered-users/$',UnRegisteredUsersViewAdmin.as_view(),name='unregistered-users'),
+     url(r'^home/$',HomeViewAdmin.as_view(),name='home'),
     
 
 ]

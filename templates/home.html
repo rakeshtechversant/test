@@ -1,0 +1,84 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title></title>
+
+
+   <!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+
+<!-- jQuery library -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+<!-- Latest compiled JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script> 
+<style>
+
+h1 {
+    font-size: 36px;
+    line-height: 40px;
+}
+
+table {
+  border-collapse: separate;
+  border-spacing: 0;
+  color: #4a4a4d;
+  font: 14px/1.4 "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+th,
+td {
+  padding: 10px 15px;
+  vertical-align: middle;
+}
+thead {
+  background: #395870;
+  color: #fff;
+}
+th:first-child {
+  text-align: left;
+}
+tbody tr:nth-child(even) {
+  background: #f0f0f2;
+}
+td {
+  border-bottom: 1px solid #cecfd5;
+  border-right: 1px solid #cecfd5;
+}
+td:first-child {
+  border-left: 1px solid #cecfd5;
+}
+.book-title {
+  color: #395870;
+  display: block;
+}
+.item-stock,
+.item-qty {
+  text-align: center;
+}
+.item-price {
+  text-align: right;
+}
+.item-multiple {
+  display: block;
+}
+tfoot {
+  text-align: right;
+}
+tfoot tr:last-child {
+  background: #f0f0f2;
+}
+</style>
+</head>
+<body>
+<h1>Church APP</h1>
+<br>
+<a href="{% url 'registered-users'%}">  Registered Users</a> <p></p>
+
+<a href="{% url 'unregistered-users'%}">  Unregistered Users</a>
+
+</body>
+</html>
+
+
+
