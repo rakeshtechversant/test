@@ -5498,8 +5498,8 @@ class RegisteredUsersViewAdmin(APIView):
         if query:
             query = query.replace(" ", "")
             query.lower()
-            primary_queryset = primary_queryset.filter(name__nospaces__icontains=query)
-            secondary_queryset = secondary_queryset.filter(member_name__nospaces__icontains=query)
+            primary_queryset = primary_queryset.filter(Q(name__nospaces__icontains=query)|Q(get_file_upload__name__nospaces__icontains=query))
+            secondary_queryset = secondary_queryset.filter(Q(member_name__nospaces__icontains=query)|Q(primary_user_id__get_file_upload__name__nospaces__icontains=query))
         try:
             queryset_primary = PrimaryUserSerializerPage(primary_queryset, many=True, context=context).data
             queryset_secondary = MembersSerializerPage(secondary_queryset.order_by('member_name'), many=True, context=context).data
@@ -5571,8 +5571,8 @@ class UnRegisteredUsersViewAdmin(APIView):
         if query:
             query = query.replace(" ", "")
             query.lower()
-            primary_queryset = primary_queryset.filter(name__nospaces__icontains=query)
-            secondary_queryset = secondary_queryset.filter(member_name__nospaces__icontains=query)
+            primary_queryset = primary_queryset.filter(Q(name__nospaces__icontains=query)|Q(get_file_upload__name__nospaces__icontains=query))
+            secondary_queryset = secondary_queryset.filter(Q(member_name__nospaces__icontains=query)|Q(primary_user_id__get_file_upload__name__nospaces__icontains=query))
         try:
             queryset_primary = PrimaryUserSerializerPage(primary_queryset, many=True, context=context).data
             queryset_secondary = MembersSerializerPage(secondary_queryset.order_by('member_name'), many=True, context=context).data
