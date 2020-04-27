@@ -5496,6 +5496,8 @@ class RegisteredUsersViewAdmin(APIView):
         except:
             count_users = ""
         if query:
+            query = query.replace(" ", "")
+            query.lower()
             primary_queryset = primary_queryset.filter(name__nospaces__icontains=query)
             secondary_queryset = secondary_queryset.filter(member_name__nospaces__icontains=query)
         try:
@@ -5567,6 +5569,8 @@ class UnRegisteredUsersViewAdmin(APIView):
         except:
             count_users = ""
         if query:
+            query = query.replace(" ", "")
+            query.lower()
             primary_queryset = primary_queryset.filter(name__nospaces__icontains=query)
             secondary_queryset = secondary_queryset.filter(member_name__nospaces__icontains=query)
         try:
