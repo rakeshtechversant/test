@@ -5479,7 +5479,7 @@ class RegisteredUsersViewAdmin(APIView):
 
     def get(self, request, *args, **kwargs):
         page = request.GET.get('page', 1)
-        # query = request.GET.get('q')
+        query = request.GET.get('q')
         context ={
             'request': request
         }
@@ -5491,10 +5491,9 @@ class RegisteredUsersViewAdmin(APIView):
             phone_lists.append(users_queryset)
         primary_queryset=FileUpload.objects.filter(Q(phone_no_primary__in=phone_lists)|Q(phone_no_secondary__in=phone_lists)).distinct()
         secondary_queryset=Members.objects.filter(Q(phone_no_secondary_user__in=phone_lists)|Q(phone_no_secondary_user_secondary__in=phone_lists)).distinct()
-        # if query:
-        #     import pdb;pdb.set_trace()
-        #     primary_queryset.filter(name=query).distinct()
-        #     secondary_queryset.filter(member_name=query).distinct()
+        if query:
+            primary_queryset = primary_queryset.filter(name__nospaces__icontains=query)
+            secondary_queryset = secondary_queryset.filter(member_name__nospaces__icontains=query)
         try:
             queryset_primary = PrimaryUserSerializerPage(primary_queryset, many=True, context=context).data
             queryset_secondary = MembersSerializerPage(secondary_queryset.order_by('member_name'), many=True, context=context).data
@@ -5548,7 +5547,7 @@ class UnRegisteredUsersViewAdmin(APIView):
     template_name = 'unusers_list.html'
     def get(self, request, *args, **kwargs):
         page = request.GET.get('page', 1)
-        # query = request.GET.get('q')
+        query = request.GET.get('q')
         context ={
             'request': request
         }
@@ -5560,6 +5559,9 @@ class UnRegisteredUsersViewAdmin(APIView):
             phone_lists.append(users_queryset)
         primary_queryset=FileUpload.objects.exclude(Q(phone_no_primary__in=phone_lists)|Q(phone_no_secondary__in=phone_lists)).distinct()
         secondary_queryset=Members.objects.exclude(Q(phone_no_secondary_user__in=phone_lists)|Q(phone_no_secondary_user_secondary__in=phone_lists)).distinct()
+        if query:
+            primary_queryset = primary_queryset.filter(name__nospaces__icontains=query)
+            secondary_queryset = secondary_queryset.filter(member_name__nospaces__icontains=query)
         try:
             queryset_primary = PrimaryUserSerializerPage(primary_queryset, many=True, context=context).data
             queryset_secondary = MembersSerializerPage(secondary_queryset.order_by('member_name'), many=True, context=context).data
