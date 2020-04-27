@@ -5491,6 +5491,10 @@ class RegisteredUsersViewAdmin(APIView):
             phone_lists.append(users_queryset)
         primary_queryset=FileUpload.objects.filter(Q(phone_no_primary__in=phone_lists)|Q(phone_no_secondary__in=phone_lists)).distinct()
         secondary_queryset=Members.objects.filter(Q(phone_no_secondary_user__in=phone_lists)|Q(phone_no_secondary_user_secondary__in=phone_lists)).distinct()
+        try:
+            count_users = len(primary_queryset) + len(secondary_queryset)
+        except:
+            count_users = ""
         if query:
             primary_queryset = primary_queryset.filter(name__nospaces__icontains=query)
             secondary_queryset = secondary_queryset.filter(member_name__nospaces__icontains=query)
@@ -5503,7 +5507,6 @@ class RegisteredUsersViewAdmin(APIView):
         try:
             response = queryset_primary + queryset_secondary
             response_query = sorted(response, key = lambda i: i.get('name'))
-            count_users = len(response_query)
             paginator = Paginator(response_query, 40)
         except:
             response =[]
@@ -5559,6 +5562,10 @@ class UnRegisteredUsersViewAdmin(APIView):
             phone_lists.append(users_queryset)
         primary_queryset=FileUpload.objects.exclude(Q(phone_no_primary__in=phone_lists)|Q(phone_no_secondary__in=phone_lists)).distinct()
         secondary_queryset=Members.objects.exclude(Q(phone_no_secondary_user__in=phone_lists)|Q(phone_no_secondary_user_secondary__in=phone_lists)).distinct()
+        try:
+            count_users = len(primary_queryset) + len(secondary_queryset)
+        except:
+            count_users = ""
         if query:
             primary_queryset = primary_queryset.filter(name__nospaces__icontains=query)
             secondary_queryset = secondary_queryset.filter(member_name__nospaces__icontains=query)
@@ -5571,7 +5578,6 @@ class UnRegisteredUsersViewAdmin(APIView):
         try:
             response = queryset_primary + queryset_secondary
             response_query = sorted(response, key = lambda i: i.get('name'))
-            count_users = len(response_query)
             paginator = Paginator(response_query, 40)
         except:
             response =[]
