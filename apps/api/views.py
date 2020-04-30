@@ -5623,3 +5623,78 @@ class HomeViewAdmin(APIView):
     def get(self, request, *args, **kwargs):
          return Response({'profiles': "",'count_users':""})
 
+class UserStatisticsViewAdmin(APIView):
+    queryset = FileUpload.objects.all()
+    permission_classes = [IsAdminUser]
+    authentication_classes = [TokenAuthentication]
+    def get(self, request, *args, **kwargs):
+        context ={
+            'request': request
+        }
+        #import pdb;pdb.set_trace()
+        phone_lists = []
+        users = User.objects.filter(is_superuser = False)
+        for user_obj in users:
+            users_queryset = user_obj.username
+            phone_lists.append(users_queryset)
+
+        #All users
+        primary_queryset_all=FileUpload.objects.all()
+        secondary_queryset_all=Members.objects.all()
+        try:
+            count_users_all = len(primary_queryset_all) + len(secondary_queryset_all)
+        except:
+            count_users_all = "Unavailable"
+
+        #Unreg users
+        primary_queryset_unreg=FileUpload.objects.exclude(Q(phone_no_primary__in=phone_lists)|Q(phone_no_secondary__in=phone_lists)).distinct()
+        secondary_queryset_unreg=Members.objects.exclude(Q(phone_no_secondary_user__in=phone_lists)|Q(phone_no_secondary_user_secondary__in=phone_lists)).distinct()
+        try:
+            count_users_unreg = len(primary_queryset_unreg) + len(secondary_queryset_unreg)
+        except:
+            count_users_unreg = "Unavailable"
+
+        #Reg users
+        primary_queryset_reg=FileUpload.objects.filter(Q(phone_no_primary__in=phone_lists)|Q(phone_no_secondary__in=phone_lists)).distinct()
+        secondary_queryset_reg=Members.objects.filter(Q(phone_no_secondary_user__in=phone_lists)|Q(phone_no_secondary_user_secondary__in=phone_lists)).distinct()
+        try:
+            count_users_reg = len(primary_queryset_reg) + len(secondary_queryset_reg)
+        except:
+            count_users_reg = "Unavailable"
+
+        #Active users
+        android_users = GCMDevice.objects.filter(active=True).exclude(user__is_superuser=True)
+        ios_users = APNSDevice.objects.filter(active=True).exclude(user__is_superuser=True)
+        try:
+            count_users_active = len(android_users) + len(ios_users)
+        except:
+            count_users_active = "Unavailable"
+        
+        #bday
+        bday_lists = []
+        import datetime as dt
+        today = dt.datetime.now()
+        #import pdb;pdb.set_trace()
+        try:
+            current_date = today.strftime("%d/%m/%Y")
+            primary_queryset_reg=FileUpload.objects.filter(dob=current_date)
+            secondary_queryset_reg=Members.objects.filter(dob=current_date)
+            for prime_user in primary_queryset_reg:
+                bday_list = {"name":prime_user.name,"user_type":"Primary","id":prime_user.primary_user_id}
+                bday_lists.append(bday_list)
+
+            for sec_user in secondary_queryset_reg:
+                bday_list = {"name":sec_user.member_name,"user_type":"Secondary","id":sec_user.secondary_user_id}
+                bday_lists.append(bday_list)
+            dob_bday = bday_lists
+        except:
+            dob_bday = []
+
+        output = {"total_number_of_users":count_users_all ,"number_of_users_registered":count_users_reg ,"number_of_users_unregistered":count_users_unreg,"number_of_active_users":count_users_active,"todays_bday":dob_bday }
+
+        data = {
+                'code': 200,
+                'status': "OK",
+                'response': output
+            }
+        return Response(data)
