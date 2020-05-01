@@ -2467,6 +2467,13 @@ class UserNoticeList(ListAPIView):
                 date_not = notice['created_at']
             if notice['image'] == None and notice['video'] == None and notice['audio'] != None:
                 not_type = 'audio'
+                try:
+                    import mutagen
+                    not_obj = Notice.objects.get(id=int(notice['id']))
+                    audio_inf = mutagen.File(not_obj.audio).info
+                    audio_length = int(audio_inf.length)
+                except:
+                    audio_length = None
                 new_data ={
                     'id': notice['id'],
                     'type': 'notice',
@@ -2474,6 +2481,7 @@ class UserNoticeList(ListAPIView):
                     'notice' : notice['notice'],
                     'description': notice['description'],
                     'audio': notice['audio'],
+                    'audio_length': audio_length,
                     'created_at': notice['created_at'],
                     'updated_at': notice['updated_at'],
                     'created_date':date_not
