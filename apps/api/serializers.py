@@ -591,6 +591,7 @@ class UserDetailsRetrieveSerializer(serializers.ModelSerializer):
             data['image'] = request.build_absolute_uri(instance.image.url)
         except:
             data['image'] = None
+        data['user_id'] = instance.primary_user_id
         try: 
             data['name'] = instance.name.title()
         except:
@@ -696,7 +697,7 @@ class MembersDetailsSerializer(serializers.ModelSerializer):
         except:
             pass
         data['name'] = data.pop('member_name')
-
+        data['user_id'] = instance.secondary_user_id
         data['user_type'] = 'SECONDARY'
         try :
             data['image'] = request.build_absolute_uri(instance.image.url)
