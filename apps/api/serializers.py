@@ -409,7 +409,6 @@ class NoticeSerializer(serializers.ModelSerializer):
         try:
             content = {'title':'notice title','message':{"data":{"title":"Notice","body":str(notice.notice),"notificationType":"notice","backgroundImage":image,"image":image,"text_type":"short"},\
             "notification":{"alert":"This is a FCM notification","title":"Notice","body":str(notice.notice),"sound":"default","backgroundImage":image,"backgroundImageTextColour":"#FFFFFF","image":image,"click_action":"notice"}}}
-
             content_ios = {'message':{"aps":{"alert":{"title":"Notice","subtitle":"","body":str(notice.notice)},"sound":"default","category":"notice","badge":1,"mutable-content":1},"media-url":image}}
             resp = fcm_messaging_to_all(content)
             resp1 = apns_messaging_to_all(content_ios)
@@ -617,9 +616,19 @@ class UserDetailsRetrieveSerializer(serializers.ModelSerializer):
             elif instance.dom:
                 data['dom'] = instance.dom
             else:
-                pass
+                data['dom'] = None
         except:
             data['dom'] = None
+
+        try :
+            if instance.marrige_date :
+                data['marriage_date'] = instance.marrige_date
+            elif instance.dom:
+                data['marriage_date'] = instance.dom
+            else:
+                data['marriage_date'] = None
+        except:
+            data['marriage_date'] = None
 
         try:
             data['family_id'] = instance.get_file_upload.first().id
@@ -697,15 +706,28 @@ class MembersDetailsSerializer(serializers.ModelSerializer):
             data['landline'] = instance.landline
         except:
             data['landline'] = None
+        try: 
+            data['blood_group'] = instance.blood_group
+        except:
+            data['blood_group'] = None
         try :
             if instance.marrige_date :
                 data['dom'] = instance.marrige_date
             elif instance.dom:
                 data['dom'] = instance.dom
             else:
-                pass
+                data['dom'] = None
         except:
             data['dom'] = None
+        try :
+            if instance.marrige_date :
+                data['marriage_date'] = instance.marrige_date
+            elif instance.dom:
+                data['marriage_date'] = instance.dom
+            else:
+                data['marriage_date'] = None
+        except:
+            data['marriage_date'] = None
         try:
             data['phone_no_secondary_user_secondary']=instance.phone_no_secondary_user_secondary
         except:
