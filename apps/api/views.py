@@ -2290,6 +2290,8 @@ class NoticeBereavementCreate(CreateAPIView):
                     member_id.in_memory_date=tz.now()
                     if dob:
                         member_id.dob=dob
+                    if request.FILES.get('image'):
+                            member_id.image = request.FILES['image']
                     member_id.save()
 
                     # body = {
@@ -2349,6 +2351,8 @@ class NoticeBereavementCreate(CreateAPIView):
                     member_id.in_memory_date=tz.now()
                     if dob:
                         member_id.dob=dob
+                    if request.FILES.get('image'):
+                        member_id.image = request.FILES['image']
                     member_id.save()
                     # body = {
                     #     "type": "Bereavement",
@@ -4052,6 +4056,16 @@ class PrimaryToSecondaryViewset(CreateAPIView):
                                 for admin_profile in admin_profiles:
                                     NoticeReadAdmin.objects.create(notification=notification, user_to=admin_profile)
                                 
+                                try:
+                                    image = ""
+                                    for admin_profile in admin_profiles:
+                                        content = {'title':'Status Change Request','message':{"data":{"title":"Status Change Request","body":"%s,of %s,%s has requested to change his status."%(from_user.name,str(from_user.get_file_upload.first().name),str(from_user.get_file_upload_prayergroup.first().name)),"notificationType":"request","backgroundImage":image,"text_type":"long"},\
+                                        "notification":{"alert":"This is a FCM notification","title":"Status Change Request","body":"%s,of %s,%s has requested to change his status"%(primary_user.name,str(primary_user.get_file_upload.first().name),str(primary_user.get_file_upload_prayergroup.first().name)),"sound":"default","backgroundImage":image,"backgroundImageTextColour":"#FFFFFF","image":image,"click_action":"request"}} }
+                                        content_ios = {'message':{"aps":{"alert":{"title":"Status Change Request","subtitle":"","body":"%s,of %s,%s has requested to change his status."%(from_user.name,str(from_user.get_file_upload.first().name),str(from_user.get_file_upload_prayergroup.first().name))},"sound":"default","category":"request","badge":1,"mutable-content":1},"media-url":image}}
+                                        resp = fcm_messaging_to_user(admin_profile.user,content)
+                                        resp1 = apns_messaging_to_user(admin_profile.user,content_ios)
+                                except:
+                                    pass
 
                                 success_data = {
                                     'status': True,
@@ -4131,7 +4145,16 @@ class PrimaryToSecondaryViewset(CreateAPIView):
                                     for admin_profile in admin_profiles:
                                         NoticeReadAdmin.objects.create(notification=notification, user_to=admin_profile)
                                     
-
+                                    try:
+                                        image = ""
+                                        for admin_profile in admin_profiles:
+                                            content = {'title':'Status Change Request','message':{"data":{"title":"Status Change Request","body":"%s,of %s,%s has requested to change his status."%(from_user.member_name,str(primary_user.get_file_upload.first().name),str(primary_user.get_file_upload_prayergroup.first().name)),"notificationType":"request","backgroundImage":image,"text_type":"long"},\
+                                            "notification":{"alert":"This is a FCM notification","title":"Status Change Request","body":"%s,of %s,%s has requested to change his status"%(from_user.member_name,str(primary_user.get_file_upload.first().name),str(primary_user.get_file_upload_prayergroup.first().name)),"sound":"default","backgroundImage":image,"backgroundImageTextColour":"#FFFFFF","image":image,"click_action":"request"}} } 
+                                            content_ios = {'message':{"aps":{"alert":{"title":"Status Change Request","subtitle":"","body":"%s,of %s,%s has requested to change his status."%(from_user.member_name,str(primary_user.get_file_upload.first().name),str(primary_user.get_file_upload_prayergroup.first().name))},"sound":"default","category":"request","badge":1,"mutable-content":1},"media-url":image}}
+                                            resp = fcm_messaging_to_user(admin_profile.user,content)
+                                            resp1 = apns_messaging_to_user(admin_profile.user,content_ios)
+                                    except:
+                                        pass
                                     success_data = {
                                         'status': True,
                                         "message": "Status change request is send successfully.Wait admin to approve/reject"
@@ -4410,6 +4433,19 @@ class StatusChangeAcceptView(mixins.CreateModelMixin,
                 not_obj = Notification.objects.create(created_by_primary=prim_obj,
                           message=user_details_str)
                 NoticeReadPrimary.objects.create(notification=not_obj, user_to=prim_obj)
+
+                try:
+                    image = ""
+                    user=User.objects.get(username=prim_obj.phone_no_primary)
+                    content = {'title':'Status Changed','message':{"data":{"title":"Status Changed","body":"Your request for status change has been accepted","notificationType":"default","backgroundImage":image},\
+                    "notification":{"alert":"This is a FCM notification","title":"Status Changed","body":"Your request for status change has been accepted","sound":"default","backgroundImage":image,"backgroundImageTextColour":"#FFFFFF","image":image,"click_action":"default"}} } 
+
+                    content_ios = {'message':{"aps":{"alert":{"title":"Status Changed","subtitle":"","body":"Your request for status change has been accepted"},"sound":"default","category":"default","badge":1,"mutable-content":1},"media-url":image}}
+                    resp = fcm_messaging_to_user(user,content)
+                    resp1 = apns_messaging_to_user(user,content_ios)
+                except:
+                    pass
+
             elif member.usertype_from == 'SECONDARY':
                 # prim_obj = FileUpload.objects.get(primary_user_id = int(member.request_to))
                 sec_obj = Members.objects.get(secondary_user_id = int(member.request_from))     
@@ -4417,6 +4453,19 @@ class StatusChangeAcceptView(mixins.CreateModelMixin,
                 not_obj = Notification.objects.create(created_by_secondary=sec_obj,
                           message=user_details_str)
                 NoticeReadPrimary.objects.create(notification=not_obj, user_to=sec_obj)
+
+                try:
+                    image = ""
+                    user=User.objects.get(username=sec_obj.phone_no_secondary_user)
+                    content = {'title':'Status Changed','message':{"data":{"title":"Status Changed","body":"Your request for status change has been accepted","notificationType":"default","backgroundImage":image},\
+                    "notification":{"alert":"This is a FCM notification","title":"Status Changed","body":"Your request for status change has been accepted","sound":"default","backgroundImage":image,"backgroundImageTextColour":"#FFFFFF","image":image,"click_action":"default"}} } 
+
+                    content_ios = {'message':{"aps":{"alert":{"title":"Status Changed","subtitle":"","body":"Your request for status change has been accepted"},"sound":"default","category":"default","badge":1,"mutable-content":1},"media-url":image}}
+                    resp = fcm_messaging_to_user(user,content)
+                    resp1 = apns_messaging_to_user(user,content_ios)
+                except:
+                    pass
+
             else:
                 pass
         except:
@@ -4437,6 +4486,19 @@ class StatusChangeAcceptView(mixins.CreateModelMixin,
                 not_obj = Notification.objects.create(created_by_primary=prim_obj,
                           message=user_details_str)
                 NoticeReadPrimary.objects.create(notification=not_obj, user_to=prim_obj)
+
+                try:
+                    image = ""
+                    user=User.objects.get(username=prim_obj.phone_no_primary)
+                    content = {'title':'Request Rejected','message':{"data":{"title":"Request Rejected","body":"Your request for status change has been rejected","notificationType":"default","backgroundImage":image},\
+                    "notification":{"alert":"This is a FCM notification","title":"Request Rejected","body":"Your request for status change has been rejected","sound":"default","backgroundImage":image,"backgroundImageTextColour":"#FFFFFF","image":image,"click_action":"default"}} } 
+
+                    content_ios = {'message':{"aps":{"alert":{"title":"Request Rejected","subtitle":"","body":"Your request for status change has been rejected"},"sound":"default","category":"default","badge":1,"mutable-content":1},"media-url":image}}
+                    resp = fcm_messaging_to_user(user,content)
+                    resp1 = apns_messaging_to_user(user,content_ios)
+                except:
+                    pass
+
             elif member.usertype_from == 'SECONDARY':
                 # prim_obj = FileUpload.objects.get(primary_user_id = int(member.request_to))
                 sec_obj = Members.objects.get(secondary_user_id = int(member.request_from))     
@@ -4444,6 +4506,18 @@ class StatusChangeAcceptView(mixins.CreateModelMixin,
                 not_obj = Notification.objects.create(created_by_secondary=sec_obj,
                           message=user_details_str)
                 NoticeReadPrimary.objects.create(notification=not_obj, user_to=sec_obj)
+
+                try:
+                    image = ""
+                    user=User.objects.get(username=sec_obj.phone_no_secondary_user)
+                    content = {'title':'Request Rejected','message':{"data":{"title":"Request Rejected","body":"Your request for status change has been rejected","notificationType":"default","backgroundImage":image},\
+                    "notification":{"alert":"This is a FCM notification","title":"Request Rejected","body":"Your request for status change has been rejected","sound":"default","backgroundImage":image,"backgroundImageTextColour":"#FFFFFF","image":image,"click_action":"default"}} } 
+
+                    content_ios = {'message':{"aps":{"alert":{"title":"Request Rejected","subtitle":"","body":"Your request for status change has been rejected"},"sound":"default","category":"default","badge":1,"mutable-content":1},"media-url":image}}
+                    resp = fcm_messaging_to_user(user,content)
+                    resp1 = apns_messaging_to_user(user,content_ios)
+                except:
+                    pass
             else:
                 pass
         except:
@@ -4509,7 +4583,6 @@ class PrimaryNumberChangeViewset(CreateAPIView):
                             )
 
                             admin_profiles = AdminProfile.objects.all()
-
                             for admin_profile in admin_profiles:
                                 NoticeReadAdmin.objects.create(notification=notification, user_to=admin_profile)
                             
@@ -4517,7 +4590,7 @@ class PrimaryNumberChangeViewset(CreateAPIView):
                                 image = ""
                                 for admin_profile in admin_profiles:
                                     content = {'title':'Number Change Request','message':{"data":{"title":"Number Change Request","body":"%s,of %s,%s has requested to change his phone number."%(from_user.name,str(from_user.get_file_upload.first().name),str(from_user.get_file_upload_prayergroup.first().name)),"notificationType":"request","backgroundImage":image,"text_type":"long"},\
-                                    "notification":{"alert":"This is a FCM notification","title":"Number Change Request","body":"%s,of %s,%s has requested to change his phone number"%(primary_user,str(primary_user.get_file_upload.first().name),str(primary_user.get_file_upload_prayergroup.first().name)),"sound":"default","backgroundImage":image,"backgroundImageTextColour":"#FFFFFF","image":image,"click_action":"request"}} } 
+                                    "notification":{"alert":"This is a FCM notification","title":"Number Change Request","body":"%s,of %s,%s has requested to change his phone number"%(primary_user.name,str(primary_user.get_file_upload.first().name),str(primary_user.get_file_upload_prayergroup.first().name)),"sound":"default","backgroundImage":image,"backgroundImageTextColour":"#FFFFFF","image":image,"click_action":"request"}} } 
                                     
                                     content_ios = {'message':{"aps":{"alert":{"title":"Number Change Request","subtitle":"","body":"%s,of %s,%s has requested to change his phone number."%(from_user.name,str(from_user.get_file_upload.first().name),str(from_user.get_file_upload_prayergroup.first().name))},"sound":"default","category":"request","badge":1,"mutable-content":1},"media-url":image}}
                                     resp = fcm_messaging_to_user(admin_profile.user,content)
