@@ -488,7 +488,7 @@ class PrimaryUserProfileSerializer(serializers.ModelSerializer):
             elif instance.dom:
                 data['marrige_date'] = instance.dom
             else:
-                pass
+                data['marrige_date'] = None
         except:
             data['marrige_date'] = None
         return data
@@ -561,7 +561,7 @@ class MemberProfileSerializer(serializers.ModelSerializer):
             elif instance.dom:
                 data['marrige_date'] = instance.dom
             else:
-                pass
+                data['marrige_date'] = None
         except:
             data['marrige_date'] = None
         return data
@@ -622,13 +622,13 @@ class UserDetailsRetrieveSerializer(serializers.ModelSerializer):
 
         try :
             if instance.marrige_date :
-                data['marriage_date'] = instance.marrige_date
+                data['marrige_date'] = instance.marrige_date
             elif instance.dom:
-                data['marriage_date'] = instance.dom
+                data['marrige_date'] = instance.dom
             else:
-                data['marriage_date'] = None
+                data['marrige_date'] = None
         except:
-            data['marriage_date'] = None
+            data['marrige_date'] = None
 
         try:
             data['family_id'] = instance.get_file_upload.first().id
@@ -721,13 +721,13 @@ class MembersDetailsSerializer(serializers.ModelSerializer):
             data['dom'] = None
         try :
             if instance.marrige_date :
-                data['marriage_date'] = instance.marrige_date
+                data['marrige_date'] = instance.marrige_date
             elif instance.dom:
-                data['marriage_date'] = instance.dom
+                data['marrige_date'] = instance.dom
             else:
-                data['marriage_date'] = None
+                data['marrige_date'] = None
         except:
-            data['marriage_date'] = None
+            data['marrige_date'] = None
         try:
             data['phone_no_secondary_user_secondary']=instance.phone_no_secondary_user_secondary
         except:
