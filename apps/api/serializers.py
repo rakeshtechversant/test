@@ -50,7 +50,7 @@ def apns_messaging_to_all(content_ios):
         device_ios = APNSDevice.objects.filter(active=True).exclude(user__is_superuser=True)
         message_ios = content_ios['message']['aps']['alert']['body']
         title_ios = content_ios['message']['aps']['alert']['title']
-        #status = device_ios.send_message(message={"title" : title_ios, "body" : message_ios}, extra=content_ios['message'])
+        status = device_ios.send_message(message={"title" : title_ios, "body" : message_ios}, extra=content_ios['message'])
         return status 
     except Exception as exp:
         print("notify-ios",exp)
@@ -61,7 +61,7 @@ def apns_messaging_to_user(user,content_ios):
         device_ios = APNSDevice.objects.filter(user=user,active=True)
         message_ios = content_ios['message']['aps']['alert']['body']
         title_ios = content_ios['message']['aps']['alert']['title']
-        #status = device_ios.send_message(message={"title" : title_ios, "body" : message_ios}, extra=content_ios['message'])
+        status = device_ios.send_message(message={"title" : title_ios, "body" : message_ios}, extra=content_ios['message'])
         return status 
     except Exception as exp:
         print("notify-ios",exp)
