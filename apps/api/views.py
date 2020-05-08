@@ -1190,6 +1190,7 @@ class UserDetailView(APIView):
                     data={
                        # 'member_name':user_details.primary_user_id,
                        'name':user_details.name,
+                       'primary_user_id':user_details.primary_user_id,
                        'address':user_details.address,
                        'is_accepted':is_accepted,
                        'phone_no_primary':user_details.phone_no_primary,
