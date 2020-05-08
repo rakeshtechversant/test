@@ -336,13 +336,14 @@ class UserLoginMobileWithOutOtpView(APIView):
             return Response({'message': 'Mobile field should not be blank', 'success': False},
                             status=HTTP_400_BAD_REQUEST)
         else:
-            # import pdb;pdb.set_trace()
             try:
                 user_profile = Members.objects.get(secondary_user_id=user_id)
-                if user_profile.primary_user_id.get_file_upload.first().members_length == 1 :
-                    return Response({'message': 'Your family is in inactive state.Please contact admin', 'success': False},
-                                status=HTTP_400_BAD_REQUEST)
                 if user_type == 'SECONDARY' and user_id :
+                    if user_profile.primary_user_id.get_file_upload.first().members_length == 1 :
+                        data = {
+                            'admin_mobile_number' : admin_phonenumber,
+                            }
+                        return Response({'success': False, 'message': 'Your family is in inactive state.Please contact admin','user_details': data},status=HTTP_404_NOT_FOUND)
 
                     if user_profile.primary_user_id.phone_no_primary == mobile_number or user_profile.primary_user_id.phone_no_secondary == mobile_number:
                         if(user_profile.primary_user_id.phone_no_secondary == None):
@@ -404,8 +405,10 @@ class UserLoginMobileWithOutOtpView(APIView):
                     for user_profile in user_profiles:
                         if mobile_number == user_profile.phone_no_primary:
                             if user_profile.get_file_upload.first().members_length == 1 :
-                                return Response({'message': 'Your family is in inactive state.Please contact admin', 'success': False},
-                                            status=HTTP_400_BAD_REQUEST)
+                                data = {
+                                    'admin_mobile_number' : admin_phonenumber,
+                                    }
+                                return Response({'success': False, 'message': 'Your family is in inactive state.Please contact admin','user_details': data},status=HTTP_404_NOT_FOUND)
                             user,created=User.objects.get_or_create(username=mobile_number)
                             token, created = Token.objects.get_or_create(user=user)
                             data = {
@@ -432,8 +435,10 @@ class UserLoginMobileWithOutOtpView(APIView):
                     for user_profile in user_profiles:
                         if mobile_number == user_profile.phone_no_secondary:
                             if user_profile.get_file_upload.first().members_length == 1 :
-                                return Response({'message': 'Your family is in inactive state.Please contact admin', 'success': False},
-                                            status=HTTP_400_BAD_REQUEST)
+                                data = {
+                                    'admin_mobile_number' : admin_phonenumber,
+                                    }
+                                return Response({'success': False, 'message': 'Your family is in inactive state.Please contact admin','user_details': data},status=HTTP_404_NOT_FOUND)
                             user,created=User.objects.get_or_create(username=mobile_number)
                             token, created = Token.objects.get_or_create(user=user)
                             data = {
@@ -459,8 +464,10 @@ class UserLoginMobileWithOutOtpView(APIView):
                     user_details = Members.objects.filter(phone_no_secondary_user=mobile_number)
                     for user_profile in user_details:
                         if user_profile.primary_user_id.get_file_upload.first().members_length == 1 :
-                            return Response({'message': 'Your family is in inactive state.Please contact admin', 'success': False},
-                                        status=HTTP_400_BAD_REQUEST)
+                            data = {
+                                    'admin_mobile_number' : admin_phonenumber,
+                                    }
+                            return Response({'success': False, 'message': 'Your family is in inactive state.Please contact admin','user_details': data},status=HTTP_404_NOT_FOUND)
                         user,created=User.objects.get_or_create(username=mobile_number)
                         token, created = Token.objects.get_or_create(user=user)
                         if mobile_number == user_profile.phone_no_secondary_user:
@@ -4097,7 +4104,7 @@ class PrimaryToSecondaryViewset(CreateAPIView):
                     if Members.objects.filter(secondary_user_id=int(request_from)).exists():
                         primary_user = FileUpload.objects.get(primary_user_id=request_to)
                         sec_user = Members.objects.get(secondary_user_id=request_from)
-                        if primary_user.in_memory == True :
+                        if primary_user and sec_user :
                             if primary_user.primary_user_id == sec_user.primary_user_id.primary_user_id:
                                 if PrimaryToSecondary.objects.filter(request_from=request_from,request_to=primary_user.primary_user_id,usertype_from='SECONDARY',status=None).exists():
                                     data = {
