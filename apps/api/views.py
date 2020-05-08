@@ -5422,7 +5422,6 @@ class UpdateUserByMembersView(APIView):
                 instance.about = serializer.data['about']
                 instance.landline= serializer.data['landline']
                 instance.relation= serializer.data['relation']
-                instance.in_memory_date= serializer.data['in_memory_date']
                 instance.save()
 
                 previous_groups = instance.get_file_upload_prayergroup.all()
@@ -5461,7 +5460,6 @@ class UpdateUserByMembersView(APIView):
                     instance.about = serializer.data['about']
                     instance.landline= serializer.data['landline']
                     instance.relation= serializer.data['relation']
-                    instance.in_memory_date= serializer.data['in_memory_date']
                     instance.save()
 
                     instance.primary_user_id = family.primary_user_id

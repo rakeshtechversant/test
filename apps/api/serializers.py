@@ -967,7 +967,6 @@ class UserByMembersSerializer(serializers.Serializer):
     member_status = serializers.ChoiceField(choices=['active', 'in_memory'])
     about = serializers.CharField(allow_blank=True)
     landline = serializers.CharField(allow_blank=True)
-    in_memory_date = serializers.DateTimeField()
 
 
 class FamilyByadminSerializer(serializers.Serializer):
