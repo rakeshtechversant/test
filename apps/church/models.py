@@ -50,6 +50,7 @@ class Family(models.Model):
     about = models.TextField(null=True, blank=True)
     image = models.FileField(upload_to='familyimage/', null=True, blank=True)
     members_length = models.IntegerField(default=0)
+    active = models.BooleanField(default=True)
     primary_user_id = models.ForeignKey(FileUpload, on_delete=models.CASCADE, related_name='get_file_upload', null=True,
                                         blank=True)
 

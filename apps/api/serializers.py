@@ -114,7 +114,7 @@ class FamilyListSerializer(serializers.ModelSerializer):
     members_length = serializers.SerializerMethodField()
     class Meta:
         model = Family
-        fields = ['name','members_length','image','id']
+        fields = ['name','members_length','image','id','active']
 
     def to_representation(self, obj):
         data = super().to_representation(obj)
