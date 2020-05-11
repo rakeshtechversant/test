@@ -341,7 +341,7 @@ class UserLoginMobileWithOutOtpView(APIView):
                 if user_type == 'SECONDARY' and user_id :
                     if user_profile.primary_user_id.get_file_upload.first().active == False :
                         data = {
-                            'mobile_number' : admin_phonenumber,
+                            'mobile' : admin_phonenumber,
                             'family_status' : 'inactive',
                             }
                         return Response({'success': False, 'message': 'Your family is in inactive state.Please contact admin','user_details': data},status=HTTP_400_BAD_REQUEST)
@@ -407,7 +407,7 @@ class UserLoginMobileWithOutOtpView(APIView):
                         if mobile_number == user_profile.phone_no_primary:
                             if user_profile.get_file_upload.first().active == False :
                                 data = {
-                                    'mobile_number' : admin_phonenumber,
+                                    'mobile' : admin_phonenumber,
                                     'family_status' : 'inactive',
                                     }
                                 return Response({'success': False, 'message': 'Your family is in inactive state.Please contact admin','user_details': data},status=HTTP_400_BAD_REQUEST)
@@ -438,7 +438,7 @@ class UserLoginMobileWithOutOtpView(APIView):
                         if mobile_number == user_profile.phone_no_secondary:
                             if user_profile.get_file_upload.first().active == False :
                                 data = {
-                                    'mobile_number' : admin_phonenumber,
+                                    'mobile' : admin_phonenumber,
                                     'family_status' : 'inactive',
                                     }
                                 return Response({'success': False, 'message': 'Your family is in inactive state.Please contact admin','user_details': data},status=HTTP_400_BAD_REQUEST)
