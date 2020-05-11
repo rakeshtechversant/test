@@ -2709,6 +2709,11 @@ class UpdateFamilyByPrimary(APIView):
                 else:
                     instance.about=serializer.data['about']
                     try:
+                        if request.POST.get('name'):
+                            instance.name = request.POST['name']
+                    except:
+                        pass
+                    try:
                         if request.FILES.get('image'):
                             instance.image = request.FILES['image']
                     except:
