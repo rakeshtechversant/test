@@ -342,6 +342,7 @@ class UserLoginMobileWithOutOtpView(APIView):
                     if user_profile.primary_user_id.get_file_upload.first().active == False :
                         data = {
                             'admin_mobile_number' : admin_phonenumber,
+                            'family_status' : 'inactive',
                             }
                         return Response({'success': False, 'message': 'Your family is in inactive state.Please contact admin','user_details': data},status=HTTP_400_BAD_REQUEST)
 
@@ -407,6 +408,7 @@ class UserLoginMobileWithOutOtpView(APIView):
                             if user_profile.get_file_upload.first().active == False :
                                 data = {
                                     'admin_mobile_number' : admin_phonenumber,
+                                    'family_status' : 'inactive',
                                     }
                                 return Response({'success': False, 'message': 'Your family is in inactive state.Please contact admin','user_details': data},status=HTTP_400_BAD_REQUEST)
                             user,created=User.objects.get_or_create(username=mobile_number)
@@ -437,6 +439,7 @@ class UserLoginMobileWithOutOtpView(APIView):
                             if user_profile.get_file_upload.first().active == False :
                                 data = {
                                     'admin_mobile_number' : admin_phonenumber,
+                                    'family_status' : 'inactive',
                                     }
                                 return Response({'success': False, 'message': 'Your family is in inactive state.Please contact admin','user_details': data},status=HTTP_400_BAD_REQUEST)
                             user,created=User.objects.get_or_create(username=mobile_number)
@@ -466,6 +469,7 @@ class UserLoginMobileWithOutOtpView(APIView):
                         if user_profile.primary_user_id.get_file_upload.first().active == False :
                             data = {
                                     'admin_mobile_number' : admin_phonenumber,
+                                    'family_status' : 'inactive',
                                     }
                             return Response({'success': False, 'message': 'Your family is in inactive state.Please contact admin','user_details': data},status=HTTP_400_BAD_REQUEST)
                         user,created=User.objects.get_or_create(username=mobile_number)
@@ -496,6 +500,7 @@ class UserLoginMobileWithOutOtpView(APIView):
                 else:
                     data = {
                         'mobile': mobile_number,
+                        'family_status' : 'not_exist',
                     }
                     return Response({
                                         'message': 'You are not in primary list,go to next section for update your number as secondary user',
@@ -2482,6 +2487,15 @@ class UserNoticeList(ListAPIView):
                 date_not = str(date_year[2]+'/'+date_year[1]+'/'+date_year[0]+' '+date_24)
             except:
                 date_not = notice['created_at']
+            try:
+                created_at = notice['created_at']
+                updated_at = notice['updated_at']
+                if created_at == updated_at :
+                    updated = False
+                else:
+                    updated = True
+            except:
+                updated = False
             if notice['image'] == None and notice['video'] == None and notice['audio'] != None:
                 not_type = 'audio'
                 try:
@@ -2500,6 +2514,7 @@ class UserNoticeList(ListAPIView):
                     'audio': notice['audio'],
                     'audio_length': audio_length,
                     'created_at': notice['created_at'],
+                    'updated': updated,
                     'updated_at': notice['updated_at'],
                     'created_date':date_not
 
@@ -2515,6 +2530,7 @@ class UserNoticeList(ListAPIView):
                     'video': notice['video'],
                     'thumbnail': notice['thumbnail'],
                     'created_at': notice['created_at'],
+                    'updated': updated,
                     'updated_at': notice['updated_at'],
                     'created_date':date_not
 
@@ -2529,6 +2545,7 @@ class UserNoticeList(ListAPIView):
                     'description': notice['description'],
                     'image': notice['image'],
                     'created_at': notice['created_at'],
+                    'updated': updated,
                     'updated_at': notice['updated_at'],
                     'created_date':date_not
 

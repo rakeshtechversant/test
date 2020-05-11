@@ -422,17 +422,17 @@ class NoticeSerializer(serializers.ModelSerializer):
         instance.save()
         
         # body="A notice has been modified"
-        body= {"message":"A notice has been modified",
-                            "type":"notice",
-                            "id":str(instance.id)
-            }
-        notifications=Notification.objects.create(created_time=tz.now(),message=body)
-        primary_members=FileUpload.objects.all()
-        secondary_members=Members.objects.all()
-        for primary_member in primary_members:
-            NoticeReadPrimary.objects.create(notification=notifications,user_to=primary_member,is_read=False)
-        for secondary_member in secondary_members:
-            NoticeReadSecondary.objects.create(notification=notifications,user_to=secondary_member,is_read=False)
+        # body= {"message":"A notice has been modified",
+        #                     "type":"notice",
+        #                     "id":str(instance.id)
+        #     }
+        # notifications=Notification.objects.create(created_time=tz.now(),message=body)
+        # primary_members=FileUpload.objects.all()
+        # secondary_members=Members.objects.all()
+        # for primary_member in primary_members:
+        #     NoticeReadPrimary.objects.create(notification=notifications,user_to=primary_member,is_read=False)
+        # for secondary_member in secondary_members:
+        #     NoticeReadSecondary.objects.create(notification=notifications,user_to=secondary_member,is_read=False)
         
         return instance
 
