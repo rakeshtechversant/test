@@ -1996,6 +1996,7 @@ class FamilyMemberDetails(ListAPIView):
                 'family_about':self.primary_user.get_file_upload.first().about,
                 'family_image':family_image,
                 'family_id': self.primary_user.get_file_upload.first().id,
+                'active' : self.primary_user.get_file_upload.first().active,
                 'prayer_group_name' : prayer_group_name,
                 'prayer_group_id' : prayer_group_id
             }
@@ -2006,6 +2007,7 @@ class FamilyMemberDetails(ListAPIView):
                 'family_about':None,
                 'family_image':family_image,
                 'family_id' : None,
+                'active' : None,
                 'prayer_group_name' : prayer_group_name,
                 'prayer_group_id' : prayer_group_id
             }
@@ -2237,14 +2239,23 @@ class FamilyDetailView(ListAPIView):
             family_images = request.build_absolute_uri(self.family_obj.image.url)
         except:
             family_images = None
-        # import pdb;pdb.set_trace()
+        try:
+            prayer_group_name = self.primary_user.get_file_upload_prayergroup.first().name
+            prayer_group_id = self.primary_user.get_file_upload_prayergroup.first().id
+        except:
+            prayer_group_name = None
+            prayer_group_id = None
         try:
             if self.primary_user.get_file_upload.first() :
                 data['response'] = {
                     'family_members':serializer.data,
                     'family_name':self.primary_user.get_file_upload.first().name,
                     'family_about':self.primary_user.get_file_upload.first().about,
-                    'family_image':family_image
+                    'family_image':family_image,
+                    'family_id' : self.primary_user.get_file_upload.first().id,
+                    'active' : self.primary_user.get_file_upload.first().active,
+                    'prayer_group_name' : prayer_group_name,
+                    'prayer_group_id': prayer_group_id,
                     }
                 data['response']['family_members'].insert(0, primary_user_id)
 
@@ -2253,14 +2264,14 @@ class FamilyDetailView(ListAPIView):
                 'family_members':[],
                 'family_name':self.family_obj.name,
                 'family_about':self.family_obj.about,
-                'family_image':family_images
+                'family_image':family_images,
+                'family_id' : self.family_obj.id,
+                'active' : self.family_obj.active,
+                'prayer_group_name' : prayer_group_name,
+                'prayer_group_id': prayer_group_id,
             }
 
         return Response(data)
-
-#
-# class ViewRequestNumberView(APIView):
-#     queryset=
 
 class NoticeBereavementCreate(CreateAPIView):
     queryset = NoticeBereavement.objects.all()
