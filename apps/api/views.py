@@ -3040,8 +3040,8 @@ class AddFamilyByAdminView(APIView):
                     'code': 200,
                     'status': "OK",
                 }
-                instance = Family.objects.get(id=pk,name=family_name)
-
+                instance = Family.objects.get(id=pk)
+                instance.name = family_name
                 if request.FILES.get('image'):
                     instance.image = request.FILES['image']
                 try:
