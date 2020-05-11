@@ -3020,7 +3020,7 @@ class AddFamilyByAdminView(APIView):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def put(self, request, pk, format=None):
+    def patch(self, request, pk, format=None):
         serializer = FamilyByadminSerializer(data=request.data)
         if serializer.is_valid():
             family_name = serializer.data['family_name']
