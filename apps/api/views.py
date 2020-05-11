@@ -468,7 +468,7 @@ class UserLoginMobileWithOutOtpView(APIView):
                     for user_profile in user_details:
                         if user_profile.primary_user_id.get_file_upload.first().active == False :
                             data = {
-                                    'mobile_number' : admin_phonenumber,
+                                    'mobile' : admin_phonenumber,
                                     'family_status' : 'inactive',
                                     }
                             return Response({'success': False, 'message': 'Your family is in inactive state.Please contact admin','user_details': data},status=HTTP_400_BAD_REQUEST)
