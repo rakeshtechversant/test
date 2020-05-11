@@ -2711,6 +2711,10 @@ class UpdateFamilyByPrimary(APIView):
                     try:
                         if request.POST.get('name'):
                             instance.name = request.POST['name']
+                        elif request.POST.get('family_name'):
+                            instance.name = request.POST['family_name']
+                        else:
+                            pass
                     except:
                         pass
                     try:
