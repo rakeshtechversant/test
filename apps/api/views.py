@@ -4039,15 +4039,15 @@ class UpdatePhoneNumberSecondary(APIView):
                     member=Members.objects.get(phone_no_secondary_user=request.user.username)
                     member.phone_no_secondary_user_secondary = phone_number_sec
                     member.save()
-                    user,created=User.objects.get_or_create(username=phone_number_sec)
-                    token, created = Token.objects.get_or_create(user=user)
-                    data1 = {
-                            'mobile': phone_number_sec,
-                            'user_type': 'SECONDARY',
-                            'name': member.member_name,
-                            'token':token.key,
-                            'user_id':member.secondary_user_id
-                    }
+                    # user,created=User.objects.get_or_create(username=phone_number_sec)
+                    # token, created = Token.objects.get_or_create(user=user)
+                    # data1 = {
+                    #         'mobile': phone_number_sec,
+                    #         'user_type': 'SECONDARY',
+                    #         'name': member.member_name,
+                    #         'token':token.key,
+                    #         'user_id':member.secondary_user_id
+                    # }
                     # request.user.auth_token.delete()
                 except:
                     data = {
