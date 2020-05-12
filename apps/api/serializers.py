@@ -417,8 +417,23 @@ class NoticeSerializer(serializers.ModelSerializer):
         return notice
 
     def update(self,instance, validated_data):
-
         instance = super().update(instance, validated_data)
+        if validated_data.get('audio') != None:
+            instance.image = None
+            instance.video = None
+            instance.thumbnail = None
+        elif validated_data.get('video') != None:
+            instance.image = None
+            instance.audio = None
+        elif validated_data.get('image') != None:
+            instance.video = None
+            instance.audio = None
+            instance.thumbnail = None
+        else:
+            instance.image = None
+            instance.video = None
+            instance.audio = None
+            instance.thumbnail = None
         instance.save()
         
         # body="A notice has been modified"
