@@ -430,10 +430,7 @@ class NoticeSerializer(serializers.ModelSerializer):
             instance.audio = None
             instance.thumbnail = None
         else:
-            instance.image = None
-            instance.video = None
-            instance.audio = None
-            instance.thumbnail = None
+            pass
         instance.save()
         
         # body="A notice has been modified"
