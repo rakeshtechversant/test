@@ -2546,6 +2546,21 @@ class UserNoticeList(ListAPIView):
                     'created_date':date_not
 
                 }
+            elif notice['image'] != None and notice['audio'] == None and notice['video'] == None:
+                not_type = 'image'
+                new_data ={
+                    'id': notice['id'],
+                    'type': 'notice',
+                    'notice_type': not_type,
+                    'notice' : notice['notice'],
+                    'description': notice['description'],
+                    'image': notice['image'],
+                    'created_at': notice['created_at'],
+                    'updated': updated,
+                    'updated_at': notice['updated_at'],
+                    'created_date':date_not
+
+                }
             else:
                 not_type = 'notice'
                 new_data ={
@@ -2554,7 +2569,6 @@ class UserNoticeList(ListAPIView):
                     'notice_type': not_type,
                     'notice' : notice['notice'],
                     'description': notice['description'],
-                    'image': notice['image'],
                     'created_at': notice['created_at'],
                     'updated': updated,
                     'updated_at': notice['updated_at'],
