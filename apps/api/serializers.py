@@ -509,6 +509,7 @@ class PrimaryUserProfileSerializer(serializers.ModelSerializer):
 
 class NoticeBereavementSerializer(serializers.ModelSerializer):
     created_at = serializers.DateTimeField(format="%d/%m/%Y %I:%M %p", read_only=True)
+    updated_at = serializers.DateTimeField(format="%d/%m/%Y %I:%M %p")
     class Meta:
         model=NoticeBereavement
         fields = '__all__'

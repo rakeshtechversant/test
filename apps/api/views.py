@@ -2434,7 +2434,34 @@ class NoticeBereavementEdit(RetrieveUpdateAPIView):
     queryset = NoticeBereavement.objects.all()
     serializer_class = NoticeBereavementSerializer
     permission_classes = [IsAdminUser]
+    def patch(self, request, pk, format=None):
+        dob = request.POST.get('dob')
+        try:
+            beri_obj=NoticeBereavement.objects.get(id=pk)
+        except:
+            return Response({'success': False,'message': 'Notice doesnot exist'}, status=HTTP_400_BAD_REQUEST)
+        try:
+            if beri_obj.primary_member:
+                member_id = beri_obj.primary_member
+            elif beri_obj.secondary_member:
+                member_id = beri_obj.secondary_member
+            else:
+                return Response({'success': False,'message': 'Member doesnot exist'}, status=HTTP_400_BAD_REQUEST)
+        except:
+            return Response({'success': False,'message': 'Member doesnot exist'}, status=HTTP_400_BAD_REQUEST)
 
+        if request.POST.get('description'):
+            beri_obj.description = request.POST['description']
+            beri_obj.updated = True
+        if dob:
+            member_id.dob = request.POST['dob']
+            beri_obj.updated = True
+        if request.FILES.get('image'):
+            member_id.image = request.FILES['image']
+            beri_obj.updated = True
+        member_id.save()
+        beri_obj.save()
+        return Response({'success': True,'message':'Notice Updated Successfully'}, status=status.HTTP_200_OK)
 
 class NoticeBereavementDelete(DestroyAPIView):
     queryset = NoticeBereavement.objects.all()
@@ -2621,6 +2648,8 @@ class UserNoticeList(ListAPIView):
                 'dob':dob,
                 'image':image,
                 'created_at': bereavement['created_at'],
+                'updated_at': bereavement['updated_at'],
+                'updated' : bereavement['updated'],
                 'created_date':date_not
 
                 # 'secondary_member': member_name.member_name,
@@ -2660,6 +2689,8 @@ class UserNoticeList(ListAPIView):
                 'dob':dob,
                 'occupation':member_name.occupation,
                 'created_at': bereavement['created_at'],
+                'updated_at': bereavement['updated_at'],
+                'updated' : bereavement['updated'],
                 'created_date':date_not
             }
 

@@ -233,6 +233,8 @@ class NoticeReadAdmin(models.Model):
 class NoticeBereavement(models.Model):
     # title = models.CharField(max_length=200, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
+    updated = models.BooleanField(default=False)
     description = models.TextField(max_length=100, null=True, blank=True)
     prayer_group = models.ForeignKey(PrayerGroup, on_delete=models.CASCADE, null=True, blank=True)
     family = models.ForeignKey(Family, on_delete=models.CASCADE, null=True, blank=True)
