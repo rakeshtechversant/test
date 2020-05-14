@@ -5867,9 +5867,9 @@ class UserStatisticsViewAdmin(APIView):
         import datetime as dt
         today = dt.datetime.now()
         try:
-            current_date = today.strftime("%d/%m/%Y")
-            primary_queryset_reg=FileUpload.objects.filter(dob=current_date,in_memory=False)
-            secondary_queryset_reg=Members.objects.filter(dob=current_date,in_memory=False)
+            current_date = today.strftime("%d/%m/")
+            primary_queryset_reg=FileUpload.objects.filter(dob__startswith=current_date,in_memory=False)
+            secondary_queryset_reg=Members.objects.filter(dob__startswith=current_date,in_memory=False)
             for prime_user in primary_queryset_reg:
                 try:
                     family_name = prime_user.get_file_upload.first().name.title()
