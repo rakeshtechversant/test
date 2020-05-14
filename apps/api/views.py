@@ -5836,7 +5836,7 @@ class UserStatisticsViewAdmin(APIView):
         try:
             count_users_all = len(primary_queryset_all) + len(secondary_queryset_all)
         except:
-            count_users_all = "Unavailable"
+            count_users_all = None
 
         #Unreg users
         primary_queryset_unreg=FileUpload.objects.exclude(Q(phone_no_primary__in=phone_lists)|Q(phone_no_secondary__in=phone_lists)).distinct()
@@ -5844,7 +5844,7 @@ class UserStatisticsViewAdmin(APIView):
         try:
             count_users_unreg = len(primary_queryset_unreg) + len(secondary_queryset_unreg)
         except:
-            count_users_unreg = "Unavailable"
+            count_users_unreg = None
 
         #Reg users
         primary_queryset_reg=FileUpload.objects.filter(Q(phone_no_primary__in=phone_lists)|Q(phone_no_secondary__in=phone_lists)).distinct()
@@ -5852,7 +5852,7 @@ class UserStatisticsViewAdmin(APIView):
         try:
             count_users_reg = len(primary_queryset_reg) + len(secondary_queryset_reg)
         except:
-            count_users_reg = "Unavailable"
+            count_users_reg = None
 
         #Active users
         android_users = GCMDevice.objects.filter(active=True).exclude(user__is_superuser=True)
@@ -5860,23 +5860,45 @@ class UserStatisticsViewAdmin(APIView):
         try:
             count_users_active = len(android_users) + len(ios_users)
         except:
-            count_users_active = "Unavailable"
+            count_users_active = None
         
         #bday
         bday_lists = []
         import datetime as dt
         today = dt.datetime.now()
-        #import pdb;pdb.set_trace()
         try:
             current_date = today.strftime("%d/%m/%Y")
-            primary_queryset_reg=FileUpload.objects.filter(dob=current_date)
-            secondary_queryset_reg=Members.objects.filter(dob=current_date)
+            primary_queryset_reg=FileUpload.objects.filter(dob=current_date,in_memory=False)
+            secondary_queryset_reg=Members.objects.filter(dob=current_date,in_memory=False)
             for prime_user in primary_queryset_reg:
-                bday_list = {"name":prime_user.name,"user_type":"Primary","id":prime_user.primary_user_id}
+                try:
+                    family_name = prime_user.get_file_upload.first().name.title()
+                    prayer_group_name = prime_user.get_file_upload_prayergroup.first().name
+                except:
+                    family_name = None
+                    prayer_group_name = None
+                try:
+                    image=request.build_absolute_uri(prime_user.image.url)
+                except:
+                    image=None
+                bday_list = {"name":prime_user.name,"user_type":"Primary","id":prime_user.primary_user_id,"image":image,\
+                            "mobile":prime_user.phone_no_primary,"family":family_name,"prayer_group":prayer_group_name}
                 bday_lists.append(bday_list)
 
             for sec_user in secondary_queryset_reg:
-                bday_list = {"name":sec_user.member_name,"user_type":"Secondary","id":sec_user.secondary_user_id}
+                try:
+                    family_name = sec_user.primary_user_id.get_file_upload.first().name.title()
+                    prayer_group_name = sec_user.primary_user_id.get_file_upload_prayergroup.first().name
+                except:
+                    family_name = None
+                    prayer_group_name = None
+                try:
+                    image=request.build_absolute_uri(sec_user.image.url)
+                except:
+                    image=None
+                bday_list = {"name":sec_user.member_name,"user_type":"Secondary","id":sec_user.secondary_user_id,"image":image,"mobile":sec_user.phone_no_secondary_user,\
+                            "family":family_name,"prayer_group":prayer_group_name}
+
                 bday_lists.append(bday_list)
             dob_bday = bday_lists
         except:
