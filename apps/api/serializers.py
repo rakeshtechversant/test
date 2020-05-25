@@ -1079,6 +1079,7 @@ class CommonUserSerializer(serializers.Serializer):
     in_memory=serializers.CharField()
     in_memory_date=serializers.CharField()
     family_name=serializers.CharField()
+    active=serializers.BooleanField()
     family_id=serializers.IntegerField()
     user_type=serializers.CharField()
     relation=serializers.CharField()
@@ -1310,6 +1311,10 @@ class MembersSerializerPage(serializers.ModelSerializer):
         except:
             data['family_name'] = ''
         try:
+            data['active'] = instance.primary_user_id.get_file_upload.first().active
+        except:
+            data['active'] = ''
+        try:
             data['family_id'] = instance.primary_user_id.get_file_upload.first().id
         except:
             data['family_id'] = ''
@@ -1359,6 +1364,10 @@ class PrimaryUserSerializerPage(serializers.ModelSerializer):
             data['family_name'] = obj.get_file_upload.first().name.title()
         else:
             data['family_name'] = ''
+        try:
+            data['active'] = obj.get_file_upload.first().active
+        except:
+            data['active'] = ''
         try:
             data['family_id'] = obj.get_file_upload.first().id
         except:
