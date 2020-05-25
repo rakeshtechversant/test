@@ -173,9 +173,13 @@ class UserRetrieveSerializer(serializers.ModelSerializer):
         except:
             data['image'] = None
         try:
-           data['family_id'] = instance.get_file_upload.get().id
+            data['family_id'] = instance.get_file_upload.get().id
         except:
             data['family_id'] = None
+        try:
+            data['active'] = instance.get_file_upload.get().active
+        except:
+            data['active'] = None
         return data
 
 
@@ -328,6 +332,10 @@ class MembersSerializer(serializers.ModelSerializer):
             data['family_name'] = instance.primary_user_id.get_file_upload.first().name
         except:
             data['family_name'] = None
+        try:
+            data['active'] = instance.primary_user_id.get_file_upload.first().active
+        except:
+            data['active'] = None
 
         try:
             data['phone_no_secondary_user_secondary'] = instance.phone_no_secondary_user
