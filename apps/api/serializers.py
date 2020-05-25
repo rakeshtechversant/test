@@ -1415,7 +1415,7 @@ class ChangeRequestSerializer(serializers.ModelSerializer):
         #import pdb;pdb.set_trace()
         try:
             if obj.request_type == 'mobile':
-                data['type'] = 'mobile'
+                data['type'] = 'change_request_mobile'
                 data['family_name'] = None
                 data['primary_number'] = None
                 data['secondary_number'] = None
@@ -1438,46 +1438,36 @@ class ChangeRequestSerializer(serializers.ModelSerializer):
                     data['family_name'] = None
                     data['primary_number'] = None
                     data['secondary_number'] = None
-                data['type'] = 'family'
+                data['type'] = 'change_request_family'
             else:
                 pass
+            try:
+                data['date'] = obj.created_at
+                data['date_format'] = tz.localtime(obj.created_at, pytz.timezone('Asia/Kolkata')).strftime("%d/%m/%Y, %H:%M:%S %p")
+            except:
+                data['date_format'] = obj.date.strftime("%d/%m/%Y, %H:%M:%S %p")
+                data['date'] = obj.created_at
         except:
             pass
         return data
     # def create(self, validated_data):
-    #     notice = ChangeRequest(**validated_data)
-    #     notice.save()
-    #     body= {"message":"You have received a new notice",
-    #                         "type":"notice",
-    #                         "id":str(notice.id)
-    #                         }
-
-    #     body="You have received a new notice"
-    #     notifications=Notification.objects.create(created_time=tz.now(),message=body)
-    #     primary_members=FileUpload.objects.all()
-    #     secondary_members=Members.objects.all()
-    #     for primary_member in primary_members:
-    #         NoticeReadPrimary.objects.create(notification=notifications,user_to=primary_member,is_read=False)
-    #     for secondary_member in secondary_members:
-    #         NoticeReadSecondary.objects.create(notification=notifications,user_to=secondary_member,is_read=False)
+    #     change_request = ChangeRequest(**validated_data)
+    #     change_request.save()
+    #     admin_profiles = AdminProfile.objects.all()
 
     #     try:
     #         request = self.context['request']
-    #         # image = "https://cdn1.iconfinder.com/data/icons/mobile-application-2-solid/128/notification_alert_alarm-512.png"
-    #         if notice.image == None and notice.video == None and notice.audio != None:
-    #             image = "https://cdn0.iconfinder.com/data/icons/cosmo-documents/40/file_audio-512.png"
-    #         elif notice.image == None and notice.audio == None and notice.video != None:
-    #             image= request.build_absolute_uri(notice.thumbnail.url)
-    #         else:
-    #             image= request.build_absolute_uri(notice.image.url)
+    #         image= ""
     #     except:
     #         image = ""
     #     try:
-    #         content = {'title':'notice title','message':{"data":{"title":"Notice","body":str(notice.notice),"notificationType":"notice","backgroundImage":image,"image":image,"text_type":"short"},\
-    #         "notification":{"alert":"This is a FCM notification","title":"Notice","body":str(notice.notice),"sound":"default","backgroundImage":image,"backgroundImageTextColour":"#FFFFFF","image":image,"click_action":"notice"}}}
-    #         content_ios = {'message':{"aps":{"alert":{"title":"Notice","subtitle":"","body":str(notice.notice)},"sound":"default","category":"notice","badge":1,"mutable-content":1},"media-url":image}}
-    #         resp = fcm_messaging_to_all(content)
-    #         resp1 = apns_messaging_to_all(content_ios)
+    #         for admin_profile in admin_profiles:
+    #             content = {'title':'Change Request','message':{"data":{"title":"Change Request","body":"%s,of %s,%s has requested to add a family member %s"%(primary_user,str(primary_user.get_file_upload.first().name),str(primary_user.get_file_upload_prayergroup.first().name), unapproved_member),"notificationType":"request","backgroundImage":image,"text_type":"long"},\
+    #             "notification":{"alert":"This is a FCM notification","title":"Change Request","body":"%s,of %s,%s has requested to add a family member %s"%(primary_user,str(primary_user.get_file_upload.first().name),str(primary_user.get_file_upload_prayergroup.first().name),unapproved_member),"sound":"default","backgroundImage":image,"backgroundImageTextColour":"#FFFFFF","image":image,"click_action":"request"}} } 
+
+    #             content_ios = {'message':{"aps":{"alert":{"title":"Change Request","subtitle":"","body":"%s,of %s,%s has requested to add a family member %s"%(primary_user,str(primary_user.get_file_upload.first().name),str(primary_user.get_file_upload_prayergroup.first().name), unapproved_member)},"sound":"default","category":"request","badge":1,"mutable-content":1},"media-url":image}}
+    #             resp = fcm_messaging_to_user(admin_profile.user,content)
+    #             resp1 = apns_messaging_to_user(admin_profile.user,content_ios)
     #     except:
     #         pass
-    #     return notice
+    #     return change_request

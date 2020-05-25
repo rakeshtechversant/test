@@ -4893,13 +4893,14 @@ class AdminRequestSectionView(ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def list(self, request, *args, **kwargs):
-
         obj = PrimaryToSecondary.objects.all().order_by('date').reverse()
         serializerdata = PrimaryToSecondarySerializer(obj,many=True)
 
         obj_unapprove = UnapprovedMember.objects.all().order_by('date').reverse()
         serializerdata_unapprove = UnapprovedMemberSerializer(obj_unapprove,many=True)
 
+        obj_change_request = ChangeRequest.objects.all().order_by('created_at').reverse()
+        serializerdata_change_request = ChangeRequestSerializer(obj_change_request,many=True)
 
         queryset = self.filter_queryset(self.get_queryset())
         serializer = self.get_serializer(queryset,many=True)
@@ -4917,6 +4918,8 @@ class AdminRequestSectionView(ModelViewSet):
             response.append(statuslist)
         for unapprovelists in serializerdata_unapprove.data:
             response.append(unapprovelists)
+        for changereq in serializerdata_change_request.data:
+            response.append(changereq)
         response.sort(key=lambda item:item['date'], reverse=True)
         data['response'] = response
         return Response(data)
