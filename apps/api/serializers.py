@@ -1423,17 +1423,20 @@ class ChangeRequestSerializer(serializers.ModelSerializer):
                 if obj.user_type == 'primary':
                     prime_obj = FileUpload.objects.get(primary_user_id=int(obj.user_id))
                     data['family_name'] = prime_obj.get_file_upload.first().name
+                    data['prayer_group_name'] = prime_obj.get_file_upload_prayergroup.first().name
                     data['primary_number'] = prime_obj.phone_no_primary
                     data['mobile_number'] = prime_obj.phone_no_primary
-                    data['secondary_number'] = prime_obj.phone_no_secondary
                     data['user_name'] = prime_obj.name
+                    data['mobile_number_head_of_family'] = prime_obj.phone_no_primary
                 elif obj.user_type == 'secondary':
                     obj_sec = Members.objects.get(secondary_user_id=int(obj.user_id))
-                    data['family_name'] = FileUpload.objects.get(primary_user_id=obj_sec.primary_user_id.primary_user_id).get_file_upload.first().name
+                    prime_obj = FileUpload.objects.get(primary_user_id=obj_sec.primary_user_id.primary_user_id)
+                    data['family_name'] = prime_obj.get_file_upload.first().name
+                    data['prayer_group_name'] = prime_obj.get_file_upload_prayergroup.first().name
                     data['primary_number'] = obj_sec.phone_no_secondary_user
                     data['mobile_number'] = obj_sec.phone_no_secondary_user
-                    data['secondary_number'] = obj_sec.phone_no_secondary_user_secondary
                     data['user_name'] = obj_sec.member_name
+                    data['mobile_number_head_of_family'] = prime_obj.phone_no_primary
                 else:
                     data['family_name'] = None
                     data['primary_number'] = None
