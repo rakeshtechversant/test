@@ -10,12 +10,13 @@ from apps.api.views import UserNoticeList, NoticeBereavementDelete, NoticeBereav
     PhoneVersionView, GalleryImagesView, GalleryImagesCreateView, SendOtpSecSave, FamilyListPaginatedView,\
     PrayerGroupBasedFamilyPaginatedView,PrayerGroupBasedMembersPaginatedView,SendWithoutOtpSecSave, UpdatePhoneNumberSecondary,\
     PrimaryToSecondaryViewset,PrimaryNumberChangeViewset,ChurchVicarEditView,ChurchHistoryEditView,DeviceInactiveView,RegisteredUsersViewAdmin,\
-    UnRegisteredUsersViewAdmin,HomeViewAdmin,UserStatisticsViewAdmin
+    UnRegisteredUsersViewAdmin,HomeViewAdmin,UserStatisticsViewAdmin,ChangeRequestModelViewSet
 from push_notifications.api.rest_framework import APNSDeviceAuthorizedViewSet, GCMDeviceAuthorizedViewSet
 router = DefaultRouter()
 
 # Notice APIs
 router.register(r'notices', NoticeModelViewSet)
+router.register(r'change-request', ChangeRequestModelViewSet)
 router.register(r'phone-version', PhoneVersionView)
 router.register(r'occupations', views.OccupationView)
 router.register(r'member-types', views.MemberTypeView)

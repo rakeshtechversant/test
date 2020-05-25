@@ -5,7 +5,7 @@ import requests
 from apps.church.models import UserProfile, ChurchDetails, FileUpload, OtpModels, \
     OtpVerify, PrayerGroup, Notification, Family, Members, Notice, NoticeBereavement, \
     UnapprovedMember, NoticeReadPrimary, NoticeReadSecondary, NoticeReadAdmin, ViewRequestNumber, PrivacyPolicy, \
-    PhoneVersion, Images, PrimaryToSecondary, NumberChangePrimary
+    PhoneVersion, Images, PrimaryToSecondary, NumberChangePrimary, ChangeRequest
 from rest_framework.serializers import CharField
 from apps.api.token_create import get_tokens_for_user
 from django.utils.crypto import get_random_string
@@ -1393,3 +1393,83 @@ class UserMemorySerializer(serializers.Serializer):
     member_status = serializers.ChoiceField(choices=['active', 'in_memory'])
     in_memory_date = serializers.DateTimeField()
     # about = serializers.CharField()
+
+class ChangeRequestSerializer(serializers.ModelSerializer):
+    created_at = serializers.DateTimeField(format="%d/%m/%Y %I:%M %p", read_only=True)
+    updated_at = serializers.DateTimeField(format="%d/%m/%Y %I:%M %p", read_only=True)
+
+    class Meta:
+        model = ChangeRequest
+        fields = '__all__'
+
+    def to_representation(self, obj):
+        data = super().to_representation(obj)
+        #import pdb;pdb.set_trace()
+        try:
+            if obj.request_type == 'mobile':
+                data['type'] = 'mobile'
+                data['family_name'] = None
+                data['primary_number'] = None
+                data['secondary_number'] = None
+            elif(obj.request_type == 'family'):
+                if obj.user_type == 'primary':
+                    prime_obj = FileUpload.objects.get(primary_user_id=int(obj.user_id))
+                    data['family_name'] = prime_obj.get_file_upload.first().name
+                    data['primary_number'] = prime_obj.phone_no_primary
+                    data['mobile_number'] = prime_obj.phone_no_primary
+                    data['secondary_number'] = prime_obj.phone_no_secondary
+                    data['user_name'] = prime_obj.name
+                elif obj.user_type == 'secondary':
+                    obj_sec = Members.objects.get(secondary_user_id=int(obj.user_id))
+                    data['family_name'] = FileUpload.objects.get(primary_user_id=obj_sec.primary_user_id.primary_user_id).get_file_upload.first().name
+                    data['primary_number'] = obj_sec.phone_no_secondary_user
+                    data['mobile_number'] = obj_sec.phone_no_secondary_user
+                    data['secondary_number'] = obj_sec.phone_no_secondary_user_secondary
+                    data['user_name'] = obj_sec.member_name
+                else:
+                    data['family_name'] = None
+                    data['primary_number'] = None
+                    data['secondary_number'] = None
+                data['type'] = 'family'
+            else:
+                pass
+        except:
+            pass
+        return data
+    # def create(self, validated_data):
+    #     notice = ChangeRequest(**validated_data)
+    #     notice.save()
+    #     body= {"message":"You have received a new notice",
+    #                         "type":"notice",
+    #                         "id":str(notice.id)
+    #                         }
+
+    #     body="You have received a new notice"
+    #     notifications=Notification.objects.create(created_time=tz.now(),message=body)
+    #     primary_members=FileUpload.objects.all()
+    #     secondary_members=Members.objects.all()
+    #     for primary_member in primary_members:
+    #         NoticeReadPrimary.objects.create(notification=notifications,user_to=primary_member,is_read=False)
+    #     for secondary_member in secondary_members:
+    #         NoticeReadSecondary.objects.create(notification=notifications,user_to=secondary_member,is_read=False)
+
+    #     try:
+    #         request = self.context['request']
+    #         # image = "https://cdn1.iconfinder.com/data/icons/mobile-application-2-solid/128/notification_alert_alarm-512.png"
+    #         if notice.image == None and notice.video == None and notice.audio != None:
+    #             image = "https://cdn0.iconfinder.com/data/icons/cosmo-documents/40/file_audio-512.png"
+    #         elif notice.image == None and notice.audio == None and notice.video != None:
+    #             image= request.build_absolute_uri(notice.thumbnail.url)
+    #         else:
+    #             image= request.build_absolute_uri(notice.image.url)
+    #     except:
+    #         image = ""
+    #     try:
+    #         content = {'title':'notice title','message':{"data":{"title":"Notice","body":str(notice.notice),"notificationType":"notice","backgroundImage":image,"image":image,"text_type":"short"},\
+    #         "notification":{"alert":"This is a FCM notification","title":"Notice","body":str(notice.notice),"sound":"default","backgroundImage":image,"backgroundImageTextColour":"#FFFFFF","image":image,"click_action":"notice"}}}
+    #         content_ios = {'message':{"aps":{"alert":{"title":"Notice","subtitle":"","body":str(notice.notice)},"sound":"default","category":"notice","badge":1,"mutable-content":1},"media-url":image}}
+    #         resp = fcm_messaging_to_all(content)
+    #         resp1 = apns_messaging_to_all(content_ios)
+    #     except:
+    #         pass
+    #     return notice

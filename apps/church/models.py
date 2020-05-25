@@ -306,3 +306,29 @@ class NumberChangePrimary(models.Model):
     status = models.CharField(max_length=200, null=True, blank=True)
     is_accepted = models.BooleanField(default=False)
     date=models.DateTimeField(default=datetime.now, blank=True)
+
+
+MOBILE = 'mobile'
+FAMILY = 'family'
+REQUEST_TYPE = (
+    (MOBILE, 'MOBILE'),
+    (FAMILY, 'FAMILY'),
+)
+
+PRIMARY = 'primary'
+SECONDARY = 'secondary'
+
+USER_TYPES = (
+    (PRIMARY, 'PRIMARY'),
+    (SECONDARY, 'SECONDARY'),
+)
+
+class ChangeRequest(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
+    request_type = models.CharField(max_length=255, choices=REQUEST_TYPE)
+    user_id = models.IntegerField(null=True, blank=True)
+    user_type = models.CharField(max_length=255, choices=USER_TYPES, null=True, blank=True)
+    mobile_number = models.CharField(max_length=20, null=True, blank=True)
+    user_name = models.CharField(max_length=20, null=True, blank=True)
+    description = models.TextField(max_length=20000)
