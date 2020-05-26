@@ -10,7 +10,7 @@ from apps.api.views import UserNoticeList, NoticeBereavementDelete, NoticeBereav
     PhoneVersionView, GalleryImagesView, GalleryImagesCreateView, SendOtpSecSave, FamilyListPaginatedView,\
     PrayerGroupBasedFamilyPaginatedView,PrayerGroupBasedMembersPaginatedView,SendWithoutOtpSecSave, UpdatePhoneNumberSecondary,\
     PrimaryToSecondaryViewset,PrimaryNumberChangeViewset,ChurchVicarEditView,ChurchHistoryEditView,DeviceInactiveView,RegisteredUsersViewAdmin,\
-    UnRegisteredUsersViewAdmin,HomeViewAdmin,UserStatisticsViewAdmin,ChangeRequestModelViewSet
+    UnRegisteredUsersViewAdmin,HomeViewAdmin,UserStatisticsViewAdmin,ChangeRequestModelViewSet,VicarsViewSet
 from push_notifications.api.rest_framework import APNSDeviceAuthorizedViewSet, GCMDeviceAuthorizedViewSet
 router = DefaultRouter()
 
@@ -23,6 +23,7 @@ router.register(r'member-types', views.MemberTypeView)
 router.register(r'images-category',GalleryImagesView,basename='gallery_images')
 router.register(r'gallery-image-upload-admin',GalleryImagesCreateView,basename='gallery_image_upload_admin')
 router.register(r'church-vicar-edit',ChurchVicarEditView,basename='church_vicar_edit')
+router.register(r'church-vicars',VicarsViewSet,basename='church_vicars')
 router.register(r'church-history-edit',ChurchHistoryEditView,basename='church_history_edit')
 router.register(r'device/apns', APNSDeviceAuthorizedViewSet)
 router.register(r'device/gcm', GCMDeviceAuthorizedViewSet)

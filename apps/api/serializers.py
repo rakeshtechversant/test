@@ -5,7 +5,7 @@ import requests
 from apps.church.models import UserProfile, ChurchDetails, FileUpload, OtpModels, \
     OtpVerify, PrayerGroup, Notification, Family, Members, Notice, NoticeBereavement, \
     UnapprovedMember, NoticeReadPrimary, NoticeReadSecondary, NoticeReadAdmin, ViewRequestNumber, PrivacyPolicy, \
-    PhoneVersion, Images, PrimaryToSecondary, NumberChangePrimary, ChangeRequest
+    PhoneVersion, Images, PrimaryToSecondary, NumberChangePrimary, ChangeRequest, ChurchVicars
 from rest_framework.serializers import CharField
 from apps.api.token_create import get_tokens_for_user
 from django.utils.crypto import get_random_string
@@ -1483,3 +1483,8 @@ class ChangeRequestSerializer(serializers.ModelSerializer):
     #     except:
     #         pass
     #     return change_request
+
+class VicarsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ChurchVicars
+        fields = '__all__'

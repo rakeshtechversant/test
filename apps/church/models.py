@@ -332,3 +332,19 @@ class ChangeRequest(models.Model):
     mobile_number = models.CharField(max_length=20, null=True, blank=True)
     user_name = models.CharField(max_length=20, null=True, blank=True)
     description = models.TextField(max_length=20000)
+
+VICAR = 'vicar'
+ASSTVICAR = 'asstvicar'
+
+VICAR_TYPES = (
+    (VICAR, 'VICAR'),
+    (ASSTVICAR, 'ASSTVICAR'),
+)
+
+class ChurchVicars(models.Model):
+    vicar_name = models.CharField(max_length=100)
+    vicar_info = models.TextField(max_length=1000, null=True, blank=True)
+    vicar_image = models.FileField(upload_to='pan_folder/', null=True, blank=True)
+    start_year = models.CharField(max_length=10,null=True, blank=True)
+    end_year = models.CharField(max_length=10,null=True, blank=True)
+    vicar_type = models.CharField(max_length=10,choices=VICAR_TYPES,null=True, blank=True)

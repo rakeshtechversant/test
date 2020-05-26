@@ -38,10 +38,11 @@ from apps.api.serializers import ChurchHistorySerializer, ChurchImagesSerializer
     ViewRequestNumberSerializer, RequestAcceptNumberSerializer, AdminNotificationSerializer, PhoneVersionSerializer, \
     GalleryImagesSerializer, FamilyDetailSerializer, FamilyEditSerializer, GalleryImagesCreateSerializer, \
     OTPVeifySerializerUserId, CommonUserSerializer, MemberNumberSerializer, PrimaryToSecondarySerializer, NumberChangePrimarySerializer ,\
-    AdminRequestSerializer, PrimaryUserSerializerPage, MembersSerializerPage, UserMemorySerializer, UserByMembersSerializer, ChangeRequestSerializer
+    AdminRequestSerializer, PrimaryUserSerializerPage, MembersSerializerPage, UserMemorySerializer, UserByMembersSerializer, ChangeRequestSerializer ,\
+    VicarsSerializer
 from apps.church.models import Members, Family, UserProfile, ChurchDetails, FileUpload, OtpModels, \
     PrayerGroup, Notification, Notice, NoticeBereavement, UnapprovedMember, NoticeReadPrimary, NoticeReadSecondary, \
-    ViewRequestNumber, NoticeReadAdmin, PrivacyPolicy, PhoneVersion, Images, PrimaryToSecondary, NumberChangePrimary, ChangeRequest
+    ViewRequestNumber, NoticeReadAdmin, PrivacyPolicy, PhoneVersion, Images, PrimaryToSecondary, NumberChangePrimary, ChangeRequest, ChurchVicars
 
 from apps.api.models import AdminProfile
 from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_400_BAD_REQUEST, HTTP_401_UNAUTHORIZED, \
@@ -727,7 +728,11 @@ class OtpVerifyUserCheckNumberViewSet(CreateAPIView):
                             'mobile': mobile,
                             'user_type': 'PRIMARY',
                             'name': user_profile.name.title(),
-                            'primary_user_id': user_profile.primary_user_id
+                            'primary_user_id': user_profile.primary_user_id,
+                            'family_name':user_profile.get_file_upload.first().name,
+                            'prayer_group_name':user_profile.get_file_upload_prayergroup.first().name,
+                            'family_id':user_profile.get_file_upload.first().id,
+                            'prayer_group_id':user_profile.get_file_upload_prayergroup.first().id,
                         }
                     else:
                         user_profile = FileUpload.objects.get(Q(phone_no_secondary=otp_obj.mobile_number) | Q(phone_no_primary=otp_obj.mobile_number))
@@ -737,7 +742,11 @@ class OtpVerifyUserCheckNumberViewSet(CreateAPIView):
                             'mobile': mobile,
                             'user_type': 'PRIMARY',
                             'name': user_profile.name.title(),
-                            'primary_user_id': user_profile.primary_user_id
+                            'primary_user_id': user_profile.primary_user_id,
+                            'family_name':user_profile.get_file_upload.first().name,
+                            'prayer_group_name':user_profile.get_file_upload_prayergroup.first().name,
+                            'family_id':user_profile.get_file_upload.first().id,
+                            'prayer_group_id':user_profile.get_file_upload_prayergroup.first().id,
                         }
                 except FileUpload.DoesNotExist:
                     return Response({'success': False, 'message': 'Primary account does not exist'}, status=HTTP_404_NOT_FOUND)
@@ -820,7 +829,11 @@ class OtpVerifyUserCheckNumberViewSet(CreateAPIView):
                             'secondary_user_id': member.secondary_user_id,
                             'primary_name':member.primary_user_id.name,
                             'primary_user_id':member.primary_user_id.primary_user_id,
-                            'primary_mobile_number':member.primary_user_id.phone_no_primary
+                            'primary_mobile_number':member.primary_user_id.phone_no_primary,
+                            'family_name':member.primary_user_id.get_file_upload.first().name,
+                            'prayer_group_name':member.primary_user_id.get_file_upload_prayergroup.first().name,
+                            'family_id':member.primary_user_id.get_file_upload.first().id,
+                            'prayer_group_id':member.primary_user_id.get_file_upload_prayergroup.first().id,
                         }
                 except Members.DoesNotExist:
                     return Response({'success': False, 'message': 'Secondary account does not exist'}, status=HTTP_404_NOT_FOUND)
@@ -5924,6 +5937,81 @@ class ChangeRequestModelViewSet(ModelViewSet):
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
 
+        page = self.paginate_queryset(queryset)
+        data = {
+                'code': 200,
+                'status': "OK",
+        }
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        data['response'] = serializer.data
+        return Response(data)
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        data = {
+            'code': 200,
+            'status': "OK",
+        }
+        data['response'] = serializer.data
+        return Response(data)
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        data = {
+            'code': 200,
+            'status': "OK",
+        }
+        data['response'] = serializer.data
+        return Response(data, status=status.HTTP_201_CREATED, headers=headers)
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        data = {
+            'code': 200,
+            'status': "OK",
+        }
+        data['response'] = "Successfully deleted"
+        return Response(data)
+
+    def update(self, request, *args, **kwargs):
+
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        data = {
+            'code': 200,
+            'status': "Successfully updated",
+        }
+        data['response'] = serializer.data
+        return Response(data)
+
+class VicarsViewSet(ModelViewSet):
+    queryset = ChurchVicars.objects.all()
+    serializer_class = VicarsSerializer
+    permission_classes = [IsAdminUser]
+    authentication_classes = [TokenAuthentication]
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset().order_by('start_year'))
+        vicar_type = request.GET.get('vicar_type')
+        if vicar_type == 'asstvicar':
+            queryset = queryset.filter(vicar_type='asstvicar').order_by('start_year')
+        elif vicar_type == 'vicar':
+            queryset = queryset.filter(vicar_type='vicar').order_by('start_year')
+        else:
+            queryset = self.filter_queryset(self.get_queryset().order_by('start_year'))
         page = self.paginate_queryset(queryset)
         data = {
                 'code': 200,
