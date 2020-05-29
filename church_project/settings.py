@@ -79,8 +79,10 @@ PUSH_NOTIFICATIONS_SETTINGS = {
     },
     "com.techversant.MukhathalaMarThomaChurch":{
         "PLATFORM": "APNS",
-        "CERTIFICATE": os.path.join(BASE_DIR, "pushcert.pem"),
-        "USE_SANDBOX" : "api.development.push.apple.com",
+        #"CERTIFICATE": os.path.join(BASE_DIR, "pushcert.pem"),
+        #"USE_SANDBOX" : "api.development.push.apple.com",
+        "CERTIFICATE": os.path.join(BASE_DIR, "apns-dev-cert.pem"),
+        "USE_SANDBOX" : "api.push.apple.com",
         "TOPIC" : "com.techversant.MukhathalaMarThomaChurch",
     }
   }
