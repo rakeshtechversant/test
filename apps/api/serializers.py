@@ -415,9 +415,8 @@ class NoticeSerializer(serializers.ModelSerializer):
         except:
             image = ""
         try:
-            # content = {'title':'notice title','message':{"data":{"title":"Notice","body":str(notice.notice),"notificationType":"notice","backgroundImage":image,"image":image,"text_type":"short"},\
-            # "notification":{"alert":"This is a FCM notification","title":"Notice","body":str(notice.notice),"sound":"default","backgroundImage":image,"backgroundImageTextColour":"#FFFFFF","image":image,"click_action":"notice"}}}
-            content = {'title':'notice title','message':{"data":{"title":"Notice","body":str(notice.notice),"notificationType":"notice","backgroundImage":image,"image":image,"text_type":"short"}}}
+            content = {'title':'notice title','message':{"data":{"title":"Notice","body":str(notice.notice),"notificationType":"notice","backgroundImage":image,"image":image,"text_type":"short"},\
+            "notification":{"alert":"This is a FCM notification","title":"Notice","body":str(notice.notice),"sound":"default","backgroundImage":image,"backgroundImageTextColour":"#FFFFFF","image":image,"click_action":"notice"}}}
             content_ios = {'message':{"aps":{"alert":{"title":"Notice","subtitle":"","body":str(notice.notice)},"sound":"default","category":"notice","badge":1,"mutable-content":1},"media-url":image}}
             resp = fcm_messaging_to_all(content)
             resp1 = apns_messaging_to_all(content_ios)
@@ -1463,27 +1462,27 @@ class ChangeRequestSerializer(serializers.ModelSerializer):
         except:
             pass
         return data
-    # def create(self, validated_data):
-    #     change_request = ChangeRequest(**validated_data)
-    #     change_request.save()
-    #     admin_profiles = AdminProfile.objects.all()
+    def create(self, validated_data):
+        change_request = ChangeRequest(**validated_data)
+        change_request.save()
+        admin_profiles = AdminProfile.objects.all()
 
-    #     try:
-    #         request = self.context['request']
-    #         image= ""
-    #     except:
-    #         image = ""
-    #     try:
-    #         for admin_profile in admin_profiles:
-    #             content = {'title':'Change Request','message':{"data":{"title":"Change Request","body":"%s,of %s,%s has requested to add a family member %s"%(primary_user,str(primary_user.get_file_upload.first().name),str(primary_user.get_file_upload_prayergroup.first().name), unapproved_member),"notificationType":"request","backgroundImage":image,"text_type":"long"},\
-    #             "notification":{"alert":"This is a FCM notification","title":"Change Request","body":"%s,of %s,%s has requested to add a family member %s"%(primary_user,str(primary_user.get_file_upload.first().name),str(primary_user.get_file_upload_prayergroup.first().name),unapproved_member),"sound":"default","backgroundImage":image,"backgroundImageTextColour":"#FFFFFF","image":image,"click_action":"request"}} } 
+        try:
+            request = self.context['request']
+            image= ""
+        except:
+            image = ""
+        try:
+            for admin_profile in admin_profiles:
+                content = {'title':'Request','message':{"data":{"title":"Request","body":"You have received a new request","notificationType":"request","backgroundImage":image,"text_type":"long"},\
+                "notification":{"alert":"This is a FCM notification","title":"Request","body":"You have received a new request","sound":"default","backgroundImage":image,"backgroundImageTextColour":"#FFFFFF","image":image,"click_action":"request"}} } 
 
-    #             content_ios = {'message':{"aps":{"alert":{"title":"Change Request","subtitle":"","body":"%s,of %s,%s has requested to add a family member %s"%(primary_user,str(primary_user.get_file_upload.first().name),str(primary_user.get_file_upload_prayergroup.first().name), unapproved_member)},"sound":"default","category":"request","badge":1,"mutable-content":1},"media-url":image}}
-    #             resp = fcm_messaging_to_user(admin_profile.user,content)
-    #             resp1 = apns_messaging_to_user(admin_profile.user,content_ios)
-    #     except:
-    #         pass
-    #     return change_request
+                content_ios = {'message':{"aps":{"alert":{"title":"Request","subtitle":"","body":"You have received a new request"},"sound":"default","category":"request","badge":1,"mutable-content":1},"media-url":image}}
+                resp = fcm_messaging_to_user(admin_profile.user,content)
+                resp1 = apns_messaging_to_user(admin_profile.user,content_ios)
+        except:
+            pass
+        return change_request
 
 class VicarsSerializer(serializers.ModelSerializer):
     class Meta:
