@@ -5554,7 +5554,6 @@ class UpdateUserByMembersView(APIView):
         serializer = UserByMembersSerializer(data=request.data)
 
         if serializer.is_valid():
-
             prayer_group = PrayerGroup.objects.get(pk=serializer.data['prayer_group'])
             family = Family.objects.get(pk=serializer.data['family'])
 
@@ -5570,7 +5569,15 @@ class UpdateUserByMembersView(APIView):
                     instance.email = serializer.data.get('email')
                 # instance.phone_no_primary = serializer.data['primary_number']
                 if serializer.data.get('secondary_number'):
-                    instance.phone_no_secondary = serializer.data.get('secondary_number')
+                    if instance.phone_no_secondary != serializer.data.get('secondary_number'):
+                        try:
+                            token_obj = Token.objects.get(user__username=instance.phone_no_secondary)
+                            token_obj.delete()
+                        except:
+                            pass
+                        instance.phone_no_secondary = serializer.data.get('secondary_number')
+                    else:
+                        instance.phone_no_secondary = serializer.data.get('secondary_number')
                 if serializer.data.get('occupation'):
                     instance.occupation = serializer.data.get('occupation')
                 if serializer.data.get('marital_status'):
@@ -5618,8 +5625,11 @@ class UpdateUserByMembersView(APIView):
                         instance.email = serializer.data.get('email')
                     if serializer.data.get('primary_number'):
                         if instance.phone_no_secondary_user != serializer.data.get('primary_number'):
-                            token_obj = Token.objects.get(user__username=instance.phone_no_secondary_user)
-                            token_obj.delete()
+                            try:
+                                token_obj = Token.objects.get(user__username=instance.phone_no_secondary_user)
+                                token_obj.delete()
+                            except:
+                                pass
                             instance.phone_no_secondary_user = serializer.data['primary_number']
                         else:
                             instance.phone_no_secondary_user = serializer.data['primary_number']
