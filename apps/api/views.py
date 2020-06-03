@@ -3066,7 +3066,6 @@ class UpdateUserByAdminView(APIView):
 
             if request.FILES.get('image'):
                 instance.image = request.FILES['image']
-
             instance.save()
 
             data ={
@@ -5563,17 +5562,27 @@ class UpdateUserByMembersView(APIView):
                 instance = FileUpload.objects.get(pk=pk)
 
                 instance.name = serializer.data['name']
-                instance.dob = serializer.data['dob']
-                instance.blood_group = serializer.data['blood_group']
-                instance.email = serializer.data['email']
+                if serializer.data.get('dob'):
+                    instance.dob = serializer.data.get('dob')
+                if serializer.data.get('blood_group'):
+                    instance.blood_group = serializer.data.get('blood_group')
+                if serializer.data.get('email'):
+                    instance.email = serializer.data.get('email')
                 # instance.phone_no_primary = serializer.data['primary_number']
-                instance.phone_no_secondary = serializer.data['secondary_number']
-                instance.occupation = serializer.data['occupation']
-                instance.marital_status = serializer.data['marital_status']
-                instance.marrige_date = serializer.data['marrige_date']
-                instance.about = serializer.data['about']
-                instance.landline= serializer.data['landline']
-                instance.relation= serializer.data['relation']
+                if serializer.data.get('secondary_number'):
+                    instance.phone_no_secondary = serializer.data.get('secondary_number')
+                if serializer.data.get('occupation'):
+                    instance.occupation = serializer.data.get('occupation')
+                if serializer.data.get('marital_status'):
+                    instance.marital_status = serializer.data.get('marital_status')
+                if serializer.data.get('marrige_date'):
+                    instance.marrige_date = serializer.data.get('marrige_date')
+                if serializer.data.get('about'):
+                    instance.about = serializer.data.get('about')
+                if serializer.data.get('landline'):
+                    instance.landline= serializer.data.get('landline')
+                if serializer.data.get('relation'):
+                    instance.relation= serializer.data.get('relation')
                 instance.save()
 
                 previous_groups = instance.get_file_upload_prayergroup.all()
@@ -5601,17 +5610,28 @@ class UpdateUserByMembersView(APIView):
 
                     instance = Members.objects.get(pk=pk)
                     instance.member_name = serializer.data['name']
-                    instance.dob = serializer.data['dob']
-                    instance.blood_group = serializer.data['blood_group']
-                    instance.email = serializer.data['email']
-                    instance.phone_no_secondary_user = serializer.data['primary_number']
-                    instance.phone_no_secondary_user_secondary = serializer.data['secondary_number']
-                    instance.occupation = serializer.data['occupation']
-                    instance.marital_status = serializer.data['marital_status']
-                    instance.marrige_date = serializer.data['marrige_date']
-                    instance.about = serializer.data['about']
-                    instance.landline= serializer.data['landline']
-                    instance.relation= serializer.data['relation']
+                    if serializer.data.get('dob'):
+                        instance.dob = serializer.data.get('dob')
+                    if serializer.data.get('blood_group'):
+                        instance.blood_group = serializer.data.get('blood_group')
+                    if serializer.data.get('email'):
+                        instance.email = serializer.data.get('email')
+                    if serializer.data.get('primary_number'):
+                        instance.phone_no_secondary_user = serializer.data['primary_number']
+                    if serializer.data.get('secondary_number'):
+                        instance.phone_no_secondary_user_secondary = serializer.data.get('secondary_number')
+                    if serializer.data.get('occupation'):
+                        instance.occupation = serializer.data.get('occupation')
+                    if serializer.data.get('marital_status'):
+                        instance.marital_status = serializer.data.get('marital_status')
+                    if serializer.data.get('marrige_date'):
+                        instance.marrige_date = serializer.data.get('marrige_date')
+                    if serializer.data.get('about'):
+                        instance.about = serializer.data.get('about')
+                    if serializer.data.get('landline'):
+                        instance.landline= serializer.data.get('landline')
+                    if serializer.data.get('relation'):
+                        instance.relation= serializer.data.get('relation')
                     instance.save()
 
                     instance.primary_user_id = family.primary_user_id
@@ -5645,6 +5665,15 @@ class UpdateUserByMembersView(APIView):
             if request.FILES.get('image'):
                 instance.image = request.FILES['image']
 
+            try:
+                if serializer.data.get('primary_number') :
+                    user,created=User.objects.get_or_create(username=serializer.data['primary_number'])
+                    token, created = Token.objects.get_or_create(user=user)
+                if serializer.data.get('secondary_number') :
+                    user,created=User.objects.get_or_create(username=serializer.data['secondary_number'])
+                    token, created = Token.objects.get_or_create(user=user)
+            except:
+                pass
             instance.save()
 
             data ={
