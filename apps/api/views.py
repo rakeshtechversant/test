@@ -2870,6 +2870,16 @@ class CreateUserByAdminView(APIView):
                     'message': 'Primary user already exists for this family'
                 }
                 return Response(data, status=status.HTTP_400_BAD_REQUEST)
+            if FileUpload.objects.filter(phone_no_primary=serializer.data['primary_number']).exists() or \
+                    FileUpload.objects.filter(phone_no_primary=serializer.data['secondary_number']).exists()  or \
+                    FileUpload.objects.filter(phone_no_secondary=serializer.data['secondary_number']).exists()  or \
+                    FileUpload.objects.filter(phone_no_secondary=serializer.data['primary_number']).exists()  or \
+                    Members.objects.filter(phone_no_secondary_user=serializer.data['primary_number']).exists():
+                    data = {
+                        'status': False,
+                        'message':"Phone number already registered.Please use another number"
+                    }
+                    return Response(data, status=status.HTTP_400_BAD_REQUEST)
 
             if serializer.data['member_type'] in ['Primary', 'primary']:
                 
@@ -2878,7 +2888,7 @@ class CreateUserByAdminView(APIView):
                     dob=serializer.data['dob'],
                     blood_group=serializer.data['blood_group'],
                     email=serializer.data['email'],
-                    phone_no_primary=serializer.data['secondary_number'],
+                    phone_no_primary=serializer.data['primary_number'],
                     phone_no_secondary=serializer.data['secondary_number'],
                     occupation=serializer.data['occupation'],
                     marital_status=serializer.data['marital_status'],
@@ -2898,7 +2908,7 @@ class CreateUserByAdminView(APIView):
                     dob=serializer.data['dob'],
                     blood_group=serializer.data['blood_group'],
                     email=serializer.data['email'],
-                    phone_no_secondary_user=serializer.data['secondary_number'],
+                    phone_no_secondary_user=serializer.data['primary_number'],
                     phone_no_secondary_user_secondary=serializer.data['secondary_number'],
                     occupation=serializer.data['occupation'],
                     marital_status=serializer.data['marital_status'],
