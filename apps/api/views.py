@@ -5617,7 +5617,12 @@ class UpdateUserByMembersView(APIView):
                     if serializer.data.get('email'):
                         instance.email = serializer.data.get('email')
                     if serializer.data.get('primary_number'):
-                        instance.phone_no_secondary_user = serializer.data['primary_number']
+                        if instance.phone_no_secondary_user != serializer.data.get('primary_number'):
+                            token_obj = Token.objects.get(user__username=instance.phone_no_secondary_user)
+                            token_obj.delete()
+                            instance.phone_no_secondary_user = serializer.data['primary_number']
+                        else:
+                            instance.phone_no_secondary_user = serializer.data['primary_number']
                     if serializer.data.get('secondary_number'):
                         instance.phone_no_secondary_user_secondary = serializer.data.get('secondary_number')
                     if serializer.data.get('occupation'):
@@ -5665,15 +5670,15 @@ class UpdateUserByMembersView(APIView):
             if request.FILES.get('image'):
                 instance.image = request.FILES['image']
 
-            try:
-                if serializer.data.get('primary_number') :
-                    user,created=User.objects.get_or_create(username=serializer.data['primary_number'])
-                    token, created = Token.objects.get_or_create(user=user)
-                if serializer.data.get('secondary_number') :
-                    user,created=User.objects.get_or_create(username=serializer.data['secondary_number'])
-                    token, created = Token.objects.get_or_create(user=user)
-            except:
-                pass
+            # try:
+            #     if serializer.data.get('primary_number') :
+            #         user,created=User.objects.get_or_create(username=serializer.data['primary_number'])
+            #         token, created = Token.objects.get_or_create(user=user)
+            #     if serializer.data.get('secondary_number') :
+            #         user,created=User.objects.get_or_create(username=serializer.data['secondary_number'])
+            #         token, created = Token.objects.get_or_create(user=user)
+            # except:
+            #     pass
             instance.save()
 
             data ={
