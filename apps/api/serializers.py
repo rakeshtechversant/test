@@ -965,11 +965,13 @@ class UserByadminSerializer(serializers.Serializer):
     primary_number = serializers.CharField()
     secondary_number = serializers.CharField()
     occupation = serializers.CharField()
+    relation =  serializers.CharField(allow_blank=True)
     marital_status = serializers.CharField()
     marrige_date = serializers.CharField(allow_blank=True)
     member_type = serializers.CharField()
     member_status = serializers.ChoiceField(choices=['active', 'in_memory'])
     about = serializers.CharField()
+    landline = serializers.CharField(allow_blank=True)
 
 class UserByMembersSerializer(serializers.Serializer):
     prayer_group = serializers.PrimaryKeyRelatedField(queryset=PrayerGroup.objects.all())
