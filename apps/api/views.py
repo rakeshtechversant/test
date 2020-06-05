@@ -5568,6 +5568,42 @@ class UpdateUserByMembersView(APIView):
                 if serializer.data.get('email'):
                     instance.email = serializer.data.get('email')
                 # instance.phone_no_primary = serializer.data['primary_number']
+                if serializer.data.get('primary_number'):
+                    if instance.phone_no_primary != serializer.data.get('primary_number'):
+                        try:
+                            token_obj = Token.objects.get(user__username=instance.phone_no_primary)
+                            token_obj.delete()
+                        except:
+                            pass
+                        admin_profiles = AdminProfile.objects.all()
+                        from_user_name = 'a family member'
+                        try:
+                            from_user = Members.objects.get(phone_no_secondary_user=request.user.username)
+                            from_user_name = from_user.member_name
+                        except:
+                            pass
+                        try:
+                            from_user = Members.objects.get(
+                               phone_no_secondary_user_secondary=request.user.username)
+                            from_user_name = from_user.member_name
+                        except:
+                            pass
+                        # for admin_profile in admin_profiles:
+                        #     NoticeReadAdmin.objects.create(notification=notification, user_to=admin_profile) 
+                        try:
+                            image = ""
+                            for admin_profile in admin_profiles:
+                                content = {'title':'Number Changed','message':{"data":{"title":"Number Changed","body":"%s,of %s,%s phone number has been changed by %s."%(instance.name,str(instance.get_file_upload.first().name),str(instance.get_file_upload_prayergroup.first().name),str(from_user_name)),"notificationType":"default","backgroundImage":image,"text_type":"long"},\
+                                "notification":{"alert":"This is a FCM notification","title":"Number Changed","body":"%s,of %s,%s  phone number has been changed by %s."%(instance.name,str(instance.get_file_upload.first().name),str(instance.get_file_upload_prayergroup.first().name),str(from_user_name)),"sound":"default","backgroundImage":image,"backgroundImageTextColour":"#FFFFFF","image":image,"click_action":"default"}} } 
+                                
+                                content_ios = {'message':{"aps":{"alert":{"title":"Number Changed","subtitle":"","body":"%s,of %s,%s phone number has been changed by %s."%(instance.name,str(instance.get_file_upload.first().name),str(instance.get_file_upload_prayergroup.first().name),str(from_user_name))},"sound":"default","category":"default","badge":1,"mutable-content":1},"media-url":image}}
+                                resp = fcm_messaging_to_user(admin_profile.user,content)
+                                resp1 = apns_messaging_to_user(admin_profile.user,content_ios)
+                        except:
+                            pass
+                        instance.phone_no_primary = serializer.data.get('primary_number')
+                    else:
+                        instance.phone_no_primary = serializer.data.get('primary_number')
                 if serializer.data.get('secondary_number'):
                     if instance.phone_no_secondary != serializer.data.get('secondary_number'):
                         try:
