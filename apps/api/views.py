@@ -2974,31 +2974,51 @@ class UpdateUserByAdminView(APIView):
 
     def post(self, request, pk=None, format=None):
         response_data = []
-
-
-
         serializer = UserByadminSerializer(data=request.data)
-
         if serializer.is_valid():
-
             prayer_group = PrayerGroup.objects.get(pk=serializer.data['prayer_group'])
             family = Family.objects.get(pk=serializer.data['family'])
-
-            if serializer.data['member_type'] in ['Primary', 'primary']:
+            if serializer.data['member_type'] in ['Primary', 'primary', 'PRIMARY']:
                 instance = FileUpload.objects.get(pk=pk)
-
                 instance.name = serializer.data['name']
-                instance.dob = serializer.data['dob']
-                instance.blood_group = serializer.data['blood_group']
-                instance.email = serializer.data['email']
-                instance.phone_no_primary = serializer.data['primary_number']
-                instance.phone_no_secondary = serializer.data['secondary_number']
-                instance.occupation = serializer.data['occupation']
-                instance.marital_status = serializer.data['marital_status']
-                instance.marrige_date = serializer.data['marrige_date']
-                instance.about = serializer.data['about']
-                instance.landline= serializer.data['landline']
-                instance.relation= serializer.data['relation']
+                if serializer.data.get('dob'):
+                    instance.dob = serializer.data.get('dob')
+                if serializer.data.get('blood_group'):
+                    instance.blood_group = serializer.data.get('blood_group')
+                if serializer.data.get('email'):
+                    instance.email = serializer.data.get('email')
+                if serializer.data.get('primary_number'):
+                    if instance.phone_no_primary != serializer.data.get('primary_number'):
+                        try:
+                            token_obj = Token.objects.get(user__username=instance.phone_no_primary)
+                            token_obj.delete()
+                        except:
+                            pass
+                        instance.phone_no_primary = serializer.data.get('primary_number')
+                    else:
+                        instance.phone_no_primary = serializer.data.get('primary_number')
+                if serializer.data.get('secondary_number'):
+                    if instance.phone_no_secondary != serializer.data.get('secondary_number'):
+                        try:
+                            token_obj = Token.objects.get(user__username=instance.phone_no_secondary)
+                            token_obj.delete()
+                        except:
+                            pass
+                        instance.phone_no_secondary = serializer.data.get('secondary_number')
+                    else:
+                        instance.phone_no_secondary = serializer.data.get('secondary_number')
+                if serializer.data.get('occupation'):
+                    instance.occupation = serializer.data.get('occupation')
+                if serializer.data.get('marital_status'):
+                    instance.marital_status = serializer.data.get('marital_status')
+                if serializer.data.get('marrige_date'):
+                    instance.marrige_date = serializer.data.get('marrige_date')
+                if serializer.data.get('about'):
+                    instance.about = serializer.data.get('about')
+                if serializer.data.get('landline'):
+                    instance.landline= serializer.data.get('landline')
+                if serializer.data.get('relation'):
+                    instance.relation= serializer.data.get('relation')
                 instance.save()
 
                 previous_groups = instance.get_file_upload_prayergroup.all()
@@ -3023,24 +3043,40 @@ class UpdateUserByAdminView(APIView):
                             'message': 'Invalid prayer group for family'
                         }
                         return Response(data, status=status.HTTP_400_BAD_REQUEST)
-
                     instance = Members.objects.get(pk=pk)
                     instance.member_name = serializer.data['name']
-                    instance.dob = serializer.data['dob']
-                    instance.blood_group = serializer.data['blood_group']
-                    instance.email = serializer.data['email']
-                    instance.phone_no_secondary_user = serializer.data['primary_number']
-                    instance.phone_no_secondary_user_secondary = serializer.data['secondary_number']
-                    instance.occupation = serializer.data['occupation']
-                    instance.marital_status = serializer.data['marital_status']
-                    instance.marrige_date = serializer.data['marrige_date']
-                    instance.about = serializer.data['about']
-                    instance.landline= serializer.data['landline']
-                    instance.relation= serializer.data['relation']
+                    if serializer.data.get('dob'):
+                        instance.dob = serializer.data.get('dob')
+                    if serializer.data.get('blood_group'):
+                        instance.blood_group = serializer.data.get('blood_group')
+                    if serializer.data.get('email'):
+                        instance.email = serializer.data.get('email')
+                    if serializer.data.get('primary_number'):
+                        if instance.phone_no_secondary_user != serializer.data.get('primary_number'):
+                            try:
+                                token_obj = Token.objects.get(user__username=instance.phone_no_secondary_user)
+                                token_obj.delete()
+                            except:
+                                pass
+                            instance.phone_no_secondary_user = serializer.data['primary_number']
+                        else:
+                            instance.phone_no_secondary_user = serializer.data['primary_number']
+                    if serializer.data.get('secondary_number'):
+                        instance.phone_no_secondary_user_secondary = serializer.data.get('secondary_number')
+                    if serializer.data.get('occupation'):
+                        instance.occupation = serializer.data.get('occupation')
+                    if serializer.data.get('marital_status'):
+                        instance.marital_status = serializer.data.get('marital_status')
+                    if serializer.data.get('marrige_date'):
+                        instance.marrige_date = serializer.data.get('marrige_date')
+                    if serializer.data.get('about'):
+                        instance.about = serializer.data.get('about')
+                    if serializer.data.get('landline'):
+                        instance.landline= serializer.data.get('landline')
+                    if serializer.data.get('relation'):
+                        instance.relation= serializer.data.get('relation')
                     instance.save()
-
                     instance.primary_user_id = family.primary_user_id
-
                     if instance.primary_user_id:
                         previous_groups = instance.primary_user_id.get_file_upload_prayergroup.all()
                         
@@ -3073,9 +3109,6 @@ class UpdateUserByAdminView(APIView):
             }
             data.update(serializer.data)
             response_data.append(data)
-
-
-
 
             response={
                 "status": True,
