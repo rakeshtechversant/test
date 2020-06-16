@@ -10,7 +10,7 @@ from apps.api.views import UserNoticeList, NoticeBereavementDelete, NoticeBereav
     PhoneVersionView, GalleryImagesView, GalleryImagesCreateView, SendOtpSecSave, FamilyListPaginatedView,\
     PrayerGroupBasedFamilyPaginatedView,PrayerGroupBasedMembersPaginatedView,SendWithoutOtpSecSave, UpdatePhoneNumberSecondary,\
     PrimaryToSecondaryViewset,PrimaryNumberChangeViewset,ChurchVicarEditView,ChurchHistoryEditView,DeviceInactiveView,RegisteredUsersViewAdmin,\
-    UnRegisteredUsersViewAdmin,HomeViewAdmin,UserStatisticsViewAdmin,ChangeRequestModelViewSet,VicarsViewSet
+    UnRegisteredUsersViewAdmin,HomeViewAdmin,UserStatisticsViewAdmin,ChangeRequestModelViewSet,VicarsViewSet,StatusChangeViewset
 from push_notifications.api.rest_framework import APNSDeviceAuthorizedViewSet, GCMDeviceAuthorizedViewSet
 router = DefaultRouter()
 
@@ -68,6 +68,7 @@ urlpatterns = [
     path('privacy-policy/',PrivacyView.as_view(),name='privacy'),
     path('update-phone-number-secondary/', UpdatePhoneNumberSecondary.as_view(),name='update-phone-number-secondary'),
     url(r'^primary-to-secondary/$',PrimaryToSecondaryViewset.as_view(),name='primary_to_secondary'),
+    url(r'^status-change/$',StatusChangeViewset.as_view(),name='status_change'),
     url(r'^change-phone-number-primary/$',PrimaryNumberChangeViewset.as_view(),name='change_phone_number_primary'),
     url(r'^device-inactive/$',DeviceInactiveView.as_view(),name='device_inactive'),
     url(r'^registered-users/$',RegisteredUsersViewAdmin.as_view(),name='registered-users'),

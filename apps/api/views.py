@@ -6207,3 +6207,304 @@ class VicarsViewSet(ModelViewSet):
         }
         data['response'] = serializer.data
         return Response(data)
+
+
+class StatusChangeViewset(CreateAPIView):
+    #queryset = PrimaryToSecondary.objects.all()
+    serializer_class = PrimaryToSecondarySerializer
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        request_from = request.POST.get('request_from', False)
+        request_to = request.POST.get('request_to', False)
+        usertype_from = request.POST.get('usertype_from', False)
+        if not request_from and not request_to and not  usertype_from :
+            return Response({'success': False,'message': 'You should fill all the fields'}, status=HTTP_400_BAD_REQUEST)
+        else :
+            try:
+                if usertype_from == 'PRIMARY' or usertype_from == 'primary':
+                    if FileUpload.objects.filter(primary_user_id=int(request_from)).exists():
+                        primary_user = FileUpload.objects.get(primary_user_id=request_from)
+                        sec_user = Members.objects.get(secondary_user_id=request_to)
+                        if primary_user.primary_user_id == sec_user.primary_user_id.primary_user_id:
+                            try:
+                                from_user = FileUpload.objects.get(phone_no_primary=request.user.username)
+                            except:
+                                from_user = FileUpload.objects.get(phone_no_secondary=request.user.username)
+
+                            #Status change
+                            prim_obj = FileUpload.objects.get(primary_user_id = int(request_from))
+                            sec_obj = Members.objects.get(secondary_user_id = int(request_to))
+                            if prim_obj and sec_obj:
+                                name1 = sec_obj.member_name
+                                sec_obj.member_name = prim_obj.name
+                                prim_obj.name = name1
+
+                                image1 = sec_obj.image
+                                sec_obj.image = prim_obj.image
+                                prim_obj.image = image1
+
+                                # address1 = sec_obj.address
+                                # sec_obj.address = prim_obj.address
+                                # prim_obj.address = address1
+
+                                phone1 = sec_obj.phone_no_secondary_user
+                                sec_obj.phone_no_secondary_user = prim_obj.phone_no_primary
+                                prim_obj.phone_no_primary = phone1
+
+                                phone2 = sec_obj.phone_no_secondary_user_secondary
+                                sec_obj.phone_no_secondary_user_secondary = prim_obj.phone_no_secondary
+                                prim_obj.phone_no_secondary = phone2
+
+                                dob1 = sec_obj.dob
+                                sec_obj.dob = prim_obj.dob
+                                prim_obj.dob = dob1
+
+                                dom1= sec_obj.dom
+                                sec_obj.dom = prim_obj.dom
+                                prim_obj.dom = dom1
+
+                                blood_group1= sec_obj.blood_group
+                                sec_obj.blood_group = prim_obj.blood_group
+                                prim_obj.blood_group = blood_group1
+
+                                email1= sec_obj.email
+                                sec_obj.email = prim_obj.email
+                                prim_obj.email = email1
+
+                                occupation1= sec_obj.occupation
+                                sec_obj.occupation = prim_obj.occupation
+                                prim_obj.occupation = occupation1
+
+                                about1= sec_obj.about
+                                sec_obj.about = prim_obj.about
+                                prim_obj.about = about1
+
+                                marital_status1= sec_obj.marital_status
+                                sec_obj.marital_status = prim_obj.marital_status
+                                prim_obj.marital_status = marital_status1
+
+                                marrige_date1= sec_obj.marrige_date
+                                sec_obj.marrige_date = prim_obj.marrige_date
+                                prim_obj.marrige_date = marrige_date1
+
+                                in_memory1= sec_obj.in_memory
+                                sec_obj.in_memory = prim_obj.in_memory
+                                prim_obj.in_memory = in_memory1
+
+                                in_memory_date1= sec_obj.in_memory_date
+                                sec_obj.in_memory_date = prim_obj.in_memory_date
+                                prim_obj.in_memory_date= in_memory_date1
+
+                                relation1= sec_obj.relation
+                                sec_obj.relation = prim_obj.relation
+                                prim_obj.relation= relation1
+
+                                landline1= sec_obj.landline
+                                sec_obj.landline = prim_obj.landline
+                                prim_obj.landline= landline1
+
+                                try:
+                                    temp_num = prim_obj.phone_no_primary
+                                    token_obj = Token.objects.get(user__username=temp_num)
+                                    token_obj.delete()
+                                except:
+                                    pass
+                                try:
+                                    temp_num = sec_obj.phone_no_secondary_user
+                                    token_obj = Token.objects.get(user__username=temp_num)
+                                    token_obj.delete()
+                                except:
+                                    pass
+                                prim_obj.save()
+                                sec_obj.save()
+
+                            #Admin notify
+                            admin_profiles = AdminProfile.objects.all()
+                            try:
+                                image = ""
+                                for admin_profile in admin_profiles:
+                                    content = {'title':'Status Changed','message':{"data":{"title":"Status Changed","body":"%s,of %s,%s changed his status."%(from_user.name,str(from_user.get_file_upload.first().name),str(from_user.get_file_upload_prayergroup.first().name)),"notificationType":"default","backgroundImage":image,"text_type":"long"},\
+                                    "notification":{"alert":"This is a FCM notification","title":"Status Changed","body":"%s,of %s,%s changed his status"%(primary_user.name,str(primary_user.get_file_upload.first().name),str(primary_user.get_file_upload_prayergroup.first().name)),"sound":"default","backgroundImage":image,"backgroundImageTextColour":"#FFFFFF","image":image,"click_action":"default"}} }
+                                    content_ios = {'message':{"aps":{"alert":{"title":"Status Changed","subtitle":"","body":"%s,of %s,%s changed his status."%(from_user.name,str(from_user.get_file_upload.first().name),str(from_user.get_file_upload_prayergroup.first().name))},"sound":"default","category":"default","badge":1,"mutable-content":1},"media-url":image}}
+                                    resp = fcm_messaging_to_user(admin_profile.user,content)
+                                    resp1 = apns_messaging_to_user(admin_profile.user,content_ios)
+                            except:
+                                pass
+
+                            success_data = {
+                                'status': True,
+                                "message": "Status changed successfully"
+                            }
+                            return Response(success_data, status=status.HTTP_201_CREATED)
+                        else:
+
+                            data = {
+                                'status': False,
+                                'message':"You have no permission to do this action"
+                            }
+                            data['response'] = {}
+
+                            return Response(data, status=status.HTTP_400_BAD_REQUEST)
+                    else:
+                        data = {
+                            'status': False,
+                            'message':"Primary member doesnot exist"
+                        }
+                        data['response'] = {}
+
+                        return Response(data, status=status.HTTP_400_BAD_REQUEST)
+
+                elif usertype_from == 'SECONDARY' or usertype_from == 'secondary':
+                    if Members.objects.filter(secondary_user_id=int(request_from)).exists():
+                        primary_user = FileUpload.objects.get(primary_user_id=request_to)
+                        sec_user = Members.objects.get(secondary_user_id=request_from)
+                        if primary_user and sec_user :
+                            if primary_user.primary_user_id == sec_user.primary_user_id.primary_user_id:
+                                try:
+                                    from_user = Members.objects.get(phone_no_secondary_user=request.user.username)
+                                    if from_user.phone_no_secondary_user:
+                                        from_user_phone = from_user.phone_no_secondary_user
+                                    else:
+                                        from_user_phone = None
+                                except:
+                                    from_user = Members.objects.get(phone_no_secondary_user_secondary=request.user.username)
+                                    if from_user.phone_no_secondary_user_secondary:
+                                        from_user_phone = from_user.phone_no_secondary_user_secondary
+                                    else:
+                                        from_user_phone = None
+
+                                #Status change
+                                prim_obj = FileUpload.objects.get(primary_user_id = int(request_to))
+                                sec_obj = Members.objects.get(secondary_user_id = int(request_from))
+                                if prim_obj and sec_obj:
+                                    name1 = sec_obj.member_name
+                                    sec_obj.member_name = prim_obj.name
+                                    prim_obj.name = name1
+
+                                    image1 = sec_obj.image
+                                    sec_obj.image = prim_obj.image
+                                    prim_obj.image = image1
+
+                                    # address1 = sec_obj.address
+                                    # sec_obj.address = prim_obj.address
+                                    # prim_obj.address = address1
+
+                                    phone1 = sec_obj.phone_no_secondary_user
+                                    sec_obj.phone_no_secondary_user = prim_obj.phone_no_primary
+                                    prim_obj.phone_no_primary = phone1
+
+                                    phone2 = sec_obj.phone_no_secondary_user_secondary
+                                    sec_obj.phone_no_secondary_user_secondary = prim_obj.phone_no_secondary
+                                    prim_obj.phone_no_secondary = phone2
+
+                                    dob1 = sec_obj.dob
+                                    sec_obj.dob = prim_obj.dob
+                                    prim_obj.dob = dob1
+
+                                    dom1= sec_obj.dom
+                                    sec_obj.dom = prim_obj.dom
+                                    prim_obj.dom = dom1
+
+                                    blood_group1= sec_obj.blood_group
+                                    sec_obj.blood_group = prim_obj.blood_group
+                                    prim_obj.blood_group = blood_group1
+
+                                    email1= sec_obj.email
+                                    sec_obj.email = prim_obj.email
+                                    prim_obj.email = email1
+
+                                    occupation1= sec_obj.occupation
+                                    sec_obj.occupation = prim_obj.occupation
+                                    prim_obj.occupation = occupation1
+
+                                    about1= sec_obj.about
+                                    sec_obj.about = prim_obj.about
+                                    prim_obj.about = about1
+
+                                    marital_status1= sec_obj.marital_status
+                                    sec_obj.marital_status = prim_obj.marital_status
+                                    prim_obj.marital_status = marital_status1
+
+                                    marrige_date1= sec_obj.marrige_date
+                                    sec_obj.marrige_date = prim_obj.marrige_date
+                                    prim_obj.marrige_date = marrige_date1
+
+                                    in_memory1= sec_obj.in_memory
+                                    sec_obj.in_memory = prim_obj.in_memory
+                                    prim_obj.in_memory = in_memory1
+
+                                    in_memory_date1= sec_obj.in_memory_date
+                                    sec_obj.in_memory_date = prim_obj.in_memory_date
+                                    prim_obj.in_memory_date= in_memory_date1
+
+                                    relation1= sec_obj.relation
+                                    sec_obj.relation = prim_obj.relation
+                                    prim_obj.relation= relation1
+
+                                    landline1= sec_obj.landline
+                                    sec_obj.landline = prim_obj.landline
+                                    prim_obj.landline= landline1
+
+                                    try:
+                                        temp_num = prim_obj.phone_no_primary
+                                        token_obj = Token.objects.get(user__username=temp_num)
+                                        token_obj.delete()
+                                    except:
+                                        pass
+                                    try:
+                                        temp_num = sec_obj.phone_no_secondary_user
+                                        token_obj = Token.objects.get(user__username=temp_num)
+                                        token_obj.delete()
+                                    except:
+                                        pass
+
+                                    sec_obj.save()
+                                    prim_obj.save()
+
+                                #Admin notification
+                                admin_profiles = AdminProfile.objects.all()
+                                try:
+                                    image = ""
+                                    for admin_profile in admin_profiles:
+                                        content = {'title':'Status Changed','message':{"data":{"title":"Status Changed","body":"%s,of %s,%s changed his status to head of the family."%(from_user.member_name,str(primary_user.get_file_upload.first().name),str(primary_user.get_file_upload_prayergroup.first().name)),"notificationType":"default","backgroundImage":image,"text_type":"long"},\
+                                        "notification":{"alert":"This is a FCM notification","title":"Status Changed","body":"%s,of %s,%s changed his status to head of the family."%(from_user.member_name,str(primary_user.get_file_upload.first().name),str(primary_user.get_file_upload_prayergroup.first().name)),"sound":"default","backgroundImage":image,"backgroundImageTextColour":"#FFFFFF","image":image,"click_action":"default"}} } 
+                                        content_ios = {'message':{"aps":{"alert":{"title":"Status Changed","subtitle":"","body":"%s,of %s,%s changed his status to head of the family."%(from_user.member_name,str(primary_user.get_file_upload.first().name),str(primary_user.get_file_upload_prayergroup.first().name))},"sound":"default","category":"default","badge":1,"mutable-content":1},"media-url":image}}
+                                        resp = fcm_messaging_to_user(admin_profile.user,content)
+                                        resp1 = apns_messaging_to_user(admin_profile.user,content_ios)
+                                except:
+                                    pass
+                                success_data = {
+                                    'status': True,
+                                    "message": "Status changed successfully"
+                                }
+                                return Response(success_data, status=status.HTTP_201_CREATED)
+                            else:
+                                data = {
+                                    'status': False,
+                                    'message':"You have no permission to do this action"
+                                }
+                                data['response'] = {}
+
+                                return Response(data, status=status.HTTP_400_BAD_REQUEST)
+                        else:
+                            data = {
+                                'status': False,
+                                'message':"You have no permission to do this action"
+                            }
+                            data['response'] = {}
+
+                            return Response(data, status=status.HTTP_400_BAD_REQUEST)
+                    else:
+                        data = {
+                            'status': False,
+                            'message':"Member doesnot exist"
+                        }
+                        data['response'] = serializer.errors
+
+                        return Response(data, status=status.HTTP_400_BAD_REQUEST)
+                else:
+                    return Response({'success': False}, status=status.HTTP_400_BAD_REQUEST)
+            except:
+                return Response({'success': False,'message': 'Something Went Wrong'}, status=status.HTTP_400_BAD_REQUEST)
