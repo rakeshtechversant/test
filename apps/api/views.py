@@ -2456,8 +2456,19 @@ class NoticeBereavementEdit(RetrieveUpdateAPIView):
         try:
             if beri_obj.primary_member:
                 member_id = beri_obj.primary_member
+                if member_id.get_file_upload.first():
+                    family_name = member_id.get_file_upload.first().name
+                else:
+                    family_name = ''
+                username = member_id.name
+
             elif beri_obj.secondary_member:
                 member_id = beri_obj.secondary_member
+                if member_id.primary_user_id.get_file_upload.first():
+                    family_name = member_id.primary_user_id.get_file_upload.first().name
+                else:
+                    family_name = ''
+                username = member_id.mamber_name
             else:
                 return Response({'success': False,'message': 'Member doesnot exist'}, status=HTTP_400_BAD_REQUEST)
         except:
@@ -2474,6 +2485,20 @@ class NoticeBereavementEdit(RetrieveUpdateAPIView):
             beri_obj.updated = True
         member_id.save()
         beri_obj.save()
+        if beri_obj.updated == True:
+            try:
+                image= request.build_absolute_uri(member_id.image.url)
+            except:
+                image = ""
+            try:
+                content = {'title':'notice title','message':{"data":{"title":"Funeral Notice Update","body":"Update About Funeral of %s belonging to %s"%(username,family_name),"notificationType":"funeral","backgroundImage":image,"text_type":"long"},\
+                "notification":{"alert":"This is a FCM notification","title":"Funeral Notice Update","body":"Update About Funeral of %s belonging to %s"%(username,family_name),"sound":"default","backgroundImage":image,"backgroundImageTextColour":"#FFFFFF","image":image,"click_action":"notice"}} } 
+            
+                content_ios = {'message':{"aps":{"alert":{"title":"Funeral Notice Update","subtitle":"","body":"Update About Funeral of %s belonging to %s"%(username,family_name)},"sound":"default","category":"notice","badge":1,"mutable-content":1},"media-url":image}}
+                resp = fcm_messaging_to_all(content)
+                resp1 = apns_messaging_to_all(content_ios)
+            except:
+                pass
         return Response({'success': True,'message':'Notice Updated Successfully'}, status=status.HTTP_200_OK)
 
 class NoticeBereavementDelete(DestroyAPIView):
@@ -6141,13 +6166,12 @@ class VicarsViewSet(ModelViewSet):
 
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset().order_by('start_year'))
-        vicar_type = request.GET.get('vicar_type')
-        if vicar_type == 'asstvicar':
-            queryset = queryset.filter(vicar_type='asstvicar').order_by('start_year')
-        elif vicar_type == 'vicar':
-            queryset = queryset.filter(vicar_type='vicar').order_by('start_year')
-        else:
-            queryset = self.filter_queryset(self.get_queryset().order_by('start_year'))
+        queryset_asstvicar = queryset.filter(vicar_type='asstvicar').order_by('start_year').exclude(end_year='present')
+        queryset_vicar = queryset.filter(vicar_type='vicar').order_by('start_year').exclude(end_year='present')
+
+        queryset_asstvicar_present = queryset.filter(vicar_type='asstvicar',end_year='present')
+        queryset_vicar_present = queryset.filter(vicar_type='vicar',end_year='present')
+
         page = self.paginate_queryset(queryset)
         data = {
                 'code': 200,
@@ -6158,8 +6182,12 @@ class VicarsViewSet(ModelViewSet):
 
             return self.get_paginated_response(serializer.data)
 
-        serializer = self.get_serializer(queryset, many=True)
-        data['response'] = serializer.data
+        queryset_asstvicar = self.get_serializer(queryset_asstvicar, many=True)
+        queryset_vicar = VicarsSerializer(queryset_vicar, many=True)
+        queryset_asstvicar_present = VicarsSerializer(queryset_asstvicar_present, many=True)
+        queryset_vicar_present = VicarsSerializer(queryset_vicar_present, many=True)
+        data['response'] = {"current-vicar":queryset_vicar_present.data,"current-asstvicar":queryset_asstvicar_present.data,\
+                            "former-vicars":queryset_vicar.data,"former-asstvicars":queryset_asstvicar.data}
         return Response(data)
 
     def retrieve(self, request, *args, **kwargs):
@@ -6172,6 +6200,23 @@ class VicarsViewSet(ModelViewSet):
         data['response'] = serializer.data
         return Response(data)
 
+    def perform_create(self, serializer):
+        import datetime as dt
+        current_year = dt.datetime.now().year
+        try: 
+            if  serializer.validated_data.get('vicar_type') == 'vicar':
+                queryset_vicar_present = ChurchVicars.objects.filter(vicar_type='vicar',end_year='present').first()
+                queryset_vicar_present.end_year = current_year
+                queryset_vicar_present.save()
+            elif serializer.validated_data.get('vicar_type') == 'asstvicar':
+                queryset_vicar_present = ChurchVicars.objects.filter(vicar_type='asstvicar',end_year='present').first()
+                queryset_vicar_present.end_year = current_year
+                queryset_vicar_present.save()
+            else:
+                pass
+        except:
+            pass
+        serializer.save(end_year='present',start_year=current_year)
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)

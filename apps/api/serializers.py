@@ -1423,7 +1423,6 @@ class ChangeRequestSerializer(serializers.ModelSerializer):
 
     def to_representation(self, obj):
         data = super().to_representation(obj)
-        #import pdb;pdb.set_trace()
         try:
             if obj.request_type == 'mobile':
                 data['type'] = 'change_request_mobile'
@@ -1462,7 +1461,12 @@ class ChangeRequestSerializer(serializers.ModelSerializer):
                 data['date_format'] = obj.date.strftime("%d/%m/%Y, %H:%M:%S %p")
                 data['date'] = obj.created_at
         except:
-            pass
+            try:
+                data['date'] = obj.created_at
+                data['date_format'] = tz.localtime(obj.created_at, pytz.timezone('Asia/Kolkata')).strftime("%d/%m/%Y, %H:%M:%S %p")
+            except:
+                data['date_format'] = obj.date.strftime("%d/%m/%Y, %H:%M:%S %p")
+                data['date'] = obj.created_at
         return data
     def create(self, validated_data):
         change_request = ChangeRequest(**validated_data)
