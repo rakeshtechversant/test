@@ -6161,8 +6161,8 @@ class ChangeRequestModelViewSet(ModelViewSet):
 class VicarsViewSet(ModelViewSet):
     queryset = ChurchVicars.objects.all()
     serializer_class = VicarsSerializer
-    permission_classes = [IsAdminUser]
-    authentication_classes = [TokenAuthentication]
+    permission_classes = [AllowAny]
+    # authentication_classes = [TokenAuthentication]
 
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset().order_by('start_year'))
