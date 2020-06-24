@@ -6165,6 +6165,9 @@ class VicarsViewSet(ModelViewSet):
     # authentication_classes = [TokenAuthentication]
 
     def list(self, request, *args, **kwargs):
+        context ={
+            'request': request
+        }
         queryset = self.filter_queryset(self.get_queryset().order_by('start_year'))
         queryset_asstvicar = queryset.filter(vicar_type='asstvicar').order_by('start_year').exclude(end_year='present')
         queryset_vicar = queryset.filter(vicar_type='vicar').order_by('start_year').exclude(end_year='present')
@@ -6182,10 +6185,10 @@ class VicarsViewSet(ModelViewSet):
 
             return self.get_paginated_response(serializer.data)
 
-        queryset_asstvicar = self.get_serializer(queryset_asstvicar, many=True)
-        queryset_vicar = VicarsSerializer(queryset_vicar, many=True)
-        queryset_asstvicar_present = VicarsSerializer(queryset_asstvicar_present, many=True)
-        queryset_vicar_present = VicarsSerializer(queryset_vicar_present, many=True)
+        queryset_asstvicar = self.get_serializer(queryset_asstvicar, many=True,context=context)
+        queryset_vicar = VicarsSerializer(queryset_vicar, many=True,context=context)
+        queryset_asstvicar_present = VicarsSerializer(queryset_asstvicar_present, many=True,context=context)
+        queryset_vicar_present = VicarsSerializer(queryset_vicar_present, many=True,context=context)
         data['response'] = {"current-vicar":queryset_vicar_present.data,"current-asstvicar":queryset_asstvicar_present.data,\
                             "former-vicars":queryset_vicar.data,"former-asstvicars":queryset_asstvicar.data}
         return Response(data)

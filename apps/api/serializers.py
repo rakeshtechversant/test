@@ -1494,3 +1494,12 @@ class VicarsSerializer(serializers.ModelSerializer):
     class Meta:
         model = ChurchVicars
         fields = '__all__'
+
+    def to_representation(self, obj):
+        data = super().to_representation(obj)
+        try:
+            request = self.context['request']
+            data['vicar_image'] = request.build_absolute_uri(obj.vicar_image.url)
+        except:
+            pass
+        return data
