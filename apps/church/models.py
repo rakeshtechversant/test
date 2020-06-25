@@ -161,6 +161,10 @@ class Images(models.Model):
 class ChurchDetails(models.Model):
     church_name = models.CharField(max_length=200)
     description = models.TextField(max_length=5000, null=True, blank=True)
+    our_church = models.TextField(max_length=5000, null=True, blank=True)
+    infrastructure = models.TextField(max_length=5000, null=True, blank=True)
+    organization = models.TextField(max_length=5000, null=True, blank=True)
+    church_place = models.CharField(max_length=200)
     image = models.ManyToManyField(Images)
     cover_image = models.FileField(upload_to='pan_folder/', null=True, blank=True)
     address = models.CharField(max_length=200, null=True, blank=True)

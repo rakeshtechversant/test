@@ -39,7 +39,7 @@ from apps.api.serializers import ChurchHistorySerializer, ChurchImagesSerializer
     GalleryImagesSerializer, FamilyDetailSerializer, FamilyEditSerializer, GalleryImagesCreateSerializer, \
     OTPVeifySerializerUserId, CommonUserSerializer, MemberNumberSerializer, PrimaryToSecondarySerializer, NumberChangePrimarySerializer ,\
     AdminRequestSerializer, PrimaryUserSerializerPage, MembersSerializerPage, UserMemorySerializer, UserByMembersSerializer, ChangeRequestSerializer ,\
-    VicarsSerializer
+    VicarsSerializer,ChurchHistoryEditSerializer
 from apps.church.models import Members, Family, UserProfile, ChurchDetails, FileUpload, OtpModels, \
     PrayerGroup, Notification, Notice, NoticeBereavement, UnapprovedMember, NoticeReadPrimary, NoticeReadSecondary, \
     ViewRequestNumber, NoticeReadAdmin, PrivacyPolicy, PhoneVersion, Images, PrimaryToSecondary, NumberChangePrimary, ChangeRequest, ChurchVicars
@@ -1267,7 +1267,7 @@ class ChurchHistoryView(RetrieveAPIView):
 
 class ChurchHistoryEditView(viewsets.ModelViewSet):
     queryset = ChurchDetails.objects.all()
-    serializer_class = ChurchHistorySerializer
+    serializer_class = ChurchHistoryEditSerializer
     permission_classes = [AllowAny]
 
 class ChurchImagesView(RetrieveAPIView):

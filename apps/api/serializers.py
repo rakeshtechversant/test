@@ -224,7 +224,12 @@ class ChurchHistorySerializer(serializers.ModelSerializer):
 
         return data
 
-    
+class ChurchHistoryEditSerializer(serializers.ModelSerializer):
+    church_name = serializers.CharField(allow_blank=True,required=False)
+    church_place = serializers.CharField(allow_blank=True,required=False)
+    class Meta:
+        model = ChurchDetails
+        fields = ['church_name','church_place','our_church','infrastructure','organization']
 
 class ChurchImagesSerializer(serializers.ModelSerializer):
 
