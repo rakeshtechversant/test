@@ -6128,7 +6128,18 @@ class UserStatisticsViewAdmin(APIView):
         except:
             dob_bday = []
 
-        output = {"total_number_of_users":count_users_all ,"number_of_users_registered":count_users_reg ,"number_of_users_unregistered":count_users_unreg,"number_of_active_users":count_users_active,"todays_bday":dob_bday }
+        #sms balance
+        try:
+            bal = None
+            bal = requests.get(
+                "http://api.unifiedbuzz.com/sms/inbal?type=1",
+                headers={"X-API-Key": "ed6edfa3928bb18628e1cb94b79c7319"})
+            bal = int(bal.json()['data']['balance'])
+        except Exception as exp:
+            print("sms",exp)
+            bal = None
+
+        output = {"total_number_of_users":count_users_all ,"number_of_users_registered":count_users_reg ,"number_of_users_unregistered":count_users_unreg,"number_of_active_users":count_users_active,"todays_bday":dob_bday,"sms_balance":bal }
 
         data = {
                 'code': 200,
