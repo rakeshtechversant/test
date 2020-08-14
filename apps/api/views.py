@@ -1597,8 +1597,10 @@ class FamilyMemberList(ListAPIView):
             raise exceptions.NotFound(detail="Family does not exist")
 
         self.primary_user = family.primary_user_id
-
-        members = Members.objects.filter(primary_user_id=family.primary_user_id)
+        if self.primary_user:
+            members = Members.objects.filter(primary_user_id=family.primary_user_id)
+        else:
+            members = []
         return members
 
     def list(self, request, *args, **kwargs):
@@ -1626,9 +1628,9 @@ class FamilyMemberList(ListAPIView):
         serializer = self.get_serializer(queryset, many=True)
         response = serializer.data
 
-        primary_user_id = UserRetrieveSerializer(self.primary_user, context={'request':request}).data
-
-        response.insert(0, primary_user_id)
+        if self.primary_user:
+            primary_user_id = UserRetrieveSerializer(self.primary_user, context={'request':request}).data
+            response.insert(0, primary_user_id)
         response_query = sorted(response, key = lambda i: i['name'])
         data = {
             'code': 200,
