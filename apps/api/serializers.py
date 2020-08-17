@@ -1320,17 +1320,15 @@ class MembersSerializerPage(serializers.ModelSerializer):
             data['phone_no_secondary'] = None
 
         try:
-            data['family_name'] = instance.primary_user_id.get_file_upload.first().name.title()
+            fam_obj = instance.primary_user_id.get_file_upload.first()
+            data['family_name'] = fam_obj.name.title()
+            data['active'] = fam_obj.active
+            data['family_id'] = fam_obj.id
         except:
             data['family_name'] = ''
-        try:
-            data['active'] = instance.primary_user_id.get_file_upload.first().active
-        except:
             data['active'] = ''
-        try:
-            data['family_id'] = instance.primary_user_id.get_file_upload.first().id
-        except:
             data['family_id'] = ''
+
         try:
             data['primary_name'] = instance.primary_user_id.name.title()
         except:
@@ -1374,16 +1372,13 @@ class PrimaryUserSerializerPage(serializers.ModelSerializer):
         request = self.context['request']
 
         if obj.get_file_upload.first():
-            data['family_name'] = obj.get_file_upload.first().name.title()
+            fam_obj = obj.get_file_upload.first()
+            data['family_name'] = fam_obj.name.title()
+            data['active'] = fam_obj.active
+            data['family_id'] = fam_obj.id
         else:
             data['family_name'] = ''
-        try:
-            data['active'] = obj.get_file_upload.first().active
-        except:
             data['active'] = ''
-        try:
-            data['family_id'] = obj.get_file_upload.first().id
-        except:
             data['family_id'] = ''
         try:
             data['name'] = obj.name.title()

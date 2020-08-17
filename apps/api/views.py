@@ -989,16 +989,11 @@ class StandardResultsSetPagination(PageNumberPagination):
     page_size_query_param = 'page_size'
     max_page_size = 1000
 
-class StandardResultsSetPaginationList(PageNumberPagination):
-    page_size = 20
-    page_size_query_param = 'page_size'
-    max_page_size = 1000
-
 class UserListCommonView(ListAPIView):
     queryset = FileUpload.objects.all()
     serializer_class = UserListSerializer
     permission_classes = [AllowAny]
-    pagination_class = StandardResultsSetPaginationList
+    pagination_class = StandardResultsSetPagination
 
     def list(self, request, *args, **kwargs):
 
@@ -1019,7 +1014,7 @@ class UserListCommonView(ListAPIView):
         except:
             queryset_primary = PrimaryUserSerializerPage(FileUpload.objects.all().order_by('name'), many=True, context=context).data
             queryset_secondary = MembersSerializerPage(Members.objects.all().order_by('member_name'), many=True, context=context).data
-        # import pdb;pdb.set_trace()
+
         try:
             response = queryset_primary + queryset_secondary
         except:
