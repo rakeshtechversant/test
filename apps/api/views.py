@@ -989,11 +989,16 @@ class StandardResultsSetPagination(PageNumberPagination):
     page_size_query_param = 'page_size'
     max_page_size = 1000
 
+class StandardResultsSetPaginationList(PageNumberPagination):
+    page_size = 20
+    page_size_query_param = 'page_size'
+    max_page_size = 1000
+
 class UserListCommonView(ListAPIView):
     queryset = FileUpload.objects.all()
     serializer_class = UserListSerializer
     permission_classes = [AllowAny]
-    pagination_class = StandardResultsSetPagination
+    pagination_class = StandardResultsSetPaginationList
 
     def list(self, request, *args, **kwargs):
 
