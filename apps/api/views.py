@@ -4146,10 +4146,57 @@ class UpdatePhoneNumberSecondary(APIView):
         # import pdb;pdb.set_trace()
         # instance=Members.objects.get(phone_no_secondary_user=request.user.username)
         serializer = MemberNumberSerializer(data=request.data)
-
         if serializer.is_valid():
             phone_number = serializer.data.get('phone_no_secondary_user',None)
             phone_number_sec = serializer.data.get('phone_no_secondary_user_secondary',None)
+            if phone_number and phone_number_sec:
+                if FileUpload.objects.filter(phone_no_primary=phone_number).exists() or \
+                    FileUpload.objects.filter(phone_no_secondary=phone_number).exists()  or \
+                    Members.objects.filter(phone_no_secondary_user=phone_number).exists() or\
+                    Members.objects.filter(phone_no_secondary_user_secondary=phone_number).exists() :
+               
+                    data = {
+                        'status': False,
+                        'message':"This phone number already registered.Please use another number"
+                    }
+                    data['response'] = serializer.errors
+
+                    return Response(data, status=status.HTTP_400_BAD_REQUEST)
+                try:
+                    member=Members.objects.get(phone_no_secondary_user=request.user.username)
+                    member.phone_no_secondary_user = phone_number
+                    member.phone_no_secondary_user_secondary = phone_number_sec
+                    member.save()
+                    data1 = {}
+                    user,created=User.objects.get_or_create(username=phone_number)
+                    token, created = Token.objects.get_or_create(user=user)
+                    data1 = {
+                            'mobile': phone_number,
+                            'user_type': 'SECONDARY',
+                            'name': member.member_name,
+                            'token':token.key,
+                            'user_id':member.secondary_user_id
+                    }
+                    # request.user.auth_token.delete()
+                except:
+                    data = {
+                        'status': False,
+                        'message':"You have no permission to do this action"
+                    }
+                    data['response'] = serializer.errors
+
+                    return Response(data, status=status.HTTP_400_BAD_REQUEST)
+                success_data = {
+                    'status': True,
+                    "message": "Member Phone number Updated Successfully"
+                }
+                success_data.update(serializer.data)
+                data1.update(success_data)
+                success_data['response'] = data1
+                # success_data['user_details'] = data1
+
+                return Response(success_data, status=status.HTTP_201_CREATED)
+
             if phone_number :
                 if FileUpload.objects.filter(phone_no_primary=phone_number).exists() or \
                     FileUpload.objects.filter(phone_no_secondary=phone_number).exists()  or \
@@ -4195,7 +4242,8 @@ class UpdatePhoneNumberSecondary(APIView):
                 # success_data['user_details'] = data1
 
                 return Response(success_data, status=status.HTTP_201_CREATED)
-            elif phone_number_sec:
+
+            if phone_number_sec:
                 if FileUpload.objects.filter(phone_no_primary=phone_number_sec).exists() or \
                     FileUpload.objects.filter(phone_no_secondary=phone_number_sec).exists()  or \
                     Members.objects.filter(phone_no_secondary_user=phone_number_sec).exists() or\
@@ -4212,6 +4260,7 @@ class UpdatePhoneNumberSecondary(APIView):
                     member=Members.objects.get(phone_no_secondary_user=request.user.username)
                     member.phone_no_secondary_user_secondary = phone_number_sec
                     member.save()
+                    data1 = {}
                     # user,created=User.objects.get_or_create(username=phone_number_sec)
                     # token, created = Token.objects.get_or_create(user=user)
                     # data1 = {
