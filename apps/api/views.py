@@ -4161,7 +4161,7 @@ class UpdatePhoneNumberSecondary(APIView):
                     }
                     data['response'] = serializer.errors
 
-                    return Response(data, status=status.HTTP_400_BAD_REQUEST)
+                    return Response(data, status=status.HTTP_201_CREATED)
                 try:
                     member=Members.objects.get(phone_no_secondary_user=request.user.username)
                     member.phone_no_secondary_user = phone_number
@@ -4209,7 +4209,7 @@ class UpdatePhoneNumberSecondary(APIView):
                     }
                     data['response'] = serializer.errors
 
-                    return Response(data, status=status.HTTP_400_BAD_REQUEST)
+                    return Response(data, status=status.HTTP_201_CREATED)
                 try:
                     member=Members.objects.get(phone_no_secondary_user=request.user.username)
                     member.phone_no_secondary_user = phone_number
