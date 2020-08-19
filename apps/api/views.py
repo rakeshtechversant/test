@@ -2935,7 +2935,6 @@ class CreateUserByAdminView(APIView):
         serializer = UserByadminSerializer(data=request.data)
 
         if serializer.is_valid():
-
             family = Family.objects.get(pk=serializer.data['family'])
             
             if family.primary_user_id and not family.primary_user_id.in_memory and serializer.data['member_type'] in ['Primary', 'primary']:
@@ -2944,9 +2943,9 @@ class CreateUserByAdminView(APIView):
                     'message': 'Primary user already exists for this family'
                 }
                 return Response(data, status=status.HTTP_400_BAD_REQUEST)
-            if FileUpload.objects.filter(phone_no_primary=serializer.data['primary_number']).exists() or \
-                    FileUpload.objects.filter(phone_no_primary=serializer.data['secondary_number']).exists()  or \
-                    FileUpload.objects.filter(phone_no_secondary=serializer.data['secondary_number']).exists()  or \
+            if FileUpload.objects.filter(phone_no_primary=serializer.data.get('primary_number')).exists() or \
+                    FileUpload.objects.filter(phone_no_primary=serializer.data.get('secondary_number')).exclude(Q(phone_no_primary='')|Q(phone_no_primary=None)).exists()  or \
+                    FileUpload.objects.filter(phone_no_secondary=serializer.data.get('secondary_number')).exclude(Q(phone_no_secondary='')|Q(phone_no_secondary=None)).exists()  or \
                     FileUpload.objects.filter(phone_no_secondary=serializer.data['primary_number']).exists()  or \
                     Members.objects.filter(phone_no_secondary_user=serializer.data['primary_number']).exists():
                     data = {
@@ -2959,15 +2958,15 @@ class CreateUserByAdminView(APIView):
                 
                 instance = FileUpload(
                     name=serializer.data['name'],
-                    dob=serializer.data['dob'],
-                    blood_group=serializer.data['blood_group'],
-                    email=serializer.data['email'],
+                    dob=serializer.data.get('dob'),
+                    blood_group=serializer.data.get('blood_group'),
+                    email=serializer.data.get('email'),
                     phone_no_primary=serializer.data['primary_number'],
-                    phone_no_secondary=serializer.data['secondary_number'],
-                    occupation=serializer.data['occupation'],
-                    marital_status=serializer.data['marital_status'],
-                    marrige_date=serializer.data['marrige_date'],
-                    about=serializer.data['about'],
+                    phone_no_secondary=serializer.data.get('secondary_number'),
+                    occupation=serializer.data.get('occupation'),
+                    marital_status=serializer.data.get('marital_status'),
+                    marrige_date=serializer.data.get('marrige_date'),
+                    about=serializer.data.get('about'),
                 )
             else:
                 if not family.primary_user_id:
@@ -2979,16 +2978,16 @@ class CreateUserByAdminView(APIView):
 
                 instance = Members(
                     member_name=serializer.data['name'],
-                    dob=serializer.data['dob'],
-                    blood_group=serializer.data['blood_group'],
-                    email=serializer.data['email'],
-                    phone_no_secondary_user=serializer.data['primary_number'],
-                    phone_no_secondary_user_secondary=serializer.data['secondary_number'],
-                    occupation=serializer.data['occupation'],
-                    marital_status=serializer.data['marital_status'],
-                    marrige_date=serializer.data['marrige_date'],
-                    about=serializer.data['about'],
-                    relation=serializer.data['member_type']
+                    dob=serializer.data.get('dob'),
+                    blood_group=serializer.data.get('blood_group'),
+                    email=serializer.data.get('email'),
+                    phone_no_secondary_user=serializer.data.get('primary_number'),
+                    phone_no_secondary_user_secondary=serializer.data.get('secondary_number'),
+                    occupation=serializer.data.get('occupation'),
+                    marital_status=serializer.data.get('marital_status'),
+                    marrige_date=serializer.data.get('marrige_date'),
+                    about=serializer.data.get('about'),
+                    relation=serializer.data.get('member_type')
                 )
 
             if serializer.data['member_status'] == 'in_memory':
