@@ -4152,12 +4152,12 @@ class UpdatePhoneNumberSecondary(APIView):
             if phone_number and phone_number_sec:
                 if FileUpload.objects.filter(phone_no_primary=phone_number).exists() or \
                     FileUpload.objects.filter(phone_no_secondary=phone_number).exists()  or \
-                    Members.objects.filter(phone_no_secondary_user=phone_number).exists() or\
-                    Members.objects.filter(phone_no_secondary_user_secondary=phone_number).exists() :
+                    Members.objects.filter(phone_no_secondary_user=phone_number).exists() :
+                    # Members.objects.filter(phone_no_secondary_user_secondary=phone_number).exists() :
                
                     data = {
                         'status': False,
-                        'message':"This phone number already registered.Please use another number"
+                        'message':"This phone number already registered"
                     }
                     data['response'] = serializer.errors
 
@@ -4200,12 +4200,12 @@ class UpdatePhoneNumberSecondary(APIView):
             if phone_number :
                 if FileUpload.objects.filter(phone_no_primary=phone_number).exists() or \
                     FileUpload.objects.filter(phone_no_secondary=phone_number).exists()  or \
-                    Members.objects.filter(phone_no_secondary_user=phone_number).exists() or\
-                    Members.objects.filter(phone_no_secondary_user_secondary=phone_number).exists() :
+                    Members.objects.filter(phone_no_secondary_user=phone_number).exists() :
+                    # Members.objects.filter(phone_no_secondary_user_secondary=phone_number).exists() :
                
                     data = {
                         'status': False,
-                        'message':"This phone number already registered.Please use another number"
+                        'message':"This phone number already registered"
                     }
                     data['response'] = serializer.errors
 
@@ -4244,18 +4244,18 @@ class UpdatePhoneNumberSecondary(APIView):
                 return Response(success_data, status=status.HTTP_201_CREATED)
 
             if phone_number_sec:
-                if FileUpload.objects.filter(phone_no_primary=phone_number_sec).exists() or \
-                    FileUpload.objects.filter(phone_no_secondary=phone_number_sec).exists()  or \
-                    Members.objects.filter(phone_no_secondary_user=phone_number_sec).exists() or\
-                    Members.objects.filter(phone_no_secondary_user_secondary=phone_number_sec).exists() :
+                # if FileUpload.objects.filter(phone_no_primary=phone_number_sec).exists() or \
+                #     FileUpload.objects.filter(phone_no_secondary=phone_number_sec).exists()  or \
+                #     Members.objects.filter(phone_no_secondary_user=phone_number_sec).exists() or\
+                #     Members.objects.filter(phone_no_secondary_user_secondary=phone_number_sec).exists() :
                
-                    data = {
-                        'status': False,
-                        'message':"Phone number already registered"
-                    }
-                    data['response'] = serializer.errors
+                #     data = {
+                #         'status': False,
+                #         'message':"Phone number already registered"
+                #     }
+                #     data['response'] = serializer.errors
 
-                    return Response(data, status=status.HTTP_400_BAD_REQUEST)
+                #     return Response(data, status=status.HTTP_400_BAD_REQUEST)
                 try:
                     member=Members.objects.get(phone_no_secondary_user=request.user.username)
                     member.phone_no_secondary_user_secondary = phone_number_sec
