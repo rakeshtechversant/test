@@ -788,7 +788,7 @@ class UnapprovedMemberSerializer(serializers.ModelSerializer):
 
         created_by = self.context['request'].user
 
-        primary_user = FileUpload.objects.get(phone_no_primary=created_by.username)
+        primary_user = FileUpload.objects.filter(phone_no_primary=created_by.username).first()
 
         unapproved_member = UnapprovedMember(**validated_data)
         unapproved_member.primary_user_id = primary_user
@@ -1273,12 +1273,9 @@ class AdminRequestSerializer(serializers.ModelSerializer):
             data['status'] = 'Pending'
         return data
 
-#searching
-
 class MembersSerializerPage(serializers.ModelSerializer):
     # phone_no_primary = serializers.SerializerMethodField()
     in_memory_date = serializers.SerializerMethodField()
-
     # family_
 
     class Meta:
@@ -1326,8 +1323,8 @@ class MembersSerializerPage(serializers.ModelSerializer):
             data['family_id'] = fam_obj.id
         except:
             data['family_name'] = ''
-            data['active'] = ''
-            data['family_id'] = ''
+            data['active'] = False
+            data['family_id'] = None
 
         try:
             data['primary_name'] = instance.primary_user_id.name.title()
@@ -1378,8 +1375,9 @@ class PrimaryUserSerializerPage(serializers.ModelSerializer):
             data['family_id'] = fam_obj.id
         else:
             data['family_name'] = ''
-            data['active'] = ''
-            data['family_id'] = ''
+            data['active'] = False
+            data['family_id'] = None
+
         try:
             data['name'] = obj.name.title()
         except:
