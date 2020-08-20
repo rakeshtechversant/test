@@ -1155,13 +1155,17 @@ class UserDetailView(APIView):
                     date_om = None
 
                 try:
-                    family_id = user_details.primary_user_id.get_file_upload.first().id
+                    fam_obj = user_details.primary_user_id.get_file_upload.first()
+                    family_id = fam_obj.id
+                    family_name = fam_obj.name
                 except:
                     family_id = None
-                try:
-                    family_name = user_details.primary_user_id.get_file_upload.first().name
-                except:
                     family_name = None
+                try:
+                    prayer_id = user_details.primary_user_id.get_file_upload_prayergroup.first().id
+                except:
+                    prayer_id = None
+
                 data={
                     'name':user_details.member_name,
                     'relation':user_details.relation,
@@ -1187,7 +1191,8 @@ class UserDetailView(APIView):
                     'family_name':family_name,
                     'primary_user_name':user_details.primary_user_id.name,
                     'user_type':'SECONDARY',
-                    'landline':user_details.landline
+                    'landline':user_details.landline,
+                    'prayer_group_id':prayer_id
 
                 }
                 return Response({'success': True,'message':'Profile found successfully','user_details':data}, status=HTTP_200_OK)
@@ -1218,14 +1223,16 @@ class UserDetailView(APIView):
                         date_om = None
 
                     try:
-                        family_id = user_details.get_file_upload.first().id
+                        fam_obj = user_details.get_file_upload.first()
+                        family_id = fam_obj.id
+                        family_name = fam_obj.name
                     except:
                         family_id = None
-
-                    try:
-                        family_name = user_details.get_file_upload.first().name
-                    except:
                         family_name = None
+                    try:
+                        prayer_id = user_details.get_file_upload_prayergroup.first().id
+                    except:
+                        prayer_id = None
 
                     data={
                        # 'member_name':user_details.primary_user_id,
@@ -1251,7 +1258,8 @@ class UserDetailView(APIView):
                        'family_name':family_name,
                        'primary_user_name':user_details.name,
                        'user_type':'PRIMARY',
-                       'landline':user_details.landline
+                       'landline':user_details.landline,
+                       'prayer_group_id':prayer_id
                     }
                     return Response({'success': True,'message':'Profile found successfully','user_details':data}, status=HTTP_200_OK)
                 except:
