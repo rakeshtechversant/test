@@ -2002,11 +2002,11 @@ class FamilyMemberDetails(ListAPIView):
     def get_queryset(self, *args, **kwargs):
 
         try:
-            primary_user = FileUpload.objects.get(phone_no_primary=self.request.user.username)
+            primary_user = FileUpload.objects.filter(phone_no_primary=self.request.user.username).first()
             members = Members.objects.filter(primary_user_id=primary_user)
             self.primary_user = primary_user
         except:
-            secondary_user = Members.objects.get(phone_no_secondary_user=self.request.user.username)
+            secondary_user = Members.objects.filter(phone_no_secondary_user=self.request.user.username).first()
             members = Members.objects.filter(primary_user_id=secondary_user.primary_user_id)
             self.primary_user = secondary_user.primary_user_id
 
