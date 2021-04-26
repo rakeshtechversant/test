@@ -109,7 +109,7 @@ def apns_messaging_to_user(user,content_ios):
 def send_sms(mobile_number,message):
     try: 
         requests.get(
-            "http://api.unifiedbuzz.com/sms/insent?mobile=" + mobile_number + "&text=" + message + "&format=json&type=1&sender=TVRSNT&entity_id=1401335780000032934&template_id=1407161638959022380",
+            "http://api.unifiedbuzz.com/sms/insent?mobile=" + mobile_number + "&text=" + message + "&format=json&type=1&sender=TVRSNT&entity_id=1401335780000032934&template_id=1407161941741170132",
             headers={"X-API-Key": "ed6edfa3928bb18628e1cb94b79c7319"})
         return True
     except Exception as exp:
