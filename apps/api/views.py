@@ -163,7 +163,7 @@ class UserLoginMobileView(APIView):
                             OtpModels.objects.create(mobile_number=mobile_number, otp=otp_number)
                             # client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
                             # message = client.messages.create(to='+91' + mobile_number, from_='+15036837180',body=otp_number)
-                            message = "OTP for login is %s" % (otp_number,)
+                            message = "OTP for login is %s    -Mukhathala Marthoma Church" % (otp_number,)
                             # requests.get(
                             #     "http://unifiedbuzz.com/api/insms/format/json/?mobile=" + mobile_number + "&text=" + message +
                             #     "&flash=0&type=1&sender=MARCHR",
@@ -203,7 +203,7 @@ class UserLoginMobileView(APIView):
                     # client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
                     # message = client.messages.create(to='+91' + mobile_number, from_='+15036837180',body=otp_number)
 
-                    message = "OTP for login is %s" % (otp_number,)
+                    message = "OTP for login is %s    -Mukhathala Marthoma Church" % (otp_number,)
                     # requests.get(
                     #     "http://unifiedbuzz.com/api/insms/format/json/?mobile=" + mobile_number + "&text=" + message +
                     #     "&flash=0&type=1&sender=MARCHR",
@@ -235,7 +235,7 @@ class UserLoginMobileView(APIView):
                             OtpModels.objects.create(mobile_number=mobile_number, otp=otp_number)
                             # client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
                             # message = client.messages.create(to='+91' + mobile_number, from_='+15036837180',body=otp_number)
-                            message = "OTP for login is %s" % (otp_number,)
+                            message = "OTP for login is %s    -Mukhathala Marthoma Church" % (otp_number,)
                             # requests.get(
                             #     "http://unifiedbuzz.com/api/insms/format/json/?mobile=" + mobile_number + "&text=" + message +
                             #     "&flash=0&type=1&sender=TVRSNT",
@@ -269,7 +269,7 @@ class UserLoginMobileView(APIView):
                             OtpModels.objects.create(mobile_number=user_profile.phone_no_primary, otp=otp_number)
                             # client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
                             # message = client.messages.create(to='+91' + mobile_number, from_='+15036837180',body=otp_number)
-                            message = "OTP for login is %s" % (otp_number,)
+                            message = "OTP for login is %s    -Mukhathala Marthoma Church" % (otp_number,)
                             # requests.get(
                             #     "http://unifiedbuzz.com/api/insms/format/json/?mobile=" + user_profile.phone_no_primary + "&text=" + message +
                             #     "&flash=0&type=1&sender=MARCHR",
@@ -310,7 +310,7 @@ class UserLoginMobileView(APIView):
                             
                             # client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
                             # message = client.messages.create(to='+91' + mobile_number, from_='+15036837180',body=otp_number)
-                            message = "OTP for login is %s" % (otp_number,)
+                            message = "OTP for login is %s    -Mukhathala Marthoma Church" % (otp_number,)
                             # requests.get(
                             #     "http://unifiedbuzz.com/api/insms/format/json/?mobile=" + user_profile.phone_no_secondary_user + "&text=" + message +
                             #     "&flash=0&type=1&sender=MARCHR",
@@ -387,7 +387,7 @@ class UserLoginMobileWithOutOtpView(APIView):
                             # OtpModels.objects.create(mobile_number=mobile_number, otp=otp_number)
                             # # client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
                             # # message = client.messages.create(to='+91' + mobile_number, from_='+15036837180',body=otp_number)
-                            # message = "OTP for login is %s" % (otp_number,)
+                            # message = "OTP for login is %s    -Mukhathala Marthoma Church" % (otp_number,)
                             # requests.get(
                             #     "http://unifiedbuzz.com/api/insms/format/json/?mobile=" + mobile_number + "&text=" + message +
                             #     "&flash=0&type=1&sender=MARCHR",
