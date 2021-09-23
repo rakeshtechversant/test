@@ -7,6 +7,33 @@ from django.utils import timezone
 
 from apps.api.models import AdminProfile
 from ckeditor.fields import RichTextField
+from django.utils import timezone as tz
+from push_notifications.models import APNSDevice, GCMDevice
+from django.conf import settings
+
+
+def fcm_messaging_to_all(content):
+    try:
+        device_android = GCMDevice.objects.filter(active=True).exclude(user__is_superuser=True)
+        message = content['message']['notification']['body']
+        title = content['message']['notification']['title']
+        status = device_android.send_message(message,title=title, extra=content['message'])
+        return status
+    except Exception as exp:
+        print("notify",exp)
+        return str(exp)
+
+
+def apns_messaging_to_all(content_ios):
+    try:
+        device_ios = APNSDevice.objects.filter(active=True).exclude(user__is_superuser=True)
+        message_ios = content_ios['message']['aps']['alert']['body']
+        title_ios = content_ios['message']['aps']['alert']['title']
+        status = device_ios.send_message(message={"title" : title_ios, "body" : message_ios}, extra=content_ios['message'])
+        return status
+    except Exception as exp:
+        print("notify-ios",exp)
+        return str(exp)
 
 
 class Notice(models.Model):
@@ -139,6 +166,67 @@ class Notice(models.Model):
     video = models.FileField(upload_to='video_files/', null=True, blank=True)
     thumbnail = models.FileField(upload_to='thumbnails/', null=True, blank=True)
 
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        body = "You have received a new notice"
+        notifications = Notification.objects.create(created_time=tz.now(), message=body)
+        primary_members = FileUpload.objects.all()
+        secondary_members = Members.objects.all()
+        for primary_member in primary_members:
+            NoticeReadPrimary.objects.create(notification=notifications, user_to=primary_member, is_read=False)
+        for secondary_member in secondary_members:
+            NoticeReadSecondary.objects.create(notification=notifications, user_to=secondary_member, is_read=False)
+        try:
+            if self.image == None and self.video == None and self.audio != None:
+                image = "https://cdn0.iconfinder.com/data/icons/cosmo-documents/40/file_audio-512.png"
+            elif self.image == None and self.audio == None and self.video != None:
+                image = settings.DEFAULT_DOMAIN + str(self.thumbnail.url)
+            else:
+                image = settings.DEFAULT_DOMAIN + str(self.image.url)
+        except:
+            image = ""
+        try:
+            content = {'title':'notice title',
+                       'message':
+                           {"data":
+                                {"title":"Notice",
+                                 "body":str(self.notice),
+                                 "notificationType":"notice",
+                                 "backgroundImage":image,
+                                 "image":image,
+                                 "text_type":"short"},
+                            "notification":
+                                {"alert":"This is a FCM notification",
+                                 "title":"Notice",
+                                 "body":str(self.notice),
+                                 "sound":"default",
+                                 "backgroundImage":image,
+                                 "backgroundImageTextColour":"#FFFFFF",
+                                 "image":image,
+                                 "click_action":"notice"
+                                 }
+                            }
+                       }
+            content_ios = {'message':
+                               {"aps":
+                                    {"alert":
+                                         {"title":"Notice",
+                                          "subtitle":"",
+                                          "body":str(self.notice)
+                                          },
+                                     "sound":"default",
+                                     "category":"notice",
+                                     "badge":1,
+                                     "mutable-content":1
+                                     },
+                                "media-url":image
+                                }
+                           }
+            fcm_messaging_to_all(content)
+            apns_messaging_to_all(content_ios)
+        except:
+            pass
+
 
 class PrayerGroup(models.Model):
     # user_profile = models.ManyToManyField(FileUpload)
@@ -244,6 +332,90 @@ class NoticeBereavement(models.Model):
     family = models.ForeignKey(Family, on_delete=models.CASCADE, null=True, blank=True)
     primary_member = models.ForeignKey(FileUpload, on_delete=models.CASCADE, null=True, blank=True)
     secondary_member = models.ForeignKey(Members, on_delete=models.CASCADE, null=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        try:
+            name, family_name = '', ''
+            if self.family:
+                family_name = self.family.name
+                if self.primary_member:
+                    name = self.primary_member.name
+                elif self.secondary_member:
+                    name = self.secondary_member.member_name
+            else:
+                if self.primary_member:
+                    name = self.primary_member.name
+                    family_name = self.primary_member.get_file_upload.first().name
+                elif self.secondary_member:
+                    name = self.secondary_member.member_name
+                    family_name = self.secondary_member.primary_user_id.get_file_upload.first().name
+
+            if family_name:
+                body = {"message": "Funeral announcement of %s belonging to %s" % (name, family_name),
+                        "user_type": "SECONDARY",
+                        "type": "bereavement",
+                        "id": str(self.id)
+                        }
+            else:
+                body = {"message": "Funeral announcement of %s" % name,
+                        "user_type": "SECONDARY",
+                        "type": "bereavement",
+                        "id": str(self.id)
+                        }
+            notifications = Notification.objects.create(created_time=tz.now(), message=body)
+            primary_members = FileUpload.objects.all()
+            secondary_members = Members.objects.all()
+            for primary_member in primary_members:
+                NoticeReadPrimary.objects.create(notification=notifications, user_to=primary_member, is_read=False)
+            for secondary_member in secondary_members:
+                NoticeReadSecondary.objects.create(notification=notifications, user_to=secondary_member, is_read=False)
+            image = ""
+            try:
+                content = {"title": "notice title",
+                           "message":
+                               {"data":
+                                    {
+				     "title": "Funeral Notice",
+                                     "body": "Funeral announcement of %s belonging to %s" % (name, family_name),
+                                     "notificationType": "notice",
+                                     "backgroundImage": image,
+                                     "text_type": "short"
+				    },
+                                "notification":
+                                    {
+				     "alert": "This is a FCM notification",
+                                     "title": "Funeral Notice",
+                                     "body": "Funeral announcement of %s belonging to %s" % (name, family_name),
+                                     "sound": "default",
+                                     "backgroundImage": image,
+                                     "backgroundImageTextColour": "#FFFFFF",
+                                     "image": image,
+                                     "click_action": "notice"
+                                    }
+                                }
+                           }
+                content_ios = {"message":
+                                   {"aps":
+                                        {"alert":
+                                             {"title": "Funeral Notice",
+                                              "subtitle": "",
+                                              "body": "Funeral announcement of %s belonging to %s" % (name, family_name)
+                                              },
+                                         "sound": "default",
+                                         "category": "notice",
+                                         "badge": 1,
+                                         "mutable-content": 1
+                                         },
+                                    "media-url": image
+                                    }
+                               }
+                fcm_messaging_to_all(content)
+                apns_messaging_to_all(content_ios)
+            except:
+                pass
+        except:
+            pass
 
 
 class ViewRequestNumber(models.Model):

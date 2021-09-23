@@ -189,7 +189,7 @@ class UserListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = FileUpload
-        fields = ['primary_user_id','name','address','phone_no_primary','phone_no_secondary','dob','dom','blood_group','email','occupation','about','marital_status']
+        fields = ['primary_user_id','name','address','phone_no_primary','phone_no_secondary','dob','dom','blood_group','email','occupation','about','marital_status','landline']
 
 
 
@@ -309,7 +309,7 @@ class MembersSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Members
-        fields = ['phone_no_primary','primary_name','secondary_user_id','member_name','relation','dob','dom','image','phone_no_secondary_user','primary_user_id','in_memory','in_memory_date','occupation']
+        fields = ['phone_no_primary','primary_name','secondary_user_id','member_name','relation','dob','dom','image','phone_no_secondary_user','primary_user_id','in_memory','in_memory_date','occupation','landline']
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
@@ -346,6 +346,10 @@ class MembersSerializer(serializers.ModelSerializer):
             data['phone_no_secondary_user_secondary'] = instance.phone_no_secondary_user
         except:
             data['phone_no_secondary_user_secondary'] = None
+        try:
+            data['landline'] = instance.landline
+        except:
+            data['landline'] = None
 
         try:
             if instance.in_memory:
@@ -606,7 +610,7 @@ class UserDetailsRetrieveSerializer(serializers.ModelSerializer):
     # family_description = serializers.SerializerMethodField()
     class Meta:
         model = FileUpload
-        fields = ['primary_user_id','image','name','address','phone_no_primary','phone_no_secondary','dob','dom','blood_group','email','in_memory','in_memory_date','occupation','about','relation']
+        fields = ['primary_user_id','image','name','address','phone_no_primary','phone_no_secondary','dob','dom','blood_group','email','in_memory','in_memory_date','occupation','about','relation','landline']
 
     def get_in_memory_date(self, obj):
         date = obj.in_memory_date
@@ -694,7 +698,7 @@ class MembersDetailsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Members
-        fields = ['phone_no_primary','primary_name','secondary_user_id','member_name','relation','dob','dom','image','phone_no_secondary_user','primary_user_id','in_memory','in_memory_date','occupation','about']
+        fields = ['phone_no_primary','primary_name','secondary_user_id','member_name','relation','dob','dom','image','phone_no_secondary_user','primary_user_id','in_memory','in_memory_date','occupation','about','landline']
 
     def get_in_memory_date(self, obj):
         date = obj.in_memory_date
@@ -1098,6 +1102,7 @@ class CommonUserSerializer(serializers.Serializer):
     relation=serializers.CharField()
     primary_user_id=serializers.IntegerField()
     primary_name=serializers.CharField()
+    landline=serializers.CharField()
 
 
 class MemberNumberSerializer(serializers.Serializer):
@@ -1281,7 +1286,7 @@ class MembersSerializerPage(serializers.ModelSerializer):
     class Meta:
         model = Members
         fields = ['image','dob','dom','blood_group','email','occupation','about','marital_status',\
-        'in_memory','in_memory_date','relation','primary_user_id']
+        'in_memory','in_memory_date','relation','primary_user_id','landline']
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
@@ -1315,6 +1320,11 @@ class MembersSerializerPage(serializers.ModelSerializer):
             data['phone_no_secondary'] = instance.phone_no_secondary_user_secondary
         except:
             data['phone_no_secondary'] = None
+
+        try:
+            data['landline'] = instance.landline
+        except:
+            data['landline']=None
 
         try:
             fam_obj = instance.primary_user_id.get_file_upload.first()
@@ -1359,7 +1369,7 @@ class PrimaryUserSerializerPage(serializers.ModelSerializer):
     class Meta:
         model = FileUpload
         fields =['name','image','address','phone_no_primary','phone_no_secondary','dob','dom','blood_group','email','occupation','about','marital_status',\
-        'in_memory','in_memory_date','relation','primary_user_id']
+        'in_memory','in_memory_date','relation','primary_user_id', 'landline']
         read_only_fields = ['primary_user_id']
 
     def to_representation(self, obj):
@@ -1385,7 +1395,7 @@ class PrimaryUserSerializerPage(serializers.ModelSerializer):
         try:
             data['primary_name'] = obj.name.title()
         except:
-            pass   
+            pass
         try:
             data['user_id'] = obj.primary_user_id
         except:

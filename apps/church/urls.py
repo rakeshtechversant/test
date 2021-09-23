@@ -10,7 +10,8 @@ from apps.api.views import UserNoticeList, NoticeBereavementDelete, NoticeBereav
     PhoneVersionView, GalleryImagesView, GalleryImagesCreateView, SendOtpSecSave, FamilyListPaginatedView,\
     PrayerGroupBasedFamilyPaginatedView,PrayerGroupBasedMembersPaginatedView,SendWithoutOtpSecSave, UpdatePhoneNumberSecondary,\
     PrimaryToSecondaryViewset,PrimaryNumberChangeViewset,ChurchVicarEditView,ChurchHistoryEditView,DeviceInactiveView,RegisteredUsersViewAdmin,\
-    UnRegisteredUsersViewAdmin,HomeViewAdmin,UserStatisticsViewAdmin,ChangeRequestModelViewSet,VicarsViewSet,StatusChangeViewset
+    UnRegisteredUsersViewAdmin,HomeViewAdmin,UserStatisticsViewAdmin,ChangeRequestModelViewSet,VicarsViewSet,StatusChangeViewset,\
+    AnniversaryAndBirthdays, UpcomingAnniversaryAndBirthdays
 from push_notifications.api.rest_framework import APNSDeviceAuthorizedViewSet, GCMDeviceAuthorizedViewSet
 router = DefaultRouter()
 
@@ -75,6 +76,8 @@ urlpatterns = [
     url(r'^unregistered-users/$',UnRegisteredUsersViewAdmin.as_view(),name='unregistered-users'),
     url(r'^home/$',HomeViewAdmin.as_view(),name='home'),
     url(r'^user-statistics/$',UserStatisticsViewAdmin.as_view(),name='user_statistics'),
+    url(r'^anniversary-birthday/$', AnniversaryAndBirthdays.as_view(),name='anniversary-birthday'),
+    url(r'^upcoming-anniversary-birthday/$', UpcomingAnniversaryAndBirthdays.as_view(),name='upcoming-anniversary-birthday'),
     
     
 

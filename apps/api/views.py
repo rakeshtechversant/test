@@ -50,7 +50,7 @@ HTTP_404_NOT_FOUND
 from django.utils.crypto import get_random_string
 from twilio.rest import Client
 from church_project import settings
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from django.utils import timezone as tz
 import pytz
 from django.contrib.auth.models import User
@@ -60,6 +60,9 @@ from collections import OrderedDict
 import csv
 from push_notifications.models import APNSDevice, GCMDevice
 from rest_framework.renderers import TemplateHTMLRenderer
+from itertools import chain
+from operator import attrgetter
+from django.db.models import F
 
 def fcm_messaging_to_all(content):
     try: 
@@ -1006,45 +1009,49 @@ class UserListCommonView(ListAPIView):
             if term:
                 term = term.replace(" ", "")
                 term.lower()
-                queryset_primary = PrimaryUserSerializerPage(FileUpload.objects.filter(Q(name__nospaces__icontains =term)|Q(occupation__icontains=term)), many=True, context=context).data
-                queryset_secondary = MembersSerializerPage(Members.objects.filter(Q(member_name__nospaces__icontains=term)|Q(occupation__icontains=term)), many=True, context=context).data
+                queryset_primary = PrimaryUserSerializerPage(
+                    FileUpload.objects.filter(Q(name__nospaces__icontains=term) | Q(occupation__icontains=term)),
+                    many=True, context=context).data
+                queryset_secondary = MembersSerializerPage(
+                    Members.objects.filter(Q(member_name__nospaces__icontains=term) | Q(occupation__icontains=term)),
+                    many=True, context=context).data
+                try:
+                    response = queryset_primary + queryset_secondary
+                except:
+                    response = []
+                res = sorted(
+                    [x for x in response if (x['name'].replace(" ", "").lower()).startswith(term.lower())],
+                    key=lambda i: i['name'])
+                names = list(map(itemgetter('name'), res))
+                response_query = res + sorted([x for x in response if x['name'] not in names],
+                                              key=lambda i: i['name'])
             else:
-                queryset_primary = PrimaryUserSerializerPage(FileUpload.objects.all().order_by('name'), many=True, context=context).data
-                queryset_secondary = MembersSerializerPage(Members.objects.all().order_by('member_name'), many=True, context=context).data
+                queryset_primary = FileUpload.objects.all().order_by('name')
+                queryset_secondary = Members.objects.annotate(name=F('member_name')).all().order_by('member_name')
+                response_query = sorted(chain(queryset_primary, queryset_secondary), key=attrgetter('name'))
+
         except:
-            queryset_primary = PrimaryUserSerializerPage(FileUpload.objects.all().order_by('name'), many=True, context=context).data
-            queryset_secondary = MembersSerializerPage(Members.objects.all().order_by('member_name'), many=True, context=context).data
+            queryset_primary = FileUpload.objects.all().order_by('name')
+            queryset_secondary = Members.objects.annotate(name=F('member_name')).all().order_by('member_name')
+            response_query = sorted(chain(queryset_primary, queryset_secondary), key=attrgetter('name'))
 
-        try:
-            response = queryset_primary + queryset_secondary
-        except:
-            response =[]
-
-        if term:
-            res = sorted([x for x in response if (x['name'].replace(" ","").lower()).startswith(term.lower())], key = lambda i: i['name'])
-            names = list(map(itemgetter('name'), res))
-            response_query = res + sorted([x for x in response if x['name'] not in names], key = lambda i: i['name'])
-
-        else:
-            response_query = sorted(response, key = lambda i: i.get('name')) 
         responses = self.paginate_queryset(response_query)
-        if responses is not None:
-            serializer = CommonUserSerializer(responses,many=True)
-            data = {
-                'code': 200,
-                'status': "OK",
-            }
-            page_nated_data = self.get_paginated_response(serializer.data).data
-            data.update(page_nated_data)
-            data['response'] = data.pop('results')
-            return Response(data)
-
-        serializer = CommonUserSerializer(response,many=True)
-        output = serializer.data
-        data={
-            'response': output
-
-            }
+        if not term:
+            serialized_queryset = []
+            for row in responses:
+                if row._meta.model.__name__ == 'FileUpload':
+                    serialized_queryset.append(PrimaryUserSerializerPage(row, context=context).data)
+                elif row._meta.model.__name__ == 'Members':
+                    serialized_queryset.append(MembersSerializerPage(row, context=context).data)
+            serializer = CommonUserSerializer(serialized_queryset, many=True)
+        else:
+            serializer = CommonUserSerializer(responses, many=True)
+        data = {
+            'code': 200,
+            'status': "OK",
+        }
+        page_nated_data = self.get_paginated_response(serializer.data).data
+        data.update(page_nated_data)
         data['response'] = data.pop('results')
         return Response(data)
 
@@ -1087,7 +1094,7 @@ class UserUpdateView(RetrieveUpdateAPIView):
     queryset = FileUpload.objects.all()
     serializer_class = UserListSerializer
     permission_classes = [IsAuthenticated]
-    # authentication_classes = [TokenAuthentication]
+    #authentication_classes = [TokenAuthentication]
 
     # def
 
@@ -1900,7 +1907,7 @@ class SendWithoutOtpSecSave(APIView):
                             status=HTTP_404_NOT_FOUND)
 
 class Profile(APIView):
-    authentication_classes = [TokenAuthentication]
+    #authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request, format=None):
@@ -1937,12 +1944,13 @@ class Profile(APIView):
         member = Members.objects.filter(phone_no_secondary_user=request.user.username)
 
         if member.exists():
-            serializer = MemberProfileSerializer(member.first(), data=request.data, context = {'request':request})
+            serializer = MemberProfileSerializer(member.first(), data=request.data, context={'request':request})
+        else:
 
-        primary_user = FileUpload.objects.filter(phone_no_primary=request.user.username)
+            primary_user = FileUpload.objects.filter(phone_no_primary=request.user.username)
 
-        if primary_user.exists():
-            serializer = PrimaryUserProfileSerializer(primary_user.first(), data=request.data, context = {'request':request})
+            if primary_user.exists():
+                serializer = PrimaryUserProfileSerializer(primary_user.first(), data=request.data, context={'request':request})
 
         if serializer:
             if serializer.is_valid():
@@ -1955,11 +1963,11 @@ class Profile(APIView):
                 }
 
                 return Response(data, status=status.HTTP_200_OK)
-
+    
             data = {
-                    'success': False,
-                    'message':'invalid input data',
-                    'user_details':serializer.data
+                        'success': False,
+                        'message':'invalid input data',
+                        'user_details':serializer.data
             }
             
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -2003,8 +2011,13 @@ class FamilyMemberDetails(ListAPIView):
 
         try:
             primary_user = FileUpload.objects.filter(phone_no_primary=self.request.user.username).first()
-            members = Members.objects.filter(primary_user_id=primary_user)
-            self.primary_user = primary_user
+            if primary_user is not None:
+                members = Members.objects.filter(primary_user_id=primary_user)
+                self.primary_user = primary_user
+            else:
+                secondary_user = Members.objects.filter(phone_no_secondary_user=self.request.user.username).first()
+                members = Members.objects.filter(primary_user_id=secondary_user.primary_user_id)
+                self.primary_user = secondary_user.primary_user_id
         except:
             secondary_user = Members.objects.filter(phone_no_secondary_user=self.request.user.username).first()
             members = Members.objects.filter(primary_user_id=secondary_user.primary_user_id)
@@ -5211,7 +5224,8 @@ class UserDetailViewPage(APIView):
                     'primary_user':user_details.primary_user_id.name,
                     'primary_user_id':user_details.primary_user_id.primary_user_id,
                     'primary_in_memory':user_details.primary_user_id.in_memory,
-                    'primary_user_name':user_details.primary_user_id.name
+                    'primary_user_name':user_details.primary_user_id.name,
+                    'landline':user_details.landline
 
                 }
                 return Response({'success': True,'message':'Profile found successfully','user_details':data}, status=HTTP_200_OK)
@@ -5274,7 +5288,8 @@ class UserDetailViewPage(APIView):
                        'primary_user':user_details.name,
                        'primary_user_id':user_details.primary_user_id,
                        'primary_in_memory':user_details.in_memory,
-                       'primary_user_name':user_details.name
+                       'primary_user_name':user_details.name,
+                       'landline':user_details.landline
                     }
                     return Response({'success': True,'message':'Profile found successfully','user_details':data}, status=HTTP_200_OK)
                 except:
@@ -6672,3 +6687,129 @@ class StatusChangeViewset(CreateAPIView):
                     return Response({'success': False}, status=status.HTTP_400_BAD_REQUEST)
             except:
                 return Response({'success': False,'message': 'Something Went Wrong'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class AnniversaryAndBirthdays(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get_anniversary_and_birthday(self, users):
+        date_patterns = ["%d/%m/%Y", "%Y/%m/%d", "%d-%m-%Y", "%Y-%m-%d", "%d.%m.%Y", "%Y.%m.%d"]
+        birthday, anniversary = [], []
+        today = datetime.today().date()
+        for row in users:
+            b_day, m_day, dob, dom = None, None, row.dob, row.dom
+            for pattern in date_patterns:
+                if dob is not None:
+                    try:
+                        b_day = datetime.strptime(dob, pattern).date()
+                    except:
+                        pass
+                if dom is not None:
+                    try:
+                        m_day = datetime.strptime(dom, pattern).date()
+                    except:
+                        pass
+            if b_day is not None and b_day.day == today.day and b_day.month == today.month:
+                birthday.append(row)
+            if m_day is not None and m_day.day == today.day and m_day.month == today.month:
+                anniversary.append(row)
+        return birthday, anniversary
+
+    def get_serialized_data(self, request, serializer, birthday, anniversary):
+        birthday_data, anniversary_data = [], []
+        for user in birthday:
+            birthday_serializer = serializer(user, context = {'request':request})
+            birthday_data.append(birthday_serializer.data)
+        for user in anniversary:
+            anniversary_serializer = serializer(user, context = {'request':request})
+            anniversary_data.append(anniversary_serializer.data)
+        return birthday_data, anniversary_data
+
+    def get(self, request):
+        primary_users = FileUpload.objects.all()
+        primary_birthday, primary_anniversary = self.get_anniversary_and_birthday(primary_users)
+        primary_birthday_data, primary_anniversary_data = self.get_serialized_data(
+            request, PrimaryUserProfileSerializer, primary_birthday, primary_anniversary)
+        secondary_users = Members.objects.all()
+        secondary_birthday, secondary_anniversary = self.get_anniversary_and_birthday(secondary_users)
+        secondary_birthday_data, secondary_anniversary_data = self.get_serialized_data(
+            request, MemberProfileSerializer, secondary_birthday, secondary_anniversary)
+        data = {
+            'success': True,
+            'anniversary_birthday': {
+                'primary_users_birthday': primary_birthday_data if primary_birthday_data else "None",
+                'primary_users_anniversary': primary_anniversary_data if primary_anniversary_data else "None",
+                'secondary_users_birthday': secondary_birthday_data if secondary_birthday_data else "None",
+                'secondary_users_anniversary': secondary_anniversary_data if secondary_anniversary_data else "None"
+            }
+        }
+        return Response(data, status=HTTP_200_OK) 
+
+
+class UpcomingAnniversaryAndBirthdays(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get_upcoming_anniversary_and_birthday(self, users):
+        date_patterns = ["%d/%m/%Y", "%Y/%m/%d", "%d-%m-%Y", "%Y-%m-%d", "%d.%m.%Y", "%Y.%m.%d"]
+        birthday, anniversary = [], []
+        start = datetime.today().date()
+        max_days = 31
+        days = [start + timedelta(days=i) for i in range(0, max_days)]
+        for d in days:
+            for row in users:
+                b_day, m_day, dob, dom = None, None, row.dob, row.dom
+                for pattern in date_patterns:
+                    if dob is not None:
+                        try:
+                            b_day = datetime.strptime(dob, pattern).date()
+                        except:
+                            pass
+                    if dom is not None:
+                        try:
+                            m_day = datetime.strptime(dom, pattern).date()
+                        except:
+                            pass
+                if b_day is not None and b_day.day == d.day and b_day.month == d.month:
+                    birthday.append(row)
+                if m_day is not None and m_day.day == d.day and m_day.month == d.month:
+                    anniversary.append(row)
+
+        return birthday, anniversary
+
+    def get_serialized_data(self, request, serializer, birthday, anniversary):
+        upcoming_birthday_data, upcoming_anniversary_data = [], []
+        for user in birthday:
+            birthday_serializer = serializer(user, context={'request': request})
+            upcoming_birthday_data.append(birthday_serializer.data)
+        for user in anniversary:
+            anniversary_serializer = serializer(user, context={'request': request})
+            upcoming_anniversary_data.append(anniversary_serializer.data)
+        return upcoming_birthday_data, upcoming_anniversary_data
+
+    def get(self, request):
+        primary_users = FileUpload.objects.all()
+        upcoming_primary_birthday, upcoming_primary_anniversary = self.get_upcoming_anniversary_and_birthday(
+            primary_users)
+        upcoming_primary_birthday_data, upcoming_primary_anniversary_data = self.get_serialized_data(
+            request, PrimaryUserProfileSerializer, upcoming_primary_birthday, upcoming_primary_anniversary)
+        secondary_users = Members.objects.all()
+        upcoming_secondary_birthday, upcoming_secondary_anniversary = self.get_upcoming_anniversary_and_birthday(
+            secondary_users)
+        upcoming_secondary_birthday_data, upcoming_secondary_anniversary_data = self.get_serialized_data(
+            request, MemberProfileSerializer, upcoming_secondary_birthday, upcoming_secondary_anniversary)
+        data = {
+            'success': True,
+            'upcoming_anniversary_birthday': {
+                'upcoming_primary_users_birthday': upcoming_primary_birthday_data
+                if upcoming_primary_birthday_data else "None",
+                'upcoming_primary_users_anniversary': upcoming_primary_anniversary_data
+                if upcoming_primary_anniversary_data else "None",
+                'upcoming_secondary_users_birthday': upcoming_secondary_birthday_data
+                if upcoming_secondary_birthday_data else "None",
+                'upcoming_secondary_users_anniversary': upcoming_secondary_anniversary_data
+                if upcoming_secondary_anniversary_data else "None"
+            }
+        }
+        return Response(data, status=HTTP_200_OK)

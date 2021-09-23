@@ -74,9 +74,269 @@ class NoticeAdmin(admin.ModelAdmin):
     list_display = ('notice','created_at')
     search_fields = ['notice',]
 
+class PrayerAdmin(ImportExportModelAdmin):
+    list_display = ['name']
+    actions = ['export_users']
+
+    def get_actions(self, request):
+        actions = super().get_actions(request)
+        if 'delete_selected' in actions:
+            del actions['delete_selected']
+        return actions
+
+    def export_users(modeladmin, request, queryset):
+        response = HttpResponse(content_type='text/csv')
+        response['content-Disposition'] = 'attachment; filename="user_data.csv"'
+        writer = csv.writer(response)
+        prayer_group_name = []
+        for i in queryset:
+            prayer_group_name.append(i.name)
+        if prayer_group_name:
+            prayer_obj = PrayerGroup.objects.filter(name__in=prayer_group_name)
+            primary_qs = FileUpload.objects.all()
+            if primary_qs:
+                writer.writerow(['SL NO', 'PRAYER GROUP', 'NAME', 'FAMILY NAME', 'FAMILY ABOUT', 'FAMILY IMAGE', 'MEMBERS',
+                                 'RELATION', 'PHONE NO PRIMARY', 'PHONE NO SECONDARY', 'EMAIL', 'ADDRESS', 'USER IMAGE',
+                                 'OCCUPATION', 'OCCUPATION DESCRIPTION', 'ABOUT USER', 'DOB', 'DOM', 'BLOOD GROUP',
+                                 'MEMORY DATE (YYYY-MM-DD)', 'ID_PRIMARY', 'ID_SECONDARY'
+                                 ])
+                count = 1
+                for prayer_group in prayer_obj:
+                    for user in primary_qs:
+                        if user.get_file_upload_prayergroup.first().name == prayer_group.name:
+                            output1 = []
+                            output2 = []
+                            try:
+                                user_id = user.primary_user_id
+                                prayer_obj = PrayerGroup.objects.get(primary_user_id=user_id)
+                                family_obj = Family.objects.get(primary_user_id=user_id)
+                                if user.image:
+                                    img = user.image.url
+                                else:
+                                    img = ''
+                                if family_obj.image:
+                                    img_fam = family_obj.image.url
+                                else:
+                                    img_fam = ''
+                                dom = ''
+                                try:
+                                    if user.marrige_date:
+                                        dom = user.marrige_date
+                                    elif user.dom:
+                                        dom = user.dom
+                                    else:
+                                        pass
+                                except:
+                                    dom = ''
+                                try:
+                                    if user.in_memory_date:
+                                        in_memory = str(user.in_memory_date.date())
+                                    else:
+                                        in_memory = ''
+                                except:
+                                    in_memory = ''
+                                occupation_description = ''
+                                occupation = ''
+                                if user.occupation:
+                                    if user.occupation.split('---'):
+                                        occupation = str(user.occupation.split('---')[0])
+                                    else:
+                                        occupation = ''
+                                    try:
+                                        if user.occupation.split('---'):
+                                            occupation_description = user.occupation.split('---')[1]
+                                        else:
+                                            occupation_description = ''
+                                    except:
+                                        pass
+                                else:
+                                    occupation = ''
+                                    occupation_description = ''
+
+                                writer.writerows([''])
+                                output1.append([count, prayer_obj.name, user.name, family_obj.name, family_obj.about, img_fam,
+                                                '', user.relation, user.phone_no_primary, user.phone_no_secondary, user.email,
+                                                user.address, img, occupation, occupation_description, user.about, user.dob,
+                                                dom, user.blood_group, in_memory, user.primary_user_id, ''])
+                                writer.writerows(output1)
+                                count = count + 1
+                                try:
+
+                                    mem_obj = Members.objects.filter(primary_user_id=user_id)
+                                    for mem in mem_obj:
+                                        if mem.image:
+                                            img_mem = mem.image.url
+                                        else:
+                                            img_mem = ''
+                                        dom_sec = ''
+                                        try:
+                                            if mem.marrige_date:
+                                                dom_sec = mem.marrige_date
+                                            elif mem.dom:
+                                                dom_sec = mem.dom
+                                            else:
+                                                pass
+                                        except:
+                                            dom_sec = ''
+                                        try:
+                                            in_memory = str(mem.in_memory_date.date())
+                                        except:
+                                            in_memory = ''
+
+                                        occupation_description_sec = ''
+                                        occupation_sec = ''
+                                        if mem.occupation:
+                                            if mem.occupation.split('---'):
+                                                occupation_sec = str(mem.occupation.split('---')[0])
+                                            else:
+                                                occupation_sec = ''
+                                            try:
+                                                if mem.occupation.split('---'):
+                                                    occupation_description_sec = mem.occupation.split('---')[1]
+                                                else:
+                                                    occupation_description_sec = ''
+                                            except:
+                                                pass
+                                        else:
+                                            occupation_sec = ''
+                                            occupation_description_sec = ''
+                                        output2.append(
+                                            ['', '', '', '', '', '', mem.member_name, mem.relation, mem.phone_no_secondary_user,
+                                             mem.phone_no_secondary_user_secondary, mem.email, '', img_mem, occupation_sec,
+                                             occupation_description_sec, mem.about, mem.dob, dom_sec, mem.blood_group,
+                                             in_memory, '', mem.secondary_user_id])
+                                    writer.writerows(output2)
+                                except:
+                                    pass
+
+                            except:
+                                pass
+                return response
+    export_users.short_description = 'Export Users In Selected Prayer Groups'
+
+    def export_action(self, request, *args, **kwargs):
+        primary_qs = FileUpload.objects.all()
+        if primary_qs:
+            response = HttpResponse(content_type='text/csv')
+            response['Content-Disposition'] = 'attachment; filename="users_data.csv"'
+            writer = csv.writer(response)
+            writer.writerow(['SL NO', 'PRAYER GROUP', 'NAME', 'FAMILY NAME', 'FAMILY ABOUT', 'FAMILY IMAGE', 'MEMBERS',
+                             'RELATION', 'PHONE NO PRIMARY', 'PHONE NO SECONDARY', 'EMAIL', 'ADDRESS', 'USER IMAGE',
+                             'OCCUPATION', 'OCCUPATION DESCRIPTION', 'ABOUT USER', 'DOB', 'DOM', 'BLOOD GROUP',
+                             'MEMORY DATE (YYYY-MM-DD)', 'ID_PRIMARY', 'ID_SECONDARY'
+                             ])
+            count = 1
+            for user in primary_qs:
+                output1 = []
+                output2 = []
+                try:
+                    user_id = user.primary_user_id
+                    prayer_obj = PrayerGroup.objects.get(primary_user_id=user_id)
+                    family_obj = Family.objects.get(primary_user_id=user_id)
+                    if user.image:
+                        img = user.image.url
+                    else:
+                        img = ''
+                    if family_obj.image:
+                        img_fam = family_obj.image.url
+                    else:
+                        img_fam = ''
+
+                    dom = ''
+                    try:
+                        if user.marrige_date:
+                            dom = user.marrige_date
+                        elif user.dom:
+                            dom = user.dom
+                        else:
+                            pass
+                    except:
+                        dom = ''
+                    try:
+                        in_memory = str(user.in_memory_date.date())
+                    except:
+                        in_memory = ''
+
+                    occupation_description = ''
+                    occupation = ''
+                    if user.occupation:
+                        if user.occupation.split('---'):
+                            occupation = str(user.occupation.split('---')[0])
+                        else:
+                            occupation = ''
+                        try:
+                            if user.occupation.split('---'):
+                                occupation_description = user.occupation.split('---')[1]
+                            else:
+                                occupation_description = ''
+                        except:
+                            pass
+                    else:
+                        occupation = ''
+                        occupation_description = ''
+                    writer.writerows([''])
+                    output1.append([count, prayer_obj.name, user.name, family_obj.name, family_obj.about, img_fam, '',
+                                    user.relation, user.phone_no_primary, user.phone_no_secondary, user.email,
+                                    user.address, img, occupation, occupation_description, user.about, user.dob, dom,
+                                    user.blood_group, in_memory, user.primary_user_id, ''])
+                    writer.writerows(output1)
+                    count = count + 1
+                    try:
+                        mem_obj = Members.objects.filter(primary_user_id=user_id)
+                        for mem in mem_obj:
+                            if mem.image:
+                                img_mem = mem.image.url
+                            else:
+                                img_mem = ''
+                            dom_sec = ''
+                            try:
+                                if mem.marrige_date:
+                                    dom_sec = mem.marrige_date
+                                elif mem.dom:
+                                    dom_sec = mem.dom
+                                else:
+                                    pass
+                            except:
+                                dom_sec = ''
+                            try:
+                                in_memory = str(mem.in_memory_date.date())
+                            except:
+                                in_memory = ''
+
+                            occupation_description_sec = ''
+                            occupation_sec = ''
+                            if mem.occupation:
+                                if mem.occupation.split('---'):
+                                    occupation_sec = str(mem.occupation.split('---')[0])
+                                else:
+                                    occupation_sec = ''
+                                try:
+                                    if mem.occupation.split('---'):
+                                        occupation_description_sec = mem.occupation.split('---')[1]
+                                    else:
+                                        occupation_description_sec = ''
+                                except:
+                                    pass
+                            else:
+                                occupation_sec = ''
+                                occupation_description_sec = ''
+
+                            output2.append(
+                                ['', '', '', '', '', '', mem.member_name, mem.relation, mem.phone_no_secondary_user,
+                                 mem.phone_no_secondary_user_secondary, mem.email, '', img_mem, occupation_sec,
+                                 occupation_description_sec, mem.about, mem.dob, dom_sec, mem.blood_group, in_memory,
+                                 '', mem.secondary_user_id])
+                        writer.writerows(output2)
+                    except:
+                        pass
+
+                except:
+                    pass
+            return response
+
 
 admin.site.register(UserProfile)
-admin.site.register(PrayerGroup)
+admin.site.register(PrayerGroup, PrayerAdmin)
 admin.site.register(Family, FamilyAdmin)
 admin.site.register(Notice,NoticeAdmin)
 admin.site.register(ChurchDetails)
