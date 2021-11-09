@@ -38,6 +38,7 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 INSTALLED_APPS = [
+    'jazzmin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -179,7 +180,7 @@ WSGI_APPLICATION = 'church_project.wsgi.application'
 if DB_URL != False:
     DATABASES = {
     'default': {
-    'ENGINE': 'django.db.backends.postgresql_psycopg2',
+   'ENGINE': 'django.db.backends.postgresql_psycopg2',
     },
     }
 
@@ -281,3 +282,4 @@ FILE_UPLOAD_PERMISSIONS = 0O644
 
 
 # CKEDITOR_BASEPATH =STATIC_ROOT + "/ckeditor/ckeditor/"
+DEFAULT_DOMAIN = "http://202.88.246.92:8014"

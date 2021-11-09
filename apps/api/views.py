@@ -16,7 +16,7 @@ from rest_framework.generics import ListCreateAPIView, ListAPIView, RetrieveAPIV
     DestroyAPIView, CreateAPIView, UpdateAPIView
 from rest_framework import status
 from django.contrib.auth.models import User
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse, HttpResponse, StreamingHttpResponse
 from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
 from rest_framework import parsers
 from rest_framework import viewsets
@@ -39,10 +39,10 @@ from apps.api.serializers import ChurchHistorySerializer, ChurchImagesSerializer
     GalleryImagesSerializer, FamilyDetailSerializer, FamilyEditSerializer, GalleryImagesCreateSerializer, \
     OTPVeifySerializerUserId, CommonUserSerializer, MemberNumberSerializer, PrimaryToSecondarySerializer, NumberChangePrimarySerializer ,\
     AdminRequestSerializer, PrimaryUserSerializerPage, MembersSerializerPage, UserMemorySerializer, UserByMembersSerializer, ChangeRequestSerializer ,\
-    VicarsSerializer,ChurchHistoryEditSerializer
+    VicarsSerializer,ChurchHistoryEditSerializer, PrimaryUserBirthdaySerializer, MemberBirthdaySerializer, MemberUserSerializer,PrayerGroupAllSerializer, NoticeFarewellSerializer, GroupSerializer, HonourSerializer
 from apps.church.models import Members, Family, UserProfile, ChurchDetails, FileUpload, OtpModels, \
     PrayerGroup, Notification, Notice, NoticeBereavement, UnapprovedMember, NoticeReadPrimary, NoticeReadSecondary, \
-    ViewRequestNumber, NoticeReadAdmin, PrivacyPolicy, PhoneVersion, Images, PrimaryToSecondary, NumberChangePrimary, ChangeRequest, ChurchVicars
+    ViewRequestNumber, NoticeReadAdmin, PrivacyPolicy, PhoneVersion, Images, PrimaryToSecondary, NumberChangePrimary, ChangeRequest, ChurchVicars, NoticeFarewell, Group, HonourAndRespect
 
 from apps.api.models import AdminProfile
 from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_400_BAD_REQUEST, HTTP_401_UNAUTHORIZED, \
@@ -63,6 +63,8 @@ from rest_framework.renderers import TemplateHTMLRenderer
 from itertools import chain
 from operator import attrgetter
 from django.db.models import F
+import base64
+import random
 
 def fcm_messaging_to_all(content):
     try: 
@@ -128,6 +130,7 @@ class UserLoginMobileView(APIView):
         mobile_number = request.data['mobile_number']
         user_type  = request.data['user_type']
         user_id  = request.data['user_id']
+        password = request.data['password']
         try:
             superusers = AdminProfile.objects.filter(user__is_superuser=True).first()
             admin_phonenumber = superusers.mobile_number
@@ -142,6 +145,8 @@ class UserLoginMobileView(APIView):
                 user_profile = Members.objects.get(secondary_user_id=user_id)
                 if user_type == 'SECONDARY' and user_id :
                     if user_profile.primary_user_id.phone_no_primary == mobile_number or user_profile.primary_user_id.phone_no_secondary == mobile_number:
+                        if password != base64.b64decode(user_profile.password.encode("ascii")).decode("ascii"):
+                            return Response({'success': False, 'message': 'Invalid Password'}, status=HTTP_404_NOT_FOUND)
                         if(user_profile.primary_user_id.phone_no_secondary == None):
                             data = {
                                 'admin_mobile_number' : admin_phonenumber,
@@ -166,12 +171,12 @@ class UserLoginMobileView(APIView):
                             OtpModels.objects.create(mobile_number=mobile_number, otp=otp_number)
                             # client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
                             # message = client.messages.create(to='+91' + mobile_number, from_='+15036837180',body=otp_number)
-                            message = "OTP for login is %s    -Mukhathala Marthoma Church" % (otp_number,)
+                            #message = "OTP for login is %s    -Mukhathala Marthoma Church" % (otp_number,)
                             # requests.get(
                             #     "http://unifiedbuzz.com/api/insms/format/json/?mobile=" + mobile_number + "&text=" + message +
                             #     "&flash=0&type=1&sender=MARCHR",
                             #     headers={"X-API-Key": "918e0674e62e01ec16ddba9a0cea447b"})
-                            send_sms(mobile_number,message)
+                            #send_sms(mobile_number,message)
                             return Response({'success': True, 'message': 'OTP Sent Successfully', 'user_details': data},
                                             status=HTTP_200_OK)
                                            
@@ -206,12 +211,12 @@ class UserLoginMobileView(APIView):
                     # client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
                     # message = client.messages.create(to='+91' + mobile_number, from_='+15036837180',body=otp_number)
 
-                    message = "OTP for login is %s    -Mukhathala Marthoma Church" % (otp_number,)
+                    #message = "OTP for login is %s    -Mukhathala Marthoma Church" % (otp_number,)
                     # requests.get(
                     #     "http://unifiedbuzz.com/api/insms/format/json/?mobile=" + mobile_number + "&text=" + message +
                     #     "&flash=0&type=1&sender=MARCHR",
                     #     headers={"X-API-Key": "918e0674e62e01ec16ddba9a0cea447b"})
-                    send_sms(mobile_number,message)
+                    #send_sms(mobile_number,message)
                     return Response({'success': True, 'message': 'OTP Sent Successfully', 'user_details': data},
                                     status=HTTP_200_OK)
                 else:
@@ -221,6 +226,9 @@ class UserLoginMobileView(APIView):
                     user_profiles = FileUpload.objects.filter(phone_no_primary=mobile_number)
                     for user_profile in user_profiles:
                         if mobile_number == user_profile.phone_no_primary:
+                            if password != base64.b64decode(user_profile.password.encode("ascii")).decode("ascii"):
+                                return Response({'success': False, 'message': 'Invalid Password'},
+                                                status=HTTP_404_NOT_FOUND)
                             user,created=User.objects.get_or_create(username=mobile_number)
                             token, created = Token.objects.get_or_create(user=user)
                             data = {
@@ -238,12 +246,12 @@ class UserLoginMobileView(APIView):
                             OtpModels.objects.create(mobile_number=mobile_number, otp=otp_number)
                             # client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
                             # message = client.messages.create(to='+91' + mobile_number, from_='+15036837180',body=otp_number)
-                            message = "OTP for login is %s    -Mukhathala Marthoma Church" % (otp_number,)
+                            #message = "OTP for login is %s    -Mukhathala Marthoma Church" % (otp_number,)
                             # requests.get(
                             #     "http://unifiedbuzz.com/api/insms/format/json/?mobile=" + mobile_number + "&text=" + message +
                             #     "&flash=0&type=1&sender=TVRSNT",
                             #     headers={"X-API-Key": "ed6edfa3928bb18628e1cb94b79c7319"})
-                            send_sms(mobile_number,message)
+                            #send_sms(mobile_number,message)
                             return Response({'success': True, 'message': 'OTP Sent Successfully', 'user_details': data},
                                             status=HTTP_200_OK)
                         else:
@@ -255,6 +263,9 @@ class UserLoginMobileView(APIView):
                     user_profiles = FileUpload.objects.filter(phone_no_secondary=mobile_number)
                     for user_profile in user_profiles:
                         if mobile_number == user_profile.phone_no_secondary:
+                            if password != base64.b64decode(user_profile.password.encode("ascii")).decode("ascii"):
+                                return Response({'success': False, 'message': 'Invalid Password'},
+                                                status=HTTP_404_NOT_FOUND)
                             user,created=User.objects.get_or_create(username=mobile_number)
                             token, created = Token.objects.get_or_create(user=user)
                             data = {
@@ -272,12 +283,12 @@ class UserLoginMobileView(APIView):
                             OtpModels.objects.create(mobile_number=user_profile.phone_no_primary, otp=otp_number)
                             # client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
                             # message = client.messages.create(to='+91' + mobile_number, from_='+15036837180',body=otp_number)
-                            message = "OTP for login is %s    -Mukhathala Marthoma Church" % (otp_number,)
+                            #message = "OTP for login is %s    -Mukhathala Marthoma Church" % (otp_number,)
                             # requests.get(
                             #     "http://unifiedbuzz.com/api/insms/format/json/?mobile=" + user_profile.phone_no_primary + "&text=" + message +
                             #     "&flash=0&type=1&sender=MARCHR",
                             #     headers={"X-API-Key": "918e0674e62e01ec16ddba9a0cea447b"})
-                            send_sms(user_profile.phone_no_primary,message)
+                            #send_sms(user_profile.phone_no_primary,message)
                             return Response({'success': True, 'message': 'OTP Sent Successfully', 'user_details': data},
                                             status=HTTP_200_OK)
                         else:
@@ -291,6 +302,8 @@ class UserLoginMobileView(APIView):
                         user,created=User.objects.get_or_create(username=mobile_number)
                         token, created = Token.objects.get_or_create(user=user)
                         if mobile_number == user_profile.phone_no_secondary_user:
+                            if password != base64.b64decode(user_profile.password.encode("ascii")).decode("ascii"):
+                                return Response({'success': False, 'message': 'Invalid Password'}, status=HTTP_404_NOT_FOUND)
                             data = {
                                 'mobile': user_profile.phone_no_secondary_user,
                                 'user_type': 'SECONDARY',
@@ -313,13 +326,13 @@ class UserLoginMobileView(APIView):
                             
                             # client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
                             # message = client.messages.create(to='+91' + mobile_number, from_='+15036837180',body=otp_number)
-                            message = "OTP for login is %s    -Mukhathala Marthoma Church" % (otp_number,)
+                            #message = "OTP for login is %s    -Mukhathala Marthoma Church" % (otp_number,)
                             # requests.get(
                             #     "http://unifiedbuzz.com/api/insms/format/json/?mobile=" + user_profile.phone_no_secondary_user + "&text=" + message +
                             #     "&flash=0&type=1&sender=MARCHR",
                             #     headers={"X-API-Key": "918e0674e62e01ec16ddba9a0cea447b"})
 
-                            send_sms(user_profile.phone_no_secondary_user,message)
+                            #send_sms(user_profile.phone_no_secondary_user,message)
                             return Response({'success': True, 'message': 'OTP Sent Successfully', 'user_details': data},
                                             status=HTTP_200_OK)
                         else:
@@ -346,6 +359,7 @@ class UserLoginMobileWithOutOtpView(APIView):
         mobile_number = request.data['mobile_number']
         user_type  = request.data['user_type']
         user_id  = request.data['user_id']
+        password = request.data['password']
         try:
             superusers = AdminProfile.objects.filter(user__is_superuser=True).first()
             admin_phonenumber = superusers.mobile_number
@@ -366,6 +380,8 @@ class UserLoginMobileWithOutOtpView(APIView):
                         return Response({'success': False, 'message': 'Your family is in inactive state.Please contact admin','user_details': data},status=HTTP_400_BAD_REQUEST)
 
                     if user_profile.primary_user_id.phone_no_primary == mobile_number or user_profile.primary_user_id.phone_no_secondary == mobile_number:
+                        if password != base64.b64decode(user_profile.password.encode("ascii")).decode("ascii"):
+                            return Response({'success': False, 'message': 'Invalid Password'}, status=HTTP_404_NOT_FOUND)
                         if(user_profile.primary_user_id.phone_no_secondary == None):
                             data = {
                                 'admin_mobile_number' : admin_phonenumber,
@@ -430,6 +446,9 @@ class UserLoginMobileWithOutOtpView(APIView):
                                     'family_status' : 'inactive',
                                     }
                                 return Response({'success': False, 'message': 'Your family is in inactive state.Please contact admin','user_details': data},status=HTTP_400_BAD_REQUEST)
+                            if password != base64.b64decode(user_profile.password.encode("ascii")).decode("ascii"):
+                                return Response({'success': False, 'message': 'Invalid Password'},
+                                                status=HTTP_404_NOT_FOUND)
                             user,created=User.objects.get_or_create(username=mobile_number)
                             token, created = Token.objects.get_or_create(user=user)
                             data = {
@@ -437,7 +456,7 @@ class UserLoginMobileWithOutOtpView(APIView):
                                 'user_type': 'PRIMARY',
                                 'name': user_profile.name,
                                 'prayer_group_name':user_profile.get_file_upload_prayergroup.first().name ,
-                                'family_name':user_profile.get_file_upload.first().name ,
+                                'family_name':user_profile.get_file_upload.first().name,
                                 'prayer_group_id':user_profile.get_file_upload_prayergroup.first().id ,
                                 'family_name_id':user_profile.get_file_upload.first().id ,
                                 'token':token.key,
@@ -461,6 +480,9 @@ class UserLoginMobileWithOutOtpView(APIView):
                                     'family_status' : 'inactive',
                                     }
                                 return Response({'success': False, 'message': 'Your family is in inactive state.Please contact admin','user_details': data},status=HTTP_400_BAD_REQUEST)
+                            if password != base64.b64decode(user_profile.password.encode("ascii")).decode("ascii"):
+                                return Response({'success': False, 'message': 'Invalid Password'},
+                                                status=HTTP_404_NOT_FOUND)
                             user,created=User.objects.get_or_create(username=mobile_number)
                             token, created = Token.objects.get_or_create(user=user)
                             data = {
@@ -491,6 +513,8 @@ class UserLoginMobileWithOutOtpView(APIView):
                                     'family_status' : 'inactive',
                                     }
                             return Response({'success': False, 'message': 'Your family is in inactive state.Please contact admin','user_details': data},status=HTTP_400_BAD_REQUEST)
+                        if password != base64.b64decode(user_profile.password.encode("ascii")).decode("ascii"):
+                            return Response({'success': False, 'message': 'Invalid Password'}, status=HTTP_404_NOT_FOUND)
                         user,created=User.objects.get_or_create(username=mobile_number)
                         token, created = Token.objects.get_or_create(user=user)
                         if mobile_number == user_profile.phone_no_secondary_user:
@@ -499,7 +523,7 @@ class UserLoginMobileWithOutOtpView(APIView):
                                 'user_type': 'SECONDARY',
                                 'name': user_profile.member_name,
                                 'prayer_group_name':user_profile.primary_user_id.get_file_upload_prayergroup.first().name ,
-                                'family_name':user_profile.primary_user_id.get_file_upload.first().name ,
+                                'family_name':user_profile.primary_user_id.get_file_upload.first().name,
                                 'prayer_group_id':user_profile.primary_user_id.get_file_upload_prayergroup.first().id ,
                                 'family_name_id':user_profile.primary_user_id.get_file_upload.first().id ,
                                 'token':token.key,
@@ -1439,6 +1463,70 @@ class PrayerGrouplistView(ListAPIView):
 
         return Response(data)
 
+class GrouplistView(ListAPIView):
+    queryset = Group.objects.all().order_by('group_name')
+    serializer_class = GroupSerializer
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+
+            data = {
+                'code': 200,
+                'status': "OK",
+            }
+
+            page_nated_data = self.get_paginated_response(serializer.data).data
+            data.update(page_nated_data)
+            data['response'] = data.pop('results')
+
+            return Response(data)
+
+        serializer = self.get_serializer(queryset, many=True)
+
+        data = {
+            'code': 200,
+            'status': "OK",
+            'response': serializer.data
+        }
+
+        return Response(data)
+
+
+class HonourlistView(ListAPIView):
+    queryset = HonourAndRespect.objects.all().order_by('created_on')
+    serializer_class = HonourSerializer
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+
+            data = {
+                'code': 200,
+                'status': "OK",
+            }
+
+            page_nated_data = self.get_paginated_response(serializer.data).data
+            data.update(page_nated_data)
+            data['response'] = data.pop('results')
+
+            return Response(data)
+
+        serializer = self.get_serializer(queryset, many=True)
+
+        data = {
+            'code': 200,
+            'status': "OK",
+            'response': serializer.data
+        }
+
+        return Response(data)
 
 
 class PrayerGroupBasedFamilyView(ListAPIView):
@@ -1731,6 +1819,7 @@ class SendOtp(APIView):
     def post(self, request):
         mobile_number = self.request.query_params.get('mobile_number')
         user_id = self.request.query_params.get('user_id')
+        password = self.request.query_params.get('password')
         try:
             sec_user = Members.objects.get(secondary_user_id=user_id)
             sec_user.phone_no_secondary_user=mobile_number
@@ -1904,7 +1993,7 @@ class SendWithoutOtpSecSave(APIView):
                 'admin_mobile_number' : admin_phonenumber,
             }
             return Response({'success': False, 'message': 'User does not exist','user_details': data},
-                            status=HTTP_404_NOT_FOUND)
+                            status=HTTP_200_OK)
 
 class Profile(APIView):
     #authentication_classes = [TokenAuthentication]
@@ -2397,120 +2486,28 @@ class NoticeBereavementCreate(CreateAPIView):
                         member_id=Members.objects.get(secondary_user_id=member_id)
                     except:
                         return Response({'success': False,'message': 'Member doesnot exist'}, status=HTTP_400_BAD_REQUEST)
-                    beri_obj=NoticeBereavement.objects.create(prayer_group=prayer_group_id,family=family_id,secondary_member=member_id,description=description)
-                    member_id.in_memory=True
-                    member_id.in_memory_date=tz.now()
+                    member_id.in_memory = True
+                    member_id.in_memory_date = tz.now()
                     if dob:
-                        member_id.dob=dob
+                        member_id.dob = dob
                     if request.FILES.get('image'):
-                            member_id.image = request.FILES['image']
+                        member_id.image = request.FILES['image']
                     member_id.save()
-
-                    # body = {
-                    #     "type": "Bereavement",
-                    #     "id": str(beri_obj.id),
-                    #     "message": "Admin created one new Bereavement",
-                    # }
-                    try:
-                        if member_id.primary_user_id.get_file_upload.first():
-                            family_name = member_id.primary_user_id.get_file_upload.first().name
-                        else:
-                            family_name = ''
-
-                        if family_name:
-                            body = {"message":"Funeral announcement of %s belonging to %s"%(member_id.member_name,family_name),
-                            "user_type": "SECONDARY",
-                            "type":"bereavement",
-                            "id":str(beri_obj.id)
-                            }
-                        else:
-                            body = {"message":"Funeral announcement of %s"%(member_id.member_name),
-                            "user_type": "SECONDARY",
-                            "type":"bereavement",
-                            "id":str(beri_obj.id)
-                            }
-                        notifications=Notification.objects.create(created_time=tz.now(),message=body)
-                        primary_members=FileUpload.objects.all()
-                        secondary_members=Members.objects.all()
-                        for primary_member in primary_members:
-                            NoticeReadPrimary.objects.create(notification=notifications,user_to=primary_member,is_read=False)
-                        for secondary_member in secondary_members:
-                            NoticeReadSecondary.objects.create(notification=notifications,user_to=secondary_member,is_read=False)
-                    
-                        try:
-                            image= request.build_absolute_uri(member_id.image.url)
-                        except:
-                            image = ""
-                        try:
-                            content = {'title':'notice title','message':{"data":{"title":"Funeral Notice","body":"Funeral announcement of %s belonging to %s"%(member_id.member_name,family_name),"notificationType":"funeral","backgroundImage":image,"text_type":"long"},\
-                            "notification":{"alert":"This is a FCM notification","title":"Funeral Notice","body":"Funeral announcement of %s belonging to %s"%(member_id.member_name,family_name),"sound":"default","backgroundImage":image,"backgroundImageTextColour":"#FFFFFF","image":image,"click_action":"notice"}} } 
-                        
-                            content_ios = {'message':{"aps":{"alert":{"title":"Funeral Notice","subtitle":"","body":"Funeral announcement of %s belonging to %s"%(member_id.member_name,family_name)},"sound":"default","category":"notice","badge":1,"mutable-content":1},"media-url":image}}
-                            resp = fcm_messaging_to_all(content)
-                            resp1 = apns_messaging_to_all(content_ios)
-                        except:
-                            pass
-                    except:
-                        pass
+                    beri_obj=NoticeBereavement.objects.create(prayer_group=prayer_group_id,family=family_id,secondary_member=member_id,description=description)
                     return Response({'success': True,'message':'Notice Created Successfully'}, status=HTTP_201_CREATED)
                 else:
                     try:
                         member_id=FileUpload.objects.get(primary_user_id=member_id)
                     except:
                         return Response({'success': False,'message': 'Member doesnot exist'}, status=HTTP_400_BAD_REQUEST)
-                    beri_obj = NoticeBereavement.objects.create(prayer_group=prayer_group_id,family=family_id,primary_member=member_id,description=description)
-                    member_id.in_memory=True
-                    member_id.in_memory_date=tz.now()
+                    member_id.in_memory = True
+                    member_id.in_memory_date = tz.now()
                     if dob:
-                        member_id.dob=dob
+                        member_id.dob = dob
                     if request.FILES.get('image'):
                         member_id.image = request.FILES['image']
                     member_id.save()
-                    # body = {
-                    #     "type": "Bereavement",
-                    #     "id": str(beri_obj.id),
-                    #     "message": "Admin created one new Bereavement",
-                    # }
-                    try:
-                        if member_id.get_file_upload.first():
-                            family_name = member_id.get_file_upload.first().name
-                        else:
-                            family_name = ''
-                        if family_name :
-
-                            body = {"message":"Funeral announcement of %s belonging to %s"%(member_id.name,family_name),
-                            "user_type": "PRIMARY",
-                            "type":"bereavement",
-                            "id":str(beri_obj.id)
-                            }
-                        else:
-                            body = {"message":"Funeral announcement of %s "%(member_id.name),
-                            "user_type": "PRIMARY",
-                            "type":"bereavement",
-                            "id":str(beri_obj.id)
-                            }
-                        notifications=Notification.objects.create(created_time=tz.now(),message=body)
-                        primary_members=FileUpload.objects.all()
-                        secondary_members=Members.objects.all()
-                        for primary_member in primary_members:
-                            NoticeReadPrimary.objects.create(notification=notifications,user_to=primary_member,is_read=False)
-                        for secondary_member in secondary_members:
-                            NoticeReadSecondary.objects.create(notification=notifications,user_to=secondary_member,is_read=False)
-                        try:
-                            image= request.build_absolute_uri(member_id.image.url)
-                        except:
-                            image = ""
-                        try:
-                            content = {'title':'notice title','message':{"data":{"title":"Funeral Notice","body":"Funeral announcement of %s belonging to %s"%(member_id.name,family_name),"notificationType":"notice","backgroundImage":image,"text_type":"long"},\
-                            "notification":{"alert":"This is a FCM notification","title":"Funeral Notice","body":"Funeral announcement of %s belonging to %s"%(member_id.name,family_name),"sound":"default","backgroundImage":image,"backgroundImageTextColour":"#FFFFFF","image":image,"click_action":"notice"}} } 
-                            
-                            content_ios = {'message':{"aps":{"alert":{"title":"Funeral Notice","subtitle":"","body":"Funeral announcement of %s belonging to %s"%(member_id.name,family_name)},"sound":"default","category":"notice","badge":1,"mutable-content":1},"media-url":image}}
-                            resp = fcm_messaging_to_all(content)
-                            resp1 = apns_messaging_to_all(content_ios)
-                        except:
-                            pass
-                    except:
-                        pass
+                    beri_obj = NoticeBereavement.objects.create(prayer_group=prayer_group_id,family=family_id,primary_member=member_id,description=description)
                     return Response({'success': True,'message':'Notice Created Successfully'}, status=HTTP_201_CREATED)
 
 class NoticeBereavementEdit(RetrieveUpdateAPIView):
@@ -2599,6 +2596,309 @@ class NoticeBereavementDelete(DestroyAPIView):
         data['response'] = "Successfully deleted"
         return Response(data)
 
+
+class NoticeFarewellCreate(CreateAPIView):
+    queryset = NoticeFarewell.objects.all()
+    serializer_class = NoticeFarewellSerializer
+    permission_classes = [IsAdminUser]
+
+    def post(self, request):
+        prayer_group_id = request.POST.get('prayer_group_id', False)
+        family_id = request.POST.get('family_id', False)
+        member_id = request.POST.get('member_id', False)
+        user_type = request.POST.get('user_type', False)
+        description = request.POST.get('description', False)
+        dob = request.POST.get('dob')
+        # title=request.POST.get('title', False)
+        if not prayer_group_id and not family_id and not member_id and not description:
+            return Response({'success': False, 'message': 'You should fill all the fields'},
+                            status=HTTP_400_BAD_REQUEST)
+        else:
+            if not prayer_group_id:
+                return Response({'success': False, 'message': 'Prayer group field shouldnot be blank'},
+                                status=HTTP_400_BAD_REQUEST)
+            if not family_id:
+                return Response({'success': False, 'message': 'Family field shouldnot be blank'},
+                                status=HTTP_400_BAD_REQUEST)
+            if not member_id:
+                return Response({'success': False, 'message': 'Member field shouldnot be blank'},
+                                status=HTTP_400_BAD_REQUEST)
+            if not description:
+                return Response({'success': False, 'message': 'Description field shouldnot be blank'},
+                                status=HTTP_400_BAD_REQUEST)
+            # if not title:
+            #     return Response({'success': False,'message': 'Title field shouldnot be blank'}, status=HTTP_400_BAD_REQUEST)
+            if prayer_group_id and member_id and family_id and description:
+                try:
+                    prayer_group_id = PrayerGroup.objects.get(id=prayer_group_id)
+                except:
+                    return Response({'success': False, 'message': 'Prayer Group doesnot exist'},
+                                    status=HTTP_400_BAD_REQUEST)
+                try:
+                    family_id = Family.objects.get(id=family_id)
+                except:
+                    return Response({'success': False, 'message': 'Family doesnot exist'}, status=HTTP_400_BAD_REQUEST)
+
+                if user_type == 'SECONDARY':
+                    try:
+                        member_id = Members.objects.get(secondary_user_id=member_id)
+                    except:
+                        return Response({'success': False, 'message': 'Member doesnot exist'},
+                                        status=HTTP_400_BAD_REQUEST)
+                    farewell_obj = NoticeFarewell.objects.create(prayer_group=prayer_group_id, family=family_id,
+                                                                 secondary_member=member_id, description=description)
+                    member_id.status = "4"
+                    if request.FILES.get('image'):
+                        member_id.image = request.FILES['image']
+                    member_id.save()
+
+                    try:
+                        if member_id.primary_user_id.get_file_upload.first():
+                            family_name = member_id.primary_user_id.get_file_upload.first().name
+                        else:
+                            family_name = ''
+
+                        if family_name:
+                            body = {"message": "Farewell Notice of %s belonging to %s" % (
+                                member_id.member_name, family_name),
+                                    "user_type": "SECONDARY",
+                                    "type": "farewell",
+                                    "id": str(farewell_obj.id)
+                                    }
+                        else:
+                            body = {"message": "Farewell Notice of %s" % (member_id.member_name),
+                                    "user_type": "SECONDARY",
+                                    "type": "farewell",
+                                    "id": str(farewell_obj.id)
+                                    }
+                        notifications = Notification.objects.create(created_time=tz.now(), message=body)
+                        primary_members = FileUpload.objects.all()
+                        secondary_members = Members.objects.all()
+                        for primary_member in primary_members:
+                            NoticeReadPrimary.objects.create(notification=notifications, user_to=primary_member,
+                                                             is_read=False)
+                        for secondary_member in secondary_members:
+                            NoticeReadSecondary.objects.create(notification=notifications, user_to=secondary_member,
+                                                               is_read=False)
+
+                        try:
+                            image = request.build_absolute_uri(member_id.image.url)
+                        except:
+                            image = ""
+                        try:
+                            content = {'title': 'notice title', 'message': {"data": {"title": "Farewell Notice",
+                                                                                     "body": "Farewell Notice of %s belonging to %s" % (
+                                                                                         member_id.member_name,
+                                                                                         family_name),
+                                                                                     "notificationType": "farewell",
+                                                                                     "backgroundImage": image,
+                                                                                     "text_type": "long"}, \
+                                                                            "notification": {
+                                                                                "alert": "This is a FCM notification",
+                                                                                "title": "Farewell Notice",
+                                                                                "body": "Farewell Notice of %s belonging to %s" % (
+                                                                                    member_id.member_name, family_name),
+                                                                                "sound": "default",
+                                                                                "backgroundImage": image,
+                                                                                "backgroundImageTextColour": "#FFFFFF",
+                                                                                "image": image,
+                                                                                "click_action": "notice"}}}
+
+                            content_ios = {'message': {"aps": {"alert": {"title": "Farewell Notice", "subtitle": "",
+                                                                         "body": "Farewell Notice of %s belonging to %s" % (
+                                                                             member_id.member_name, family_name)},
+                                                               "sound": "default", "category": "notice", "badge": 1,
+                                                               "mutable-content": 1}, "media-url": image}}
+                            resp = fcm_messaging_to_all(content)
+                            resp1 = apns_messaging_to_all(content_ios)
+                        except:
+                            pass
+                    except:
+                        pass
+                    return Response({'success': True, 'message': 'Notice Created Successfully'},
+                                    status=HTTP_201_CREATED)
+                else:
+                    try:
+                        member_id = FileUpload.objects.get(primary_user_id=member_id)
+                    except:
+                        return Response({'success': False, 'message': 'Member doesnot exist'},
+                                        status=HTTP_400_BAD_REQUEST)
+                    farewell_obj = NoticeFarewell.objects.create(prayer_group=prayer_group_id, family=family_id,
+                                                                 primary_member=member_id, description=description)
+                    member_id.status = "4"
+                    if request.FILES.get('image'):
+                        member_id.image = request.FILES['image']
+                    member_id.save()
+                    try:
+                        if member_id.get_file_upload.first():
+                            family_name = member_id.get_file_upload.first().name
+                        else:
+                            family_name = ''
+                        if family_name:
+
+                            body = {
+                                "message": "Farewell Notice of %s belonging to %s" % (member_id.name, family_name),
+                                "user_type": "PRIMARY",
+                                "type": "farewell",
+                                "id": str(farewell_obj.id)
+                            }
+                        else:
+                            body = {"message": "Farewell Notice of %s " % (member_id.name),
+                                    "user_type": "PRIMARY",
+                                    "type": "farewell",
+                                    "id": str(farewell_obj.id)
+                                    }
+                        notifications = Notification.objects.create(created_time=tz.now(), message=body)
+                        primary_members = FileUpload.objects.all()
+                        secondary_members = Members.objects.all()
+                        for primary_member in primary_members:
+                            NoticeReadPrimary.objects.create(notification=notifications, user_to=primary_member,
+                                                             is_read=False)
+                        for secondary_member in secondary_members:
+                            NoticeReadSecondary.objects.create(notification=notifications, user_to=secondary_member,
+                                                               is_read=False)
+                        try:
+                            image = request.build_absolute_uri(member_id.image.url)
+                        except:
+                            image = ""
+                        try:
+                            content = {'title': 'notice title', 'message': {"data": {"title": "Farewell Notice",
+                                                                                     "body": "Farewell Notice of %s belonging to %s" % (
+                                                                                         member_id.name, family_name),
+                                                                                     "notificationType": "notice",
+                                                                                     "backgroundImage": image,
+                                                                                     "text_type": "long"}, \
+                                                                            "notification": {
+                                                                                "alert": "This is a FCM notification",
+                                                                                "title": "Farewell Notice",
+                                                                                "body": "Farewell Notice of %s belonging to %s" % (
+                                                                                    member_id.name, family_name),
+                                                                                "sound": "default",
+                                                                                "backgroundImage": image,
+                                                                                "backgroundImageTextColour": "#FFFFFF",
+                                                                                "image": image,
+                                                                                "click_action": "notice"}}}
+
+                            content_ios = {'message': {"aps": {"alert": {"title": "Farewell Notice", "subtitle": "",
+                                                                         "body": "Farewell announcement of %s belonging to %s" % (
+                                                                             member_id.name, family_name)},
+                                                               "sound": "default", "category": "notice", "badge": 1,
+                                                               "mutable-content": 1}, "media-url": image}}
+                            resp = fcm_messaging_to_all(content)
+                            resp1 = apns_messaging_to_all(content_ios)
+                        except:
+                            pass
+                    except:
+                        pass
+                    return Response({'success': True, 'message': 'Notice Created Successfully'},
+                                    status=HTTP_201_CREATED)
+
+
+class NoticeFarewellEdit(RetrieveUpdateAPIView):
+    queryset = NoticeFarewell.objects.all()
+    serializer_class = NoticeFarewellSerializer
+    permission_classes = [IsAdminUser]
+
+    def patch(self, request, pk, format=None):
+        dob = request.POST.get('dob')
+        try:
+            farewell_obj = NoticeFarewell.objects.get(id=pk)
+        except:
+            return Response({'success': False, 'message': 'Notice doesnot exist'}, status=HTTP_400_BAD_REQUEST)
+        try:
+            if farewell_obj.primary_member:
+                member_id = farewell_obj.primary_member
+                if member_id.get_file_upload.first():
+                    family_name = member_id.get_file_upload.first().name
+                else:
+                    family_name = ''
+                username = member_id.name
+
+            elif farewell_obj.secondary_member:
+                member_id = farewell_obj.secondary_member
+                if member_id.primary_user_id.get_file_upload.first():
+                    family_name = member_id.primary_user_id.get_file_upload.first().name
+                else:
+                    family_name = ''
+                username = member_id.member_name
+            else:
+                return Response({'success': False, 'message': 'Member doesnot exist'}, status=HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'success': False, 'message': 'Member doesnot exist', 'error':str(e)}, status=HTTP_400_BAD_REQUEST)
+
+        if request.POST.get('description'):
+            farewell_obj.description = request.POST['description']
+            farewell_obj.updated = True
+        if dob:
+            member_id.dob = request.POST['dob']
+            farewell_obj.updated = True
+        if request.FILES.get('image'):
+            member_id.image = request.FILES['image']
+            farewell_obj.updated = True
+        member_id.save()
+        farewell_obj.save()
+        if farewell_obj.updated == True:
+            try:
+                image = request.build_absolute_uri(member_id.image.url)
+            except:
+                image = ""
+            try:
+                content = {'title': 'notice title', 'message': {"data": {"title": "Farewell Notice Update",
+                                                                         "body": "Update About Farewell of %s belonging to %s" % (
+                                                                             username, family_name),
+                                                                         "notificationType": "farewell",
+                                                                         "backgroundImage": image, "text_type": "long"}, \
+                                                                "notification": {"alert": "This is a FCM notification",
+                                                                                 "title": "Farewell Notice Update",
+                                                                                 "body": "Update About Farewell of %s belonging to %s" % (
+                                                                                     username, family_name),
+                                                                                 "sound": "default",
+                                                                                 "backgroundImage": image,
+                                                                                 "backgroundImageTextColour": "#FFFFFF",
+                                                                                 "image": image,
+                                                                                 "click_action": "notice"}}}
+
+                content_ios = {'message': {"aps": {"alert": {"title": "Farewell Notice Update", "subtitle": "",
+                                                             "body": "Update About Farewell of %s belonging to %s" % (
+                                                                 username, family_name)}, "sound": "default",
+                                                   "category": "notice", "badge": 1, "mutable-content": 1},
+                                           "media-url": image}}
+                resp = fcm_messaging_to_all(content)
+                resp1 = apns_messaging_to_all(content_ios)
+            except:
+                pass
+        return Response({'success': True, 'message': 'Notice Updated Successfully'}, status=status.HTTP_200_OK)
+
+
+class NoticeFarewellDelete(DestroyAPIView):
+    queryset = NoticeFarewell.objects.all()
+    serializer_class = NoticeFarewellSerializer
+    permission_classes = [IsAdminUser]
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        try:
+            if instance.primary_member:
+                instance.primary_member.status = "1"
+                instance.primary_member.save()
+            elif instance.secondary_member:
+                instance.secondary_member.status = "1"
+                instance.secondary_member.save()
+            else:
+                pass
+        except:
+            pass
+
+        self.perform_destroy(instance)
+        data = {
+            'code': 200,
+            'status': "OK",
+        }
+        data['response'] = "Successfully deleted"
+        return Response(data)
+
+
+
 def convert24(str1): 
 
     if str1[-2:] == "AM" and str1[:2] == "12": 
@@ -2608,7 +2908,7 @@ def convert24(str1):
     elif str1[-2:] == "PM" and str1[:2] == "12": 
         return str1[:-2]     
     else: 
-        return str(int(str1[:2]) + 12) + str1[2:8] 
+        return str(int(str1[:2]) + 12) + str1[2:8]
 
 class UserNoticeList(ListAPIView):
     queryset=Notice.objects.all()
@@ -2616,220 +2916,321 @@ class UserNoticeList(ListAPIView):
     permission_classes=[IsAuthenticated]
 
     def list(self, request, *args, **kwargs):
-        context ={
-            'request': request
-        }
-        queryset_normal_notice = NoticeSerializer(Notice.objects.all().order_by('created_at'), many=True, context=context).data
-        queryset_bereavement_notice = NoticeBereavementSerializer(NoticeBereavement.objects.all().order_by('created_at'), many=True, context=context).data
-
-        response = []
-        response_bereavement = []
-        not_type = None
-        for notice in queryset_normal_notice:
-            try:
-                notice_date_obj = notice['created_at'].split(' ')
-                date_year=notice_date_obj[0].split('/')
-                date_24 = convert24(notice_date_obj[1]+':00'+' '+notice_date_obj[2])
-                date_not = str(date_year[2]+'/'+date_year[1]+'/'+date_year[0]+' '+date_24)
-            except:
-                date_not = notice['created_at']
-            try:
-                created_at = notice['created_at']
-                updated_at = notice['updated_at']
-                if created_at == updated_at :
-                    updated = False
-                else:
-                    updated = True
-            except:
-                updated = False
-            if notice['image'] == None and notice['video'] == None and notice['audio'] != None:
-                not_type = 'audio'
-                try:
-                    import mutagen
-                    not_obj = Notice.objects.get(id=int(notice['id']))
-                    audio_inf = mutagen.File(not_obj.audio).info
-                    audio_length = int(audio_inf.length)
-                except:
-                    audio_length = None
-                new_data ={
-                    'id': notice['id'],
-                    'type': 'notice',
-                    'notice_type': not_type,
-                    'notice' : notice['notice'],
-                    'description': notice['description'],
-                    'audio': notice['audio'],
-                    'audio_length': audio_length,
-                    'created_at': notice['created_at'],
-                    'updated': updated,
-                    'updated_at': notice['updated_at'],
-                    'created_date':date_not
-
-                }
-            elif notice['image'] == None and notice['audio'] == None and notice['video'] != None:
-                not_type = 'video'
-                new_data ={
-                    'id': notice['id'],
-                    'type': 'notice',
-                    'notice_type': not_type,
-                    'notice' : notice['notice'],
-                    'description': notice['description'],
-                    'video': notice['video'],
-                    'thumbnail': notice['thumbnail'],
-                    'created_at': notice['created_at'],
-                    'updated': updated,
-                    'updated_at': notice['updated_at'],
-                    'created_date':date_not
-
-                }
-            elif notice['image'] != None and notice['audio'] == None and notice['video'] == None:
-                not_type = 'image'
-                new_data ={
-                    'id': notice['id'],
-                    'type': 'notice',
-                    'notice_type': not_type,
-                    'notice' : notice['notice'],
-                    'description': notice['description'],
-                    'image': notice['image'],
-                    'created_at': notice['created_at'],
-                    'updated': updated,
-                    'updated_at': notice['updated_at'],
-                    'created_date':date_not
-
-                }
-            else:
-                not_type = 'notice'
-                new_data ={
-                    'id': notice['id'],
-                    'type': 'notice',
-                    'notice_type': not_type,
-                    'notice' : notice['notice'],
-                    'description': notice['description'],
-                    'created_at': notice['created_at'],
-                    'updated': updated,
-                    'updated_at': notice['updated_at'],
-                    'created_date':date_not
-
-                }
-
-            response.append(new_data)
-
-        for bereavement in queryset_bereavement_notice:
-            prayer=PrayerGroup.objects.get(id=bereavement['prayer_group'])
-            family=Family.objects.get(id=bereavement['family'])
-            try:
-                #import pdb;pdb.set_trace()
-                notice_date_obj = bereavement['created_at'].split(' ')
-                date_year=notice_date_obj[0].split('/')
-                date_24 = convert24(notice_date_obj[1]+':00'+' '+notice_date_obj[2])
-                date_not = str(date_year[2]+'/'+date_year[1]+'/'+date_year[0]+' '+date_24)
-            except:
-                date_not = bereavement['created_at']
-            try:
-                member=FileUpload.objects.get(primary_user_id=bereavement['primary_member'])
-                if member.image:
-                    image=request.build_absolute_uri(member.image.url)
-                else:
-                    image='null'
-                if member.dob:
-                    dob = member.dob
-                else:
-                    dob = 'Expired'
-                import datetime as dt
-                today = dt.datetime.now()
-                try:
-                    in_memory_date_format_year = tz.localtime(member.in_memory_date, pytz.timezone('Asia/Kolkata')).strftime("%Y")
-                    in_memory_date_format_date = tz.localtime(member.in_memory_date, pytz.timezone('Asia/Kolkata')).strftime("%d/%m/%Y")
-                except:
-                    in_memory_date_format_year = today.year
-                    in_memory_date_format_date = today
-                new_data ={
-                'id': bereavement['id'],
-                'type': 'bereavement',
-                # 'title' : bereavement['title'],
-                'description': bereavement['description'],
-                'prayer_group': prayer.name,
-                'family': family.name,
-                'name': member.name,
-                'occupation':member.occupation,
-                'current_year':int(in_memory_date_format_year),
-                'current_date':in_memory_date_format_date,
-                'dob':dob,
-                'image':image,
-                'created_at': bereavement['created_at'],
-                'updated_at': bereavement['updated_at'],
-                'updated' : bereavement['updated'],
-                'created_date':date_not
-
-                # 'secondary_member': member_name.member_name,
-                }
-
-            except:
-                import datetime as dt
-                today = dt.datetime.now()
-                member_name=Members.objects.get(secondary_user_id=bereavement['secondary_member'])
-                family=Family.objects.get(id=bereavement['family'])
-                if member_name.image:
-                    image=request.build_absolute_uri(member_name.image.url)
-                else:
-                    image='null'
-                if member_name.dob:
-                    dob = member_name.dob
-                else:
-                    dob = 'Expired'
-                try:
-                    in_memory_date_format_year = tz.localtime(member_name.in_memory_date, pytz.timezone('Asia/Kolkata')).strftime("%Y")
-                    in_memory_date_format_date = tz.localtime(member_name.in_memory_date, pytz.timezone('Asia/Kolkata')).strftime("%d/%m/%Y")
-                except:
-                    in_memory_date_format_year = today.year
-                    in_memory_date_format_date = today
-                new_data ={
-                'id': bereavement['id'],
-                'type': 'bereavement',
-                # 'title' : bereavement['title'],
-                'description': bereavement['description'],
-                'prayer_group': prayer.name,
-                'family': family.name,
-                # 'primary_member': member.name,
-                'name': member_name.member_name,
-                'image':image,
-                'current_year':int(in_memory_date_format_year),
-                'current_date':in_memory_date_format_date,
-                'dob':dob,
-                'occupation':member_name.occupation,
-                'created_at': bereavement['created_at'],
-                'updated_at': bereavement['updated_at'],
-                'updated' : bereavement['updated'],
-                'created_date':date_not
+        try:
+            context ={
+                'request': request
             }
+            response = []
+            if request.GET['type'] == 'notice':
+                queryset_normal_notice = NoticeSerializer(Notice.objects.all().order_by('created_at'), many=True, context=context).data
+                for notice in queryset_normal_notice:
+                    try:
+                        notice_date_obj = notice['created_at'].split(' ')
+                        date_year = notice_date_obj[0].split('/')
+                        date_24 = convert24(notice_date_obj[1] + ':00' + ' ' + notice_date_obj[2])
+                        date_not = str(date_year[2] + '/' + date_year[1] + '/' + date_year[0] + ' ' + date_24)
+                    except:
+                        date_not = notice['created_at']
+                    try:
+                        created_at = notice['created_at']
+                        updated_at = notice['updated_at']
+                        if created_at == updated_at:
+                            updated = False
+                        else:
+                            updated = True
+                    except:
+                        updated = False
+                    if notice['image'] == None and notice['video'] == None and notice['audio'] != None:
+                        not_type = 'audio'
+                        try:
+                            import mutagen
+                            not_obj = Notice.objects.get(id=int(notice['id']))
+                            audio_inf = mutagen.File(not_obj.audio).info
+                            audio_length = int(audio_inf.length)
+                        except:
+                            audio_length = None
+                        new_data = {
+                            'id': notice['id'],
+                            'type': 'notice',
+                            'notice_type': not_type,
+                            'notice': notice['notice'],
+                            'description': notice['description'],
+                            'audio': notice['audio'],
+                            'audio_length': audio_length,
+                            'created_at': notice['created_at'],
+                            'updated': updated,
+                            'updated_at': notice['updated_at'],
+                            'created_date': date_not
 
+                        }
+                    elif notice['image'] == None and notice['audio'] == None and notice['video'] != None:
+                        not_type = 'video'
+                        new_data = {
+                            'id': notice['id'],
+                            'type': 'notice',
+                            'notice_type': not_type,
+                            'notice': notice['notice'],
+                            'description': notice['description'],
+                            'video': notice['video'],
+                            'thumbnail': notice['thumbnail'],
+                            'created_at': notice['created_at'],
+                            'updated': updated,
+                            'updated_at': notice['updated_at'],
+                            'created_date': date_not
 
+                        }
+                    elif notice['image'] != None and notice['audio'] == None and notice['video'] == None:
+                        not_type = 'image'
+                        new_data = {
+                            'id': notice['id'],
+                            'type': 'notice',
+                            'notice_type': not_type,
+                            'notice': notice['notice'],
+                            'description': notice['description'],
+                            'image': notice['image'],
+                            'created_at': notice['created_at'],
+                            'updated': updated,
+                            'updated_at': notice['updated_at'],
+                            'created_date': date_not
 
+                        }
+                    else:
+                        not_type = 'notice'
+                        new_data = {
+                            'id': notice['id'],
+                            'type': 'notice',
+                            'notice_type': not_type,
+                            'notice': notice['notice'],
+                            'description': notice['description'],
+                            'created_at': notice['created_at'],
+                            'updated': updated,
+                            'updated_at': notice['updated_at'],
+                            'created_date': date_not
 
-            # response.append(new_data)
+                        }
 
+                    response.append(new_data)
+                response_query = sorted(response, key=lambda i: i.get('created_date'))
+                data = {
+                    'code': 200,
+                    'status': "OK",
+                    'response': response
 
+                }
+                data['response'] = {
+                    'notices': response_query,
+                    'notice count': len(queryset_normal_notice)
+                }
 
-            response.append(new_data)
+            elif request.GET['type'] == 'bereavement':
+                queryset_bereavement_notice = NoticeBereavementSerializer(NoticeBereavement.objects.all().order_by('created_at'), many=True, context=context).data
+                for bereavement in queryset_bereavement_notice:
+                    prayer = PrayerGroup.objects.get(id=bereavement['prayer_group'])
+                    family = Family.objects.get(id=bereavement['family'])
+                    try:
+                        # import pdb;pdb.set_trace()
+                        notice_date_obj = bereavement['created_at'].split(' ')
+                        date_year = notice_date_obj[0].split('/')
+                        date_24 = convert24(notice_date_obj[1] + ':00' + ' ' + notice_date_obj[2])
+                        date_not = str(date_year[2] + '/' + date_year[1] + '/' + date_year[0] + ' ' + date_24)
+                    except:
+                        date_not = bereavement['created_at']
+                    try:
+                        member = FileUpload.objects.get(primary_user_id=bereavement['primary_member'])
+                        if member.image:
+                            image = request.build_absolute_uri(member.image.url)
+                        else:
+                            image = 'null'
+                        if member.dob:
+                            dob = member.dob
+                        else:
+                            dob = 'Expired'
+                        import datetime as dt
+                        today = dt.datetime.now()
+                        try:
+                            in_memory_date_format_year = tz.localtime(member.in_memory_date,
+                                                                      pytz.timezone('Asia/Kolkata')).strftime("%Y")
+                            in_memory_date_format_date = tz.localtime(member.in_memory_date,
+                                                                      pytz.timezone('Asia/Kolkata')).strftime("%d/%m/%Y")
+                        except:
+                            in_memory_date_format_year = today.year
+                            in_memory_date_format_date = today
+                        new_data = {
+                            'id': bereavement['id'],
+                            'type': 'bereavement',
+                            # 'title' : bereavement['title'],
+                            'description': bereavement['description'],
+                            'prayer_group': prayer.name,
+                            'family': family.name,
+                            'name': member.name,
+                            'occupation': member.occupation,
+                            'current_year': int(in_memory_date_format_year),
+                            'current_date': in_memory_date_format_date,
+                            'dob': dob,
+                            'image': image,
+                            'created_at': bereavement['created_at'],
+                            'updated_at': bereavement['updated_at'],
+                            'updated': bereavement['updated'],
+                            'created_date': date_not
+                            # 'secondary_member': member_name.member_name,
+                        }
 
+                    except:
+                        import datetime as dt
+                        today = dt.datetime.now()
+                        member_name = Members.objects.get(secondary_user_id=bereavement['secondary_member'])
+                        family = Family.objects.get(id=bereavement['family'])
+                        if member_name.image:
+                            image = request.build_absolute_uri(member_name.image.url)
+                        else:
+                            image = 'null'
+                        if member_name.dob:
+                            dob = member_name.dob
+                        else:
+                            dob = 'Expired'
+                        try:
+                            in_memory_date_format_year = tz.localtime(member_name.in_memory_date,
+                                                                      pytz.timezone('Asia/Kolkata')).strftime("%Y")
+                            in_memory_date_format_date = tz.localtime(member_name.in_memory_date,
+                                                                      pytz.timezone('Asia/Kolkata')).strftime("%d/%m/%Y")
+                        except:
+                            in_memory_date_format_year = today.year
+                            in_memory_date_format_date = today
+                        new_data = {
+                            'id': bereavement['id'],
+                            'type': 'bereavement',
+                            # 'title' : bereavement['title'],
+                            'description': bereavement['description'],
+                            'prayer_group': prayer.name,
+                            'family': family.name,
+                            # 'primary_member': member.name,
+                            'name': member_name.member_name,
+                            'image': image,
+                            'current_year': int(in_memory_date_format_year),
+                            'current_date': in_memory_date_format_date,
+                            'dob': dob,
+                            'occupation': member_name.occupation,
+                            'created_at': bereavement['created_at'],
+                            'updated_at': bereavement['updated_at'],
+                            'updated': bereavement['updated'],
+                            'created_date': date_not
+                        }
 
-        response_query = sorted(response, key = lambda i: i.get('created_date'))
+                    response.append(new_data)
+                response_query = sorted(response, key=lambda i: i.get('created_date'))
+                data = {
+                    'code': 200,
+                    'status': "OK",
+                    'response': response
 
-        data={
-            'code': 200,
-            'status': "OK",
-            'response': response
+                }
+                data['response'] = {
+                    'notices': response_query,
+                    'notice count': len(queryset_bereavement_notice)
+                }
 
+            elif request.GET['type'] == 'farewell':
+                queryset_farewell_notice = NoticeBereavementSerializer(NoticeFarewell.objects.all().order_by('created_at'), many=True, context=context).data
+                for farewell in queryset_farewell_notice:
+                    prayer = PrayerGroup.objects.get(id=farewell['prayer_group'])
+                    family = Family.objects.get(id=farewell['family'])
+                    try:
+                        # import pdb;pdb.set_trace()
+                        notice_date_obj = farewell['created_at'].split(' ')
+                        date_year = notice_date_obj[0].split('/')
+                        date_24 = convert24(notice_date_obj[1] + ':00' + ' ' + notice_date_obj[2])
+                        date_not = str(date_year[2] + '/' + date_year[1] + '/' + date_year[0] + ' ' + date_24)
+                    except:
+                        date_not = farewell['created_at']
+                    try:
+                        member = FileUpload.objects.get(primary_user_id=farewell['primary_member'])
+                        if member.image:
+                            image = request.build_absolute_uri(member.image.url)
+                        else:
+                            image = 'null'
+                        if member.dob:
+                            dob = member.dob
+                        else:
+                            dob = ''
+                        import datetime as dt
+                        today = dt.datetime.now()
+                        in_memory_date_format_year = today.year
+                        in_memory_date_format_date = today
+                        new_data = {
+                            'id': farewell['id'],
+                            'type': 'farewell',
+                            # 'title' : bereavement['title'],
+                            'description': farewell['description'],
+                            'prayer_group': prayer.name,
+                            'family': family.name,
+                            'name': member.name,
+                            'occupation': member.occupation,
+                            'current_year': int(in_memory_date_format_year),
+                            'current_date': in_memory_date_format_date,
+                            'dob': dob,
+                            'image': image,
+                            'created_at': farewell['created_at'],
+                            'updated_at': farewell['updated_at'],
+                            'updated': farewell['updated'],
+                            'created_date': date_not
+                            # 'secondary_member': member_name.member_name,
+                        }
+
+                    except:
+                        import datetime as dt
+                        today = dt.datetime.now()
+                        member_name = Members.objects.get(secondary_user_id=farewell['secondary_member'])
+                        family = Family.objects.get(id=farewell['family'])
+                        if member_name.image:
+                            image = request.build_absolute_uri(member_name.image.url)
+                        else:
+                            image = 'null'
+                        if member_name.dob:
+                            dob = member_name.dob
+                        else:
+                            dob = ''
+                        in_memory_date_format_year = today.year
+                        in_memory_date_format_date = today
+                        new_data = {
+                            'id': farewell['id'],
+                            'type': 'bereavement',
+                            # 'title' : bereavement['title'],
+                            'description': farewell['description'],
+                            'prayer_group': prayer.name,
+                            'family': family.name,
+                            # 'primary_member': member.name,
+                            'name': member_name.member_name,
+                            'image': image,
+                            'current_year': int(in_memory_date_format_year),
+                            'current_date': in_memory_date_format_date,
+                            'dob': dob,
+                            'occupation': member_name.occupation,
+                            'created_at': farewell['created_at'],
+                            'updated_at': farewell['updated_at'],
+                            'updated': farewell['updated'],
+                            'created_date': date_not
+                        }
+
+                    response.append(new_data)
+                response_query = sorted(response, key=lambda i: i.get('created_date'))
+                data = {
+                    'code': 200,
+                    'status': "OK",
+                    'response': response
+
+                }
+                data['response'] = {
+                    'notices': response_query,
+                    'notice count': len(queryset_farewell_notice)
+                }
+
+            return Response(data)
+        except:
+            data = {
+                'code': 400,
+                'response': "Please Enter The Type of Notice"
             }
-        data['response'] = {
-            'notices':response_query,
-            'normal notice count':len(queryset_normal_notice),
-            'bereavement notice count':len(queryset_bereavement_notice)
-
-            }
-        # data['response']['member_details'].insert(0)
-
-        return Response(data)
-
+            return Response(data)
 
 
 class UpdateFamilyByPrimary(APIView):
@@ -3908,115 +4309,387 @@ class UserListView(ListAPIView):
 
     def list(self, request, *args, **kwargs):
 
-        context ={
-            'request': request
-        }
-        
-        queryset_primary = PrimaryUserSerializer(FileUpload.objects.all().order_by('name'), many=True, context=context).data
-        queryset_secondary = MemberSerializer(Members.objects.all().order_by('member_name'), many=True, context=context).data
+        request_date = request.GET.get('date')
+        if request_date:
+            start_time = datetime.strptime(request_date, '%Y-%m-%d %H:%M:%S')
+            queryset_primary = FileUpload.objects.filter(
+                last_modified__gte=start_time).order_by('name')
+            queryset_secondary = Members.objects.filter(
+                last_modified__gte=start_time).order_by('member_name')
+            d_queryset_primary = FileUpload.objects.filter(
+                last_modified__gte=start_time).order_by('name')
+            d_queryset_secondary = Members.objects.filter(
+                last_modified__gte=start_time).order_by('member_name')
+        else:
+            queryset_primary = FileUpload.objects.all().order_by('name')
+            queryset_secondary = Members.objects.all().order_by('member_name')
+            d_queryset_primary = FileUpload.objects.all().order_by('name')
+            d_queryset_secondary = Members.objects.all().order_by('member_name')
 
         response = []
         for primary in queryset_primary:
+            name, image, prayer_group_name, primary_name, user_id, in_memory_date_format, prayer_group_id = None, None, None, None, None, None, None
+            if primary.get_file_upload.first():
+                fam_obj = primary.get_file_upload.first()
+                family_name = fam_obj.name.title()
+                active = fam_obj.active
+                family_id = fam_obj.id
+            else:
+                family_name = ''
+                active = False
+                family_id = None
+            try:
+                name = primary.name.title()
+            except:
+                pass
+            if primary.image:
+                try:
+                    image = request.build_absolute_uri(primary.image.url)
+                except:
+                    image = None
+            try:
+                prayer_group_name = primary.get_file_upload_prayergroup.first().name
+            except:
+                prayer_group_name = ''
 
-            new_data ={
-                'user_id' : primary['primary_user_id'],
-                'name': primary['name'],
-                'image': primary['image'],
-                'address': primary['address'],
-                'phone_no_primary': primary['phone_no_primary'],
-                'phone_no_secondary': primary['phone_no_secondary'],
-                'dob': primary['dob'],
-                'dom': primary['dom'],
-                'blood_group': primary['blood_group'],
-                'email': primary['email'],
-                'occupation': primary['occupation'],
-                'about': primary['about'],
-                'marital_status': primary['marital_status'],
-                'in_memory': primary['in_memory'],
-                'in_memory_date': primary['in_memory_date'],
-                'family_name': primary['family_name'],
-                'user_type': primary['user_type']
+            try:
+                prayer_group_id = primary.get_file_upload_prayergroup.first().id
+            except:
+                prayer_group_id = ''
+
+            try:
+                primary_name = primary.name.title()
+            except:
+                pass
+            try:
+                user_id = primary.primary_user_id
+            except:
+                user_id = None
+            try:
+                if primary.in_memory:
+                    try:
+                        in_memory_date_format = tz.localtime(primary.in_memory_date,
+                                                             pytz.timezone('Asia/Kolkata')).strftime("%d/%m/%Y")
+                    except:
+                        in_memory_date_format = primary.in_memory_date.strftime("%d/%m/%Y")
+                else:
+                    in_memory_date_format = None
+            except:
+                in_memory_date_format = None
+            new_data = {
+                'user_id': user_id,
+                'name': name,
+                'image': image,
+                'address': primary.address,
+                'phone_no_primary': primary.phone_no_primary,
+                'phone_no_secondary': primary.phone_no_secondary,
+                'dob': primary.dob,
+                'dom': primary.dom,
+                'blood_group': primary.blood_group,
+                'email': primary.email,
+                'occupation': primary.occupation,
+                'about': primary.about,
+                'marital_status': primary.marital_status,
+                'in_memory': primary.in_memory,
+                'in_memory_date': str(primary.in_memory_date),
+                'family_name': family_name,
+                'active': active,
+                'family_id': family_id,
+                'user_type': 'primary',
+                'prayer_group_name': prayer_group_name,
+                'primary_name': primary_name,
+                'landline': primary.landline,
+                'in_memory_date_format': in_memory_date_format,
+                'prayer_group_id': prayer_group_id,
+                'last_modified': datetime.strftime(primary.last_modified, '%Y-%m-%d %H:%M:%S')
             }
 
             response.append(new_data)
 
         for secondary in queryset_secondary:
+            member_name, image, member_name, prayer_group_name, family_name, active, user_id, in_memory_date_format, prayer_group_id = None, None, None, None, None, None, None, None, None
+            try:
+                fam_obj = secondary.primary_user_id.get_file_upload.first()
+                family_name = fam_obj.name.title()
+                active = fam_obj.active
+                family_id = fam_obj.id
+            except:
+                family_name = ''
+                active = False
+                family_id = None
+            try:
+                member_name = secondary.member_name.title()
+            except:
+                pass
 
-            new_data ={
-                'user_id' : secondary['secondary_user_id'],
-                'name': secondary['member_name'],
-                'image': secondary['image'],
-                'phone_no_primary': secondary['phone_no_secondary_user'],
-                'phone_no_secondary': secondary['phone_no_secondary_user_secondary'],
-                'dob': secondary['dob'],
-                'dom': secondary['dom'],
-                'blood_group': secondary['blood_group'],
-                'email': secondary['email'],
-                'occupation': secondary['occupation'],
-                'about': secondary['about'],
-                'marital_status': secondary['marital_status'],
-                'in_memory': secondary['in_memory'],
-                'in_memory_date': secondary['in_memory_date'],
-                'family_name': secondary['family_name'],
-                'user_type': secondary['user_type'],
-                'relation': secondary['relation'],
-                'primary_user_id': secondary['primary_user_id']
+            if secondary.image:
+                try:
+                    image = request.build_absolute_uri(secondary.image.url)
+                except:
+                    image = None
+
+            try:
+                prayer_group_name = secondary.primary_user_id.get_file_upload_prayergroup.first().name
+            except:
+                prayer_group_name = ''
+
+            try:
+                prayer_group_id = secondary.primary_user_id.get_file_upload_prayergroup.first().id
+            except:
+                prayer_group_id = ''
+
+            try:
+                user_id = secondary.secondary_user_id
+            except:
+                user_id = None
+
+            try:
+                if secondary.in_memory:
+                    try:
+                        in_memory_date_format = tz.localtime(secondary.in_memory_date,
+                                                             pytz.timezone('Asia/Kolkata')).strftime("%d/%m/%Y")
+                    except:
+                        in_memory_date_format = secondary.in_memory_date.strftime("%d/%m/%Y")
+                else:
+                    in_memory_date_format = None
+            except:
+                in_memory_date_format = None
+            new_data = {
+                'user_id': user_id,
+                'name': member_name,
+                'image': image,
+                'phone_no_primary': secondary.phone_no_secondary_user,
+                'phone_no_secondary': secondary.phone_no_secondary_user_secondary,
+                'dob': secondary.dob,
+                'dom': secondary.dom,
+                'blood_group': secondary.blood_group,
+                'email': secondary.email,
+                'occupation': secondary.occupation,
+                'about': secondary.about,
+                'marital_status': secondary.marital_status,
+                'in_memory': secondary.in_memory,
+                'in_memory_date': str(secondary.in_memory_date),
+                'family_name': family_name,
+                'active': active,
+                'family_id': family_id,
+                'user_type': 'secondary',
+                'relation': secondary.relation,
+                'primary_user_id': secondary.primary_user_id.primary_user_id if secondary.primary_user_id else None,
+                'prayer_group_name': prayer_group_name,
+                'landline': secondary.landline,
+                'address': "",
+                'in_memory_date_format': in_memory_date_format,
+                'prayer_group_id': prayer_group_id,
+                'last_modified': datetime.strftime(secondary.last_modified, '%Y-%m-%d %H:%M:%S')
             }
 
             response.append(new_data)
-
-
-        data={
-            'code': 200,
-            'status': "OK",
-            'response': response
-
-            }
-
-        return Response(data)
-
-class FamilyListPaginatedView(ListAPIView):
-    queryset = Family.objects.all().order_by('name')
-    serializer_class = FamilyListSerializer
-    permission_classes = [AllowAny]
-    pagination_class = StandardResultsSetPagination
-    def list(self, request, *args, **kwargs):
-        try:
-            term = request.GET['term']
-            if term:
-                term = term.replace(" ", "")
-                term.lower()
-                queryset = Family.objects.filter(name__nospaces__icontains=term).order_by('name')
+        is_deleted_response = []
+        for primary in d_queryset_primary:
+            name, image, prayer_group_name, primary_name, user_id, in_memory_date_format, prayer_group_id = None, None, None, None, None, None, None
+            if primary.get_file_upload.first():
+                fam_obj = primary.get_file_upload.first()
+                family_name = fam_obj.name.title()
+                active = fam_obj.active
+                family_id = fam_obj.id
             else:
-                queryset = self.filter_queryset(self.get_queryset())
-        except:
-            queryset = self.filter_queryset(self.get_queryset())
+                family_name = ''
+                active = False
+                family_id = None
+            try:
+                name = primary.name.title()
+            except:
+                pass
+            if primary.image:
+                try:
+                    image = request.build_absolute_uri(primary.image.url)
+                except:
+                    image = None
+            try:
+                prayer_group_name = primary.get_file_upload_prayergroup.first().name
+            except:
+                prayer_group_name = ''
 
-        page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
+            try:
+                prayer_group_id = primary.get_file_upload_prayergroup.first().id
+            except:
+                prayer_group_id = ''
 
-            data = {
-                'code': 200,
-                'status': "OK",
+            try:
+                primary_name = primary.name.title()
+            except:
+                pass
+            try:
+                user_id = primary.primary_user_id
+            except:
+                user_id = None
+
+            try:
+                if primary.in_memory:
+                    try:
+                        in_memory_date_format = tz.localtime(primary.in_memory_date,
+                                                             pytz.timezone('Asia/Kolkata')).strftime("%d/%m/%Y")
+                    except:
+                        in_memory_date_format = primary.in_memory_date.strftime("%d/%m/%Y")
+                else:
+                    in_memory_date_format = None
+            except:
+                in_memory_date_format = None
+            new_data = {
+                'user_id': user_id,
+                'name': name,
+                'image': image,
+                'address': primary.address,
+                'phone_no_primary': primary.phone_no_primary,
+                'phone_no_secondary': primary.phone_no_secondary,
+                'dob': primary.dob,
+                'dom': primary.dom,
+                'blood_group': primary.blood_group,
+                'email': primary.email,
+                'occupation': primary.occupation,
+                'about': primary.about,
+                'marital_status': primary.marital_status,
+                'in_memory': primary.in_memory,
+                'in_memory_date': str(primary.in_memory_date),
+                'family_name': family_name,
+                'active': active,
+                'family_id': family_id,
+                'user_type': 'primary',
+                'prayer_group_name': prayer_group_name,
+                'primary_name': primary_name,
+                'landline': primary.landline,
+                'in_memory_date_format': in_memory_date_format,
+                'prayer_group_id': prayer_group_id,
+                'last_modified': datetime.strftime(primary.last_modified, '%Y-%m-%d %H:%M:%S')
             }
 
-            page_nated_data = self.get_paginated_response(serializer.data).data
-            data.update(page_nated_data)
-            data['response'] = data.pop('results')
+            is_deleted_response.append(new_data)
 
-            return Response(data)
+        for secondary in d_queryset_secondary:
+            member_name, image, member_name, prayer_group_name, family_name, active, user_id, in_memory_date_format, prayer_group_id = None, None, None, None, None, None, None, None, None
+            try:
+                fam_obj = secondary.primary_user_id.get_file_upload.first()
+                family_name = fam_obj.name.title()
+                active = fam_obj.active
+                family_id = fam_obj.id
+            except:
+                family_name = ''
+                active = False
+                family_id = None
+            try:
+                member_name = secondary.member_name.title()
+            except:
+                pass
 
+            if secondary.image:
+                try:
+                    image = request.build_absolute_uri(secondary.image.url)
+                except:
+                    image = None
 
-        serializer = self.get_serializer(queryset, many=True)
+            try:
+                prayer_group_name = secondary.primary_user_id.get_file_upload_prayergroup.first().name
+            except:
+                prayer_group_name = ''
+
+            try:
+                prayer_group_id = secondary.primary_user_id.get_file_upload_prayergroup.first().id
+            except:
+                prayer_group_id = ''
+            try:
+                user_id = secondary.secondary_user_id
+            except:
+                user_id = None
+
+            try:
+                if secondary.in_memory:
+                    try:
+                        in_memory_date_format = tz.localtime(secondary.in_memory_date,
+                                                             pytz.timezone('Asia/Kolkata')).strftime("%d/%m/%Y")
+                    except:
+                        in_memory_date_format = secondary.in_memory_date.strftime("%d/%m/%Y")
+                else:
+                    in_memory_date_format = None
+            except:
+                in_memory_date_format = None
+            new_data = {
+                'user_id': user_id,
+                'name': member_name,
+                'image': image,
+                'phone_no_primary': secondary.phone_no_secondary_user,
+                'phone_no_secondary': secondary.phone_no_secondary_user_secondary,
+                'dob': secondary.dob,
+                'dom': secondary.dom,
+                'blood_group': secondary.blood_group,
+                'email': secondary.email,
+                'occupation': secondary.occupation,
+                'about': secondary.about,
+                'marital_status': secondary.marital_status,
+                'in_memory': secondary.in_memory,
+                'in_memory_date': str(secondary.in_memory_date),
+                'family_name': family_name,
+                'active': active,
+                'family_id': family_id,
+                'user_type': 'secondary',
+                'relation': secondary.relation,
+                'primary_user_id': secondary.primary_user_id.primary_user_id if secondary.primary_user_id else None,
+                'prayer_group_name': prayer_group_name,
+                'landline': secondary.landline,
+                'address': "",
+                'in_memory_date_format': in_memory_date_format,
+                'prayer_group_id': prayer_group_id,
+                'last_modified': datetime.strftime(secondary.last_modified, '%Y-%m-%d %H:%M:%S')
+            }
+
+            is_deleted_response.append(new_data)
 
         data = {
             'code': 200,
             'status': "OK",
-            'response': serializer.data
+            'response': {'data': response, 'is_deleted': is_deleted_response}
+        }
+        data = json.dumps(data)
+        return StreamingHttpResponse(data)
+
+class FamilyListAllView(ListAPIView):
+    queryset = Family.objects.all().order_by('name')
+    serializer_class = FamilyListSerializer
+    permission_classes = [AllowAny]
+
+    def list(self, request, *args, **kwargs):
+        try:
+            term = request.GET.get('term')
+            request_date = request.GET.get('date')
+            if request_date:
+                start_time = datetime.strptime(request_date, '%Y-%m-%d %H:%M:%S')
+                if term:
+                    term = term.replace(" ", "")
+                    term.lower()
+                    queryset = Family.objects.filter(last_modified__gte=start_time,
+                                                     name__nospaces__icontains=term).order_by('name')
+                    d_queryset = Family.objects.filter(last_modified__gte=start_time,
+                                                     name__nospaces__icontains=term).order_by('name')
+                else:
+                    queryset = Family.objects.filter(last_modified__gte=start_time).order_by('name')
+                    d_queryset = Family.objects.filter(last_modified__gte=start_time).order_by('name')
+            else:
+                queryset = Family.objects.filter().order_by('name')
+                d_queryset = Family.objects.filter().order_by('name')
+        except:
+            queryset = Family.objects.all().order_by('name')
+            d_queryset = Family.objects.all().order_by('name')
+
+        serializer = self.get_serializer(queryset, many=True)
+        d_serializer = self.get_serializer(d_queryset, many=True)
+
+        data = {
+            'code': 200,
+            'status': "OK",
+            'response': {'data': serializer.data, 'is_deleted': d_serializer.data}
         }
 
         return Response(data)
+
 
 class PrayerGroupBasedFamilyPaginatedView(ListAPIView):
     queryset = Family.objects.all()
@@ -4081,7 +4754,7 @@ class PrayerGroupBasedMembersPaginatedView(ListAPIView):
     serializer_class = MembersSerializer
     permission_classes = [AllowAny]
     pagination_class = StandardResultsSetPagination
-    
+
     def get_queryset(self, *args, **kwargs):
         prayer_id = self.kwargs['pk']
 
@@ -4109,39 +4782,21 @@ class PrayerGroupBasedMembersPaginatedView(ListAPIView):
         except:
             queryset = self.filter_queryset(self.get_queryset())
             queryset_primary = self.primary_user.all()
-        # page = self.paginate_queryset(queryset)
-        # if page is not None:
-        #     serializer = self.get_serializer(page, many=True)
-
-        #     data = {
-        #         'code': 200,
-        #         'status': "OK",
-        #     }
-
-        #     page_nated_data = self.get_paginated_response(serializer.data).data
-        #     data.update(page_nated_data)
-        #      response = data.pop('results')
-        #     # return Response(data)
         serializer = self.get_serializer(queryset, many=True)
-
-        # data = {
-        #     'code': 200,
-        #     'status': "OK",
-        #     'response': serializer.data
-        # }
         response = serializer.data
         for primary_user in queryset_primary:
-            primary_user_id = UserRetrieveSerializer(primary_user,context={'request':request}).data
+            primary_user_id = UserRetrieveSerializer(primary_user, context={'request': request}).data
 
             response.insert(0, primary_user_id)
 
         if term:
-            res = sorted([x for x in response if (x['name'].replace(" ","").lower()).startswith(term.lower())], key = lambda i: i['name'])
-            names = list(map(itemgetter('name'), res)) 
-            response_query = res + sorted([x for x in response if x['name'] not in names], key = lambda i: i['name'])
+            res = sorted([x for x in response if (x['name'].replace(" ", "").lower()).startswith(term.lower())],
+                         key=lambda i: i['name'])
+            names = list(map(itemgetter('name'), res))
+            response_query = res + sorted([x for x in response if x['name'] not in names], key=lambda i: i['name'])
         else:
-            response_query = sorted(response, key = lambda i: i['name']) 
-            
+            response_query = sorted(response, key=lambda i: i['name'])
+
         page = self.paginate_queryset(response_query)
         if page is not None:
             # serializer = CommonUserSerializer(responses,many=True)
@@ -6116,92 +6771,148 @@ class UserStatisticsViewAdmin(APIView):
     queryset = FileUpload.objects.all()
     permission_classes = [IsAdminUser]
     authentication_classes = [TokenAuthentication]
+
+    def get_anniversary_and_birthday(self, users):
+        #date_patterns = ["%d/%m/%Y", "%Y/%m/%d", "%d-%m-%Y", "%Y-%m-%d", "%d.%m.%Y", "%Y.%m.%d"]
+        date_patterns = ["%d/%m/%Y"]
+        birthday, anniversary = [], []
+        today = datetime.today().date()
+        for row in users:
+            b_day, m_day, dob, dom = None, None, row.dob, row.dom
+            for pattern in date_patterns:
+                if dob is not None:
+                    try:
+                        b_day = datetime.strptime(dob, pattern).date()
+                    except:
+                        pass
+                if dom is not None:
+                    try:
+                        m_day = datetime.strptime(dom, pattern).date()
+                    except:
+                        pass
+            if b_day is not None and b_day.day == today.day and b_day.month == today.month:
+                row.dob = b_day
+                birthday.append(row)
+            if m_day is not None and m_day.day == today.day and m_day.month == today.month:
+                row.dom = m_day
+                anniversary.append(row)
+        return birthday, anniversary
+
+    def get_upcoming_anniversary_and_birthday(self, users):
+        #date_patterns = ["%d/%m/%Y", "%Y/%m/%d", "%d-%m-%Y", "%Y-%m-%d", "%d.%m.%Y", "%Y.%m.%d"]
+        date_patterns = ["%d/%m/%Y"]
+        birthday, anniversary = [], []
+        start = datetime.today().date() + timedelta(1)
+        max_days = 31
+        days = [start + timedelta(days=i) for i in range(0, max_days)]
+        for d in days:
+            for row in users:
+                b_day, m_day, dob, dom = None, None, row.dob, row.dom
+                for pattern in date_patterns:
+                    if dob is not None:
+                        try:
+                            b_day = datetime.strptime(dob, pattern).date()
+                        except:
+                            pass
+                    if dom is not None:
+                        try:
+                            m_day = datetime.strptime(dom, pattern).date()
+                        except:
+                            pass
+                if b_day is not None and b_day.day == d.day and b_day.month == d.month:
+                    row.dob = b_day
+                    birthday.append(row)
+                if m_day is not None and m_day.day == d.day and m_day.month == d.month:
+                    row.dom = m_day
+                    anniversary.append(row)
+
+        return birthday, anniversary
+
+    def get_serialized_data(self, request, serializer, birthday, anniversary):
+        birthday_data, anniversary_data = [], []
+        for user in birthday:
+            birthday_serializer = serializer(user, context = {'request':request})
+            birthday_data.append(birthday_serializer.data)
+        for user in anniversary:
+            anniversary_serializer = serializer(user, context = {'request':request})
+            anniversary_data.append(anniversary_serializer.data)
+        return birthday_data, anniversary_data
+
     def get(self, request, *args, **kwargs):
-        context ={
+        context = {
             'request': request
         }
-        #import pdb;pdb.set_trace()
+        # import pdb;pdb.set_trace()
         phone_lists = []
-        users = User.objects.filter(is_superuser = False)
+        users = User.objects.filter(is_superuser=False)
         for user_obj in users:
             users_queryset = user_obj.username
             phone_lists.append(users_queryset)
 
-        #All users
-        primary_queryset_all=FileUpload.objects.all()
-        secondary_queryset_all=Members.objects.all()
+        # All users
+        primary_queryset_all = FileUpload.objects.all()
+        secondary_queryset_all = Members.objects.all()
         try:
             count_users_all = len(primary_queryset_all) + len(secondary_queryset_all)
         except:
             count_users_all = None
 
-        #Unreg users
-        primary_queryset_unreg=FileUpload.objects.exclude(Q(phone_no_primary__in=phone_lists)|Q(phone_no_secondary__in=phone_lists)).distinct()
-        secondary_queryset_unreg=Members.objects.exclude(Q(phone_no_secondary_user__in=phone_lists)|Q(phone_no_secondary_user_secondary__in=phone_lists)).distinct()
+        # Unreg users
+        primary_queryset_unreg = FileUpload.objects.exclude(
+            Q(phone_no_primary__in=phone_lists) | Q(phone_no_secondary__in=phone_lists)).distinct()
+        secondary_queryset_unreg = Members.objects.exclude(Q(phone_no_secondary_user__in=phone_lists) | Q(
+            phone_no_secondary_user_secondary__in=phone_lists)).distinct()
         try:
             count_users_unreg = len(primary_queryset_unreg) + len(secondary_queryset_unreg)
         except:
             count_users_unreg = None
 
-        #Reg users
-        primary_queryset_reg=FileUpload.objects.filter(Q(phone_no_primary__in=phone_lists)|Q(phone_no_secondary__in=phone_lists)).distinct()
-        secondary_queryset_reg=Members.objects.filter(Q(phone_no_secondary_user__in=phone_lists)|Q(phone_no_secondary_user_secondary__in=phone_lists)).distinct()
+        # Reg users
+        primary_queryset_reg = FileUpload.objects.filter(
+            Q(phone_no_primary__in=phone_lists) | Q(phone_no_secondary__in=phone_lists)).distinct()
+        secondary_queryset_reg = Members.objects.filter(Q(phone_no_secondary_user__in=phone_lists) | Q(
+            phone_no_secondary_user_secondary__in=phone_lists)).distinct()
         try:
             count_users_reg = len(primary_queryset_reg) + len(secondary_queryset_reg)
         except:
             count_users_reg = None
 
-        #Active users
+        # Active users
         android_users = GCMDevice.objects.filter(active=True).exclude(user__is_superuser=True)
         ios_users = APNSDevice.objects.filter(active=True).exclude(user__is_superuser=True)
         try:
             count_users_active = len(android_users) + len(ios_users)
         except:
             count_users_active = None
-        
-        #bday
-        bday_lists = []
-        import datetime as dt
-        today = dt.datetime.now()
-        try:
-            current_date = today.strftime("%d/%m/")
-            primary_queryset_reg=FileUpload.objects.filter(dob__startswith=current_date,in_memory=False)
-            secondary_queryset_reg=Members.objects.filter(dob__startswith=current_date,in_memory=False)
-            for prime_user in primary_queryset_reg:
-                try:
-                    family_name = prime_user.get_file_upload.first().name.title()
-                    prayer_group_name = prime_user.get_file_upload_prayergroup.first().name
-                except:
-                    family_name = None
-                    prayer_group_name = None
-                try:
-                    image=request.build_absolute_uri(prime_user.image.url)
-                except:
-                    image=None
-                bday_list = {"name":prime_user.name,"user_type":"Primary","id":prime_user.primary_user_id,"image":image,\
-                            "mobile":prime_user.phone_no_primary,"family":family_name,"prayer_group":prayer_group_name}
-                bday_lists.append(bday_list)
 
-            for sec_user in secondary_queryset_reg:
-                try:
-                    family_name = sec_user.primary_user_id.get_file_upload.first().name.title()
-                    prayer_group_name = sec_user.primary_user_id.get_file_upload_prayergroup.first().name
-                except:
-                    family_name = None
-                    prayer_group_name = None
-                try:
-                    image=request.build_absolute_uri(sec_user.image.url)
-                except:
-                    image=None
-                bday_list = {"name":sec_user.member_name,"user_type":"Secondary","id":sec_user.secondary_user_id,"image":image,"mobile":sec_user.phone_no_secondary_user,\
-                            "family":family_name,"prayer_group":prayer_group_name}
+        primary_bday_qset = FileUpload.objects.filter(in_memory=False)
+        secondary_bday_qset = Members.objects.filter(in_memory=False)
 
-                bday_lists.append(bday_list)
-            dob_bday = bday_lists
-        except:
-            dob_bday = []
+        primary_birthday, primary_anniversary = self.get_anniversary_and_birthday(primary_bday_qset)
+        primary_birthday_data, primary_anniversary_data = self.get_serialized_data(
+            request, PrimaryUserBirthdaySerializer, primary_birthday, primary_anniversary)
+        secondary_birthday, secondary_anniversary = self.get_anniversary_and_birthday(secondary_bday_qset)
+        secondary_birthday_data, secondary_anniversary_data = self.get_serialized_data(
+            request, MemberBirthdaySerializer, secondary_birthday, secondary_anniversary)
 
-        #sms balance
+        upcoming_primary_birthday, upcoming_primary_anniversary = self.get_upcoming_anniversary_and_birthday(
+            primary_bday_qset)
+        upcoming_primary_birthday_data, upcoming_primary_anniversary_data = self.get_serialized_data(
+            request, PrimaryUserBirthdaySerializer, upcoming_primary_birthday, upcoming_primary_anniversary)
+        upcoming_secondary_birthday, upcoming_secondary_anniversary = self.get_upcoming_anniversary_and_birthday(
+            secondary_bday_qset)
+        upcoming_secondary_birthday_data, upcoming_secondary_anniversary_data = self.get_serialized_data(
+            request, MemberBirthdaySerializer, upcoming_secondary_birthday, upcoming_secondary_anniversary)
+
+        todays_birthday = primary_birthday_data + secondary_birthday_data
+        todays_anniversary = primary_anniversary_data + secondary_anniversary_data
+        upcoming_birthday = upcoming_primary_birthday_data + upcoming_secondary_birthday_data
+        upcoming_birthday.sort(key=lambda item: item['dob'][5:])
+        upcoming_anniversary = upcoming_primary_anniversary_data + upcoming_secondary_anniversary_data
+        upcoming_anniversary.sort(key=lambda item: item['dom'][5:])
+
+
+        # sms balance
         try:
             bal = None
             bal = requests.get(
@@ -6209,16 +6920,20 @@ class UserStatisticsViewAdmin(APIView):
                 headers={"X-API-Key": "ed6edfa3928bb18628e1cb94b79c7319"})
             bal = int(bal.json()['data']['balance'])
         except Exception as exp:
-            print("sms",exp)
+            print("sms", exp)
             bal = None
 
-        output = {"total_number_of_users":count_users_all ,"number_of_users_registered":count_users_reg ,"number_of_users_unregistered":count_users_unreg,"number_of_active_users":count_users_active,"todays_bday":dob_bday,"sms_balance":bal }
+        output = {"total_number_of_users": count_users_all, "number_of_users_registered": count_users_reg,
+                  "number_of_users_unregistered": count_users_unreg, "number_of_active_users": count_users_active,
+                  "todays_birthday": todays_birthday,"todays_anniversary": todays_anniversary,
+                  "upcoming_birthday": upcoming_birthday, "upcoming_anniversary": upcoming_anniversary,
+                  "sms_balance": bal}
 
         data = {
-                'code': 200,
-                'status': "OK",
-                'response': output
-            }
+            'code': 200,
+            'status': "OK",
+            'response': output
+        }
         return Response(data)
 
 class ChangeRequestModelViewSet(ModelViewSet):
@@ -6813,3 +7528,587 @@ class UpcomingAnniversaryAndBirthdays(APIView):
             }
         }
         return Response(data, status=HTTP_200_OK)
+
+class PrayerGrouplistallView(ListAPIView):
+    queryset = PrayerGroup.objects.all().order_by('name')
+    serializer_class = PrayerGroupAllSerializer
+
+    def list(self, request, *args, **kwargs):
+        try:
+            request_date = request.GET.get('date')
+            if request_date:
+                start_time = datetime.strptime(request_date, '%Y-%m-%d %H:%M:%S')
+                queryset = PrayerGroup.objects.filter(last_modified__gte=start_time).order_by('name')
+                is_deleted_queryset = PrayerGroup.objects.filter(last_modified__gte=start_time).order_by('name')
+            else:
+                queryset = PrayerGroup.objects.all().order_by('name')
+                is_deleted_queryset = PrayerGroup.objects.all().order_by('name')
+        except:
+            queryset = PrayerGroup.objects.all().order_by('name')
+            is_deleted_queryset = PrayerGroup.objects.all().order_by('name')
+
+        serializer = self.get_serializer(queryset, many=True)
+        is_deleted_serializer = self.get_serializer(is_deleted_queryset, many=True)
+
+        data = {
+            'code': 200,
+            'status': "OK",
+            'response': {
+                'data': serializer.data,
+                'is_deleted': is_deleted_serializer.data
+            }
+        }
+
+        return Response(data)
+
+class FamilyListAllView(ListAPIView):
+    queryset = Family.objects.all().order_by('name')
+    serializer_class = FamilyListSerializer
+    permission_classes = [AllowAny]
+
+    def list(self, request, *args, **kwargs):
+        try:
+            term = request.GET.get('term')
+            request_date = request.GET.get('date')
+            if request_date:
+                start_time = datetime.strptime(request_date, '%Y-%m-%d %H:%M:%S')
+                if term:
+                    term = term.replace(" ", "")
+                    term.lower()
+                    queryset = Family.objects.filter(last_modified__gte=start_time,
+                                                     name__nospaces__icontains=term).order_by('name')
+                    d_queryset = Family.objects.filter(last_modified__gte=start_time,
+                                                     name__nospaces__icontains=term).order_by('name')
+                else:
+                    queryset = Family.objects.filter(last_modified__gte=start_time).order_by('name')
+                    d_queryset = Family.objects.filter(last_modified__gte=start_time).order_by('name')
+            else:
+                queryset = Family.objects.all().order_by('name')
+                d_queryset = Family.objects.all().order_by('name')
+        except:
+            queryset = Family.objects.all().order_by('name')
+            d_queryset = Family.objects.all().order_by('name')
+
+        serializer = self.get_serializer(queryset, many=True)
+        d_serializer = self.get_serializer(d_queryset, many=True)
+
+        data = {
+            'code': 200,
+            'status': "OK",
+            'response': {'data': serializer.data, 'is_deleted': d_serializer.data}
+        }
+
+        return Response(data)
+
+class OfflineChangesByAdminView(APIView):
+    serializer_class = FamilyByadminSerializer
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated, AdminPermission]
+
+    def post(self, request):
+        if request.data['add_user']:
+            for add_user_json in request.data['add_user']:
+                serializer = UserByadminSerializer(data=add_user_json)
+                if serializer.is_valid():
+                    family = Family.objects.get(pk=serializer.data['family'])
+                    if family.primary_user_id and not family.primary_user_id.in_memory and serializer.data['member_type'] in [
+                        'Primary', 'primary']:
+                        data = {
+                            'status': False,
+                            'message': 'Primary user already exists for this family'
+                        }
+                        # continue
+                        return Response(data, status=status.HTTP_400_BAD_REQUEST)
+                    if FileUpload.objects.filter(phone_no_primary=serializer.data.get('primary_number')).exists() or \
+                            FileUpload.objects.filter(phone_no_primary=serializer.data.get('secondary_number')).exclude(
+                                Q(phone_no_primary='') | Q(phone_no_primary=None)).exists() or \
+                            FileUpload.objects.filter(phone_no_secondary=serializer.data.get('secondary_number')).exclude(
+                                Q(phone_no_secondary='') | Q(phone_no_secondary=None)).exists() or \
+                            FileUpload.objects.filter(phone_no_secondary=serializer.data['primary_number']).exists() or \
+                            Members.objects.filter(phone_no_secondary_user=serializer.data['primary_number']).exists():
+                        data = {
+                            'status': False,
+                            'message': "Phone number already registered.Please use another number"
+                        }
+                        # continue
+                        return Response(data, status=status.HTTP_400_BAD_REQUEST)
+
+                    if serializer.data['member_type'] in ['Primary', 'primary']:
+
+                        instance = FileUpload(
+                            name=serializer.data['name'],
+                            dob=serializer.data.get('dob'),
+                            blood_group=serializer.data.get('blood_group'),
+                            email=serializer.data.get('email'),
+                            phone_no_primary=serializer.data['primary_number'],
+                            phone_no_secondary=serializer.data.get('secondary_number'),
+                            occupation=serializer.data.get('occupation'),
+                            marital_status=serializer.data.get('marital_status'),
+                            marrige_date=serializer.data.get('marrige_date'),
+                            about=serializer.data.get('about'),
+                        )
+                    else:
+                        if not family.primary_user_id:
+                            data = {
+                                'status': False,
+                                'message': 'Create a primary user to add secondary users'
+                            }
+                            # continue
+                            return Response(data, status=status.HTTP_400_BAD_REQUEST)
+
+                        instance = Members(
+                            member_name=serializer.data['name'],
+                            dob=serializer.data.get('dob'),
+                            blood_group=serializer.data.get('blood_group'),
+                            email=serializer.data.get('email'),
+                            phone_no_secondary_user=serializer.data.get('primary_number'),
+                            phone_no_secondary_user_secondary=serializer.data.get('secondary_number'),
+                            occupation=serializer.data.get('occupation'),
+                            marital_status=serializer.data.get('marital_status'),
+                            marrige_date=serializer.data.get('marrige_date'),
+                            about=serializer.data.get('about'),
+                            relation=serializer.data.get('member_type')
+                        )
+
+                    if serializer.data['member_status'] == 'in_memory':
+                        instance.in_memory = True
+
+                    if add_user_json.get('image'):
+                        img_data = add_user_json.get('image').encode("ascii")
+                        n = random.randint(1, 1000)
+                        file_name = "members/user" + str(n) + ".png"
+                        with open("cards/" + file_name, 'wb') as fh:
+                            fh.write(base64.decodebytes(img_data))
+                        instance.image = file_name
+
+                    instance.save()
+
+                    if serializer.data['family']:
+
+                        if serializer.data['member_type'] in ['Primary', 'primary']:
+                            family.primary_user_id = instance
+
+                        else:
+                            instance.primary_user_id = family.primary_user_id
+                            instance.save()
+
+                        family.save()
+
+                    if serializer.data['prayer_group']:
+                        prayer_group = PrayerGroup.objects.get(pk=serializer.data['prayer_group'])
+
+                        if serializer.data['member_type'] in ['Primary', 'primary']:
+                            prayer_group.primary_user_id.add(instance)
+                        else:
+                            prayer_group.primary_user_id.add(instance.primary_user_id)
+
+                        data = {
+                            'id': instance.pk
+                        }
+                        data.update(serializer.data)
+
+                        response = {
+                            "status": True,
+                            "message": "User Created by admin"
+                        }
+
+                        response['response'] = data
+
+                    continue
+                    #return Response(response)
+
+                data = {
+                    'status': False,
+                }
+                data['response'] = serializer.errors
+                # continue
+                return Response(data, status=status.HTTP_400_BAD_REQUEST)
+
+        if request.data['edit_user']:
+            for edit_user_value in request.data['edit_user']:
+                try:
+                    req_last_modified = datetime.strptime(edit_user_value.get("last_modified"), '%Y-%m-%d %H:%M:%S')
+                except:
+                    continue
+                response_data = []
+                serializer = UserByadminSerializer(data=edit_user_value)
+                if serializer.is_valid():
+                    prayer_group = PrayerGroup.objects.get(pk=serializer.data['prayer_group'])
+                    family = Family.objects.get(pk=serializer.data['family'])
+                    if serializer.data['member_type'] in ['Primary', 'primary', 'PRIMARY']:
+                        instance = FileUpload.objects.get(pk=edit_user_value['id'])
+                        if not (req_last_modified.replace(tzinfo=pytz.UTC) > instance.last_modified.replace(tzinfo=pytz.UTC)):
+                            continue
+                        instance.name = serializer.data['name']
+                        if serializer.data.get('dob'):
+                            instance.dob = serializer.data.get('dob')
+                        if serializer.data.get('blood_group'):
+                            instance.blood_group = serializer.data.get('blood_group')
+                        if serializer.data.get('email'):
+                            instance.email = serializer.data.get('email')
+                        if serializer.data.get('primary_number'):
+                            if instance.phone_no_primary != serializer.data.get('primary_number'):
+                                try:
+                                    token_obj = Token.objects.get(user__username=instance.phone_no_primary)
+                                    token_obj.delete()
+                                except:
+                                    pass
+                                instance.phone_no_primary = serializer.data.get('primary_number')
+                            else:
+                                instance.phone_no_primary = serializer.data.get('primary_number')
+                        if serializer.data.get('secondary_number'):
+                            if instance.phone_no_secondary != serializer.data.get('secondary_number'):
+                                try:
+                                    token_obj = Token.objects.get(user__username=instance.phone_no_secondary)
+                                    token_obj.delete()
+                                except:
+                                    pass
+                                instance.phone_no_secondary = serializer.data.get('secondary_number')
+                            else:
+                                instance.phone_no_secondary = serializer.data.get('secondary_number')
+                        if serializer.data.get('occupation'):
+                            instance.occupation = serializer.data.get('occupation')
+                        if serializer.data.get('marital_status'):
+                            instance.marital_status = serializer.data.get('marital_status')
+                        if serializer.data.get('marrige_date'):
+                            instance.marrige_date = serializer.data.get('marrige_date')
+                        if serializer.data.get('about'):
+                            instance.about = serializer.data.get('about')
+                        if serializer.data.get('landline'):
+                            instance.landline = serializer.data.get('landline')
+                        if serializer.data.get('relation'):
+                            instance.relation = serializer.data.get('relation')
+                        instance.save()
+
+                        previous_groups = instance.get_file_upload_prayergroup.all()
+
+                        for group in previous_groups:
+                            group.primary_user_id.remove(instance)
+
+                        prayer_group.primary_user_id.add(instance)
+
+                        for pre_family in instance.get_file_upload.all():
+                            pre_family.primary_EachUserNotificationuser_id = None
+                            pre_family.save()
+
+                        family.primary_user_id = instance
+                        family.save()
+
+                    else:
+                        if serializer.data['member_type'] in ['Secondary', 'secondary', 'SECONDARY']:
+                            if not family.primary_user_id in prayer_group.primary_user_id.all():
+                                data = {
+                                    'status': False,
+                                    'message': 'Invalid prayer group for family'
+                                }
+                                # continue
+                                return Response(data, status=status.HTTP_400_BAD_REQUEST)
+                            instance = Members.objects.get(pk=edit_user_value['id'])
+                            instance.member_name = serializer.data['name']
+                            if serializer.data.get('dob'):
+                                instance.dob = serializer.data.get('dob')
+                            if serializer.data.get('blood_group'):
+                                instance.blood_group = serializer.data.get('blood_group')
+                            if serializer.data.get('email'):
+                                instance.email = serializer.data.get('email')
+                            if serializer.data.get('primary_number'):
+                                if instance.phone_no_secondary_user != serializer.data.get('primary_number'):
+                                    try:
+                                        token_obj = Token.objects.get(user__username=instance.phone_no_secondary_user)
+                                        token_obj.delete()
+                                    except:
+                                        pass
+                                    instance.phone_no_secondary_user = serializer.data['primary_number']
+                                else:
+                                    instance.phone_no_secondary_user = serializer.data['primary_number']
+                            if serializer.data.get('secondary_number'):
+                                instance.phone_no_secondary_user_secondary = serializer.data.get('secondary_number')
+                            if serializer.data.get('occupation'):
+                                instance.occupation = serializer.data.get('occupation')
+                            if serializer.data.get('marital_status'):
+                                instance.marital_status = serializer.data.get('marital_status')
+                            if serializer.data.get('marrige_date'):
+                                instance.marrige_date = serializer.data.get('marrige_date')
+                            if serializer.data.get('about'):
+                                instance.about = serializer.data.get('about')
+                            if serializer.data.get('landline'):
+                                instance.landline = serializer.data.get('landline')
+                            if serializer.data.get('relation'):
+                                instance.relation = serializer.data.get('relation')
+                            instance.save()
+                            instance.primary_user_id = family.primary_user_id
+                            if instance.primary_user_id:
+                                previous_groups = instance.primary_user_id.get_file_upload_prayergroup.all()
+
+                                for group in previous_groups:
+                                    group.primary_user_id.remove(instance.primary_user_id)
+
+                                prayer_group = PrayerGroup.objects.get(pk=serializer.data['prayer_group'])
+                                prayer_group.primary_user_id.add(instance.primary_user_id)
+                            instance.save()
+                        else:
+                            data = {
+                                'status': False,
+                                'message': "Invalid Member Type"
+                            }
+                            data['response'] = {}
+                            # continue
+                            return Response(data, status=status.HTTP_400_BAD_REQUEST)
+
+                    if serializer.data['member_status'] == 'in_memory':
+                        instance.in_memory = True
+
+                    if serializer.data['member_status'] == 'active':
+                        instance.in_memory = False
+
+                    if edit_user_value.get('image'):
+                        img_data = edit_user_value.get('image').encode("ascii")
+                        n = random.randint(1, 1000)
+                        file_name = "members/user" + str(n) + ".png"
+                        with open("cards/" + file_name, 'wb') as fh:
+                            fh.write(base64.decodebytes(img_data))
+                        instance.image = file_name
+
+                    instance.save()
+
+                    data = {
+                        'id': instance.pk
+                    }
+                    data.update(serializer.data)
+                    response_data.append(data)
+
+                    response = {
+                        "status": True,
+                        "message": "User Updated by admin",
+                        "response": response_data
+                    }
+
+
+                    continue
+                    #return Response(response)
+
+                data = {
+                    'status': False,
+                }
+                data['response'] = serializer.errors
+                # continue
+                return Response(data, status=status.HTTP_400_BAD_REQUEST)
+
+        if request.data['add_family']:
+            for add_family_value in request.data['add_family']:
+                serializer = FamilyByadminSerializer(data=add_family_value)
+
+                if serializer.is_valid():
+                    prayer_group = PrayerGroup.objects.get(pk=serializer.data['prayer_group'])
+                    family_name = serializer.data['family_name']
+
+                    instance = Family(name=family_name)
+
+                    if add_family_value.get('image'):
+                        img_data = add_family_value.get('image').encode("ascii")
+                        n = random.randint(1, 1000)
+                        file_name = "familyimage/user" + str(n) + ".png"
+                        with open("cards/" + file_name, 'wb') as fh:
+                            fh.write(base64.decodebytes(img_data))
+                        instance.image = file_name
+
+                    instance.save()
+                    prayer_group.family.add(instance.id)
+                    prayer_group.save()
+                    continue
+                    # return Response(serializer.data)
+                # continue
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        if request.data['edit_family']:
+            for edit_family_value in request.data['edit_family']:
+                try:
+                    req_last_modified = datetime.strptime(edit_family_value.get("last_modified"), '%Y-%m-%d %H:%M:%S')
+                except:
+                    continue
+                serializer = FamilyByadminSerializer(data=edit_family_value)
+                if serializer.is_valid():
+                    family_name = serializer.data['family_name']
+                    try:
+                        data = {
+                            'code': 200,
+                            'status': "OK",
+                        }
+                        instance = Family.objects.get(id=edit_family_value['id'])
+                        if not (req_last_modified.replace(tzinfo=pytz.UTC) > instance.last_modified.replace(tzinfo=pytz.UTC)):
+                            continue
+                        instance.name = family_name
+                        if edit_family_value.get('image'):
+                            img_data = add_family_value.get('image').encode("ascii")
+                            n = random.randint(1, 1000)
+                            file_name = "familyimage/user" + str(n) + ".png"
+                            with open("cards/" + file_name, 'wb') as fh:
+                                fh.write(base64.decodebytes(img_data))
+                            instance.image = file_name
+                        try:
+                            about = request.POST.get('about')
+                            instance.about = about
+                        except:
+                            pass
+                        try:
+                            status_fam = request.POST.get('status')
+                            if status_fam == 'active':
+                                instance.active = True
+                            elif status_fam == 'inactive':
+                                instance.active = False
+                            else:
+                                pass
+                        except:
+                            pass
+                        instance.save()
+                        data['response'] = "Family successfully updated"
+                        continue
+                        # return Response(data, status=status.HTTP_200_OK)
+                    except:
+                        # continue
+                        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                # continue
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        if request.data['delete_family']:
+            for delete_family_value in request.data['delete_family']:
+                try:
+                    req_last_modified = datetime.strptime(delete_family_value.get("last_modified"), '%Y-%m-%d %H:%M:%S')
+                except:
+                    continue
+                try:
+                    instance = Family.objects.get(id=delete_family_value['id'])
+                    if not (req_last_modified.replace(tzinfo=pytz.UTC) > instance.last_modified.replace(tzinfo=pytz.UTC)):
+                            continue
+                    if instance:
+                        instance.active = False
+                        instance.save()
+                        # Token deletion
+                        try:
+                            prim_obj = instance.primary_user_id
+                            if prim_obj:
+                                temp_num = prim_obj.phone_no_primary
+                                token_obj = Token.objects.get(user__username=temp_num)
+                                token_obj.delete()
+                                try:
+                                    mems = Members.objects.filter(primary_user_id=prim_obj.primary_user_id)
+                                    if mems.count() >= 1:
+                                        for mem in mems:
+                                            temp_num = mem.phone_no_secondary_user
+                                            token_obj = Token.objects.get(user__username=temp_num)
+                                            token_obj.delete()
+                                    else:
+                                        pass
+                                except:
+                                    pass
+                            else:
+                                pass
+                        except:
+                            pass
+
+                        data = {
+                            'code': 200,
+                            'status': "OK",
+                        }
+                        data['response'] = "Family deleted successfully"
+                        continue
+                        # return Response(data, status=status.HTTP_200_OK)
+                except:
+                    # continue
+                    return Response({'success': False}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({"success": True})
+
+class FamilyListPaginatedView(ListAPIView):
+    queryset = Family.objects.all().order_by('name')
+    serializer_class = FamilyListSerializer
+    permission_classes = [AllowAny]
+    pagination_class = StandardResultsSetPagination
+    def list(self, request, *args, **kwargs):
+        try:
+            term = request.GET['term']
+            if term:
+                term = term.replace(" ", "")
+                term.lower()
+                queryset = Family.objects.filter(name__nospaces__icontains=term).order_by('name')
+            else:
+                queryset = self.filter_queryset(self.get_queryset())
+        except:
+            queryset = self.filter_queryset(self.get_queryset())
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+
+            data = {
+                'code': 200,
+                'status': "OK",
+            }
+
+            page_nated_data = self.get_paginated_response(serializer.data).data
+            data.update(page_nated_data)
+            data['response'] = data.pop('results')
+
+            return Response(data)
+
+        serializer = self.get_serializer(queryset, many=True)
+
+        data = {
+            'code': 200,
+            'status': "OK",
+            'response': serializer.data
+        }
+
+        return Response(data)
+
+class UserRegisterView(APIView):
+    serializer_class = UserByadminSerializer
+
+    def post(self, request, format=None):
+        try:
+            name = request.data['name']
+            password = request.data['password']
+            mobile_number = request.data['mobile_number']
+            membership_id = request.data['membership_number']
+            if name and password and mobile_number and membership_id is not None:
+                family = Family.objects.get(name=str(membership_id))
+
+                if not family.primary_user_id:
+                    data = {
+                        'status': False,
+                        'message': 'Invalid Membership Number'
+                    }
+                    return Response(data, status=status.HTTP_400_BAD_REQUEST)
+                else:
+                    if FileUpload.objects.filter(phone_no_primary=mobile_number).exists() or \
+                            FileUpload.objects.filter(phone_no_secondary=mobile_number).exists() or \
+                            Members.objects.filter(phone_no_secondary_user=mobile_number).exists():
+                        data = {
+                            'status': False,
+                            'message': "Phone number already registered. Please use another number"
+                        }
+                        return Response(data, status=status.HTTP_400_BAD_REQUEST)
+
+                    instance = Members(
+                        member_name=name,
+                        phone_no_secondary_user=mobile_number,
+                        password=password,
+                        primary_user_id=family.primary_user_id
+                    )
+                    instance.save()
+                    data = {
+                        'id': instance.pk
+                    }
+                    response = {"status": True, "message": "User Registered Successfully", 'response': data}
+                    return Response(response)
+
+            else:
+                data = {'status': False, 'message': "Input fields should not be blank"}
+                return Response(data, status=status.HTTP_400_BAD_REQUEST)
+
+        except Family.DoesNotExist:
+            data = {'status': False, 'message': "Membership Does not Exist"}
+            return Response(data, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response(e, status=status.HTTP_400_BAD_REQUEST)
+

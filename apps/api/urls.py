@@ -6,7 +6,7 @@ from apps.api.views import UserLoginView, UserLoginMobileView, UserListView, Use
     OtpVerifyViewSet, SecondaryaddView, Profile, UnapprovedMemberView, UpdateMemberByPrimary, CreateUserByAdminView, \
     UpdateUserByAdminView, AddFamilyByAdminView, GalleryImagesView, UpdateFamilyByPrimary, OtpVerifyUserIdViewSet, \
     UserLoginMobileWithOutOtpView,UserListCommonView,OtpVerifyUserCheckNumberViewSet,StatusChangeAcceptView,PrimaryNumberChangeAcceptView,\
-    AdminRequestSectionView,UserDetailViewPage,UserDownloadView,CreateMemoryUserView,CreateFamilyMemoryUserView,UpdateUserByMembersView
+    AdminRequestSectionView,UserDetailViewPage,UserDownloadView,CreateMemoryUserView,CreateFamilyMemoryUserView,UpdateUserByMembersView, OfflineChangesByAdminView, UserRegisterView
 
 from rest_framework import routers
 
@@ -20,6 +20,7 @@ router.register(r'csv-download',UserDownloadView,basename='csv-download'),
 
 urlpatterns = [
     path('login-user/', UserLoginView.as_view(),name='login'),
+    path('register/', UserRegisterView.as_view(),name='register_user'),
     path('create/',UserCreateView.as_view(),name='create_user'),
     path('mobile-login/',UserLoginMobileView.as_view(),name='create_user_mobile'),
     path('mobile-login-without-otp/',UserLoginMobileWithOutOtpView.as_view(),name='create_user_mobile'),
@@ -48,5 +49,6 @@ urlpatterns = [
     
     url(r'^update-member-by-primary/(?P<pk>[\w-]+)/$', UpdateMemberByPrimary.as_view(),name='update_member_by_primary'),
     url(r'^api/', include(router.urls)),
+    path('offline-changes-by-admin/', OfflineChangesByAdminView.as_view(), name='offline_changes_by_admin'),
 
 ]

@@ -5,7 +5,7 @@ import requests
 from apps.church.models import UserProfile, ChurchDetails, FileUpload, OtpModels, \
     OtpVerify, PrayerGroup, Notification, Family, Members, Notice, NoticeBereavement, \
     UnapprovedMember, NoticeReadPrimary, NoticeReadSecondary, NoticeReadAdmin, ViewRequestNumber, PrivacyPolicy, \
-    PhoneVersion, Images, PrimaryToSecondary, NumberChangePrimary, ChangeRequest, ChurchVicars
+    PhoneVersion, Images, PrimaryToSecondary, NumberChangePrimary, ChangeRequest, ChurchVicars, NoticeFarewell, Group, HonourAndRespect
 from rest_framework.serializers import CharField
 from apps.api.token_create import get_tokens_for_user
 from django.utils.crypto import get_random_string
@@ -114,7 +114,7 @@ class FamilyListSerializer(serializers.ModelSerializer):
     members_length = serializers.SerializerMethodField()
     class Meta:
         model = Family
-        fields = ['name','members_length','image','id','active']
+        fields = ['name','about', 'members_length','image','id','active']
 
     def to_representation(self, obj):
         data = super().to_representation(obj)
@@ -122,12 +122,28 @@ class FamilyListSerializer(serializers.ModelSerializer):
             data['name'] = obj.name.title()
         except:
             pass
+        try:
+            data['prayer_group_name'] = obj.prayergroup_set.first().name
+        except:
+            data['prayer_group_name'] = None
+        try:
+            data['prayer_group_id'] = obj.prayergroup_set.first().id
+        except:
+            data['prayer_group_id'] = 0
+        try:
+            data['primary_id'] = obj.primary_user_id.primary_user_id
+        except:
+            data['primary_id'] = None
+        try:
+            data['last_modified'] = datetime.strftime(obj.last_modified, '%Y-%m-%d %H:%M:%S')
+        except:
+            data['last_modified'] = None
         return data
 
     def get_members_length(self, obj):
             try:
                 name = obj.primary_user_id
-                number_list = Members.objects.filter(primary_user_id=name.primary_user_id).count()
+                number_list = Members.objects.filter(primary_user_id=name.primary_user_id, is_deleted=False).count()
                 number_list = number_list + 1
             except:
                 number_list = 0
@@ -284,6 +300,34 @@ class PrayerGroupAddSerializer(serializers.ModelSerializer):
         model = PrayerGroup
         fields = ['name','id']
 
+
+class GroupSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Group
+        fields = ['id', 'group_name', 'group_image', 'group_description']
+
+
+class HonourSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HonourAndRespect
+        fields = ['id', 'title', 'image', 'description']
+
+
+class PrayerGroupAllSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PrayerGroup
+        fields = ['name', 'id']
+
+    def to_representation(self, obj):
+        data = super().to_representation(obj)
+        try:
+            data['last_modified'] = datetime.strftime(obj.last_modified, '%Y-%m-%d %H:%M:%S')
+        except:
+            data['last_modified'] = None
+
+        return data
+
+
 class PrayerGroupAddMembersSerializer(serializers.ModelSerializer):
     user_profile = serializers.PrimaryKeyRelatedField(queryset=FileUpload.objects.all(), many=True,read_only=False)
     class Meta:
@@ -309,7 +353,7 @@ class MembersSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Members
-        fields = ['phone_no_primary','primary_name','secondary_user_id','member_name','relation','dob','dom','image','phone_no_secondary_user','primary_user_id','in_memory','in_memory_date','occupation','landline']
+        fields = ['phone_no_primary','primary_name','secondary_user_id','member_name','relation','dob','dom','image','phone_no_secondary_user','primary_user_id','in_memory','in_memory_date','occupation']
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
@@ -325,7 +369,8 @@ class MembersSerializer(serializers.ModelSerializer):
             data['about'] = instance.about
         except:
             pass
-        try :
+
+        try:
             data['image'] = request.build_absolute_uri(instance.image.url)
         except:
             data['image'] = None
@@ -346,23 +391,24 @@ class MembersSerializer(serializers.ModelSerializer):
             data['phone_no_secondary_user_secondary'] = instance.phone_no_secondary_user
         except:
             data['phone_no_secondary_user_secondary'] = None
-        try:
-            data['landline'] = instance.landline
-        except:
-            data['landline'] = None
 
         try:
             if instance.in_memory:
                 try:
-                    data['in_memory_date_format'] = tz.localtime(instance.in_memory_date, pytz.timezone('Asia/Kolkata')).strftime("%d/%m/%Y")
+                    data['in_memory_date_format'] = tz.localtime(instance.in_memory_date,
+                                                                 pytz.timezone('Asia/Kolkata')).strftime("%d/%m/%Y")
                 except:
                     data['in_memory_date_format'] = instance.in_memory_date.strftime("%d/%m/%Y")
             else:
                 data['in_memory_date_format'] = None
         except:
             data['in_memory_date_format'] = None
-        return data
 
+        try:
+            data['prayer_group_name'] = instance.primary_user_id.get_file_upload_prayergroup.first().name
+        except:
+            data['prayer_group_name'] = ''
+        return data
 
 
     def get_in_memory_date(self, obj):
@@ -398,45 +444,6 @@ class NoticeSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         notice = Notice(**validated_data)
         notice.save()
-        body= {"message":"You have received a new notice",
-                            "type":"notice",
-                            "id":str(notice.id)
-                            }
-
-        body="You have received a new notice"
-        notifications=Notification.objects.create(created_time=tz.now(),message=body)
-        primary_members=FileUpload.objects.all()
-        secondary_members=Members.objects.all()
-        for primary_member in primary_members:
-            NoticeReadPrimary.objects.create(notification=notifications,user_to=primary_member,is_read=False)
-        for secondary_member in secondary_members:
-            NoticeReadSecondary.objects.create(notification=notifications,user_to=secondary_member,is_read=False)
-
-        try:
-            request = self.context['request']
-            # image = "https://cdn1.iconfinder.com/data/icons/mobile-application-2-solid/128/notification_alert_alarm-512.png"
-            if notice.image == None and notice.video == None and notice.audio != None:
-                image = "https://cdn0.iconfinder.com/data/icons/cosmo-documents/40/file_audio-512.png"
-            elif notice.image == None and notice.audio == None and notice.video != None:
-                image= request.build_absolute_uri(notice.thumbnail.url)
-            else:
-                image= request.build_absolute_uri(notice.image.url)
-        except:
-            image = ""
-        try:
-            content = {'title':'notice title','message':{"data":{"title":"Notice","body":str(notice.notice),"notificationType":"notice","backgroundImage":image,"image":image,"text_type":"short"},\
-            "notification":{"alert":"This is a FCM notification","title":"Notice","body":str(notice.notice),"sound":"default","backgroundImage":image,"backgroundImageTextColour":"#FFFFFF","image":image,"click_action":"notice"}}}
-            content_ios = {'message':{"aps":{"alert":{"title":"Notice","subtitle":"","body":str(notice.notice)},"sound":"default","category":"notice","badge":1,"mutable-content":1},"media-url":image}}
-            resp = fcm_messaging_to_all(content)
-            resp1 = apns_messaging_to_all(content_ios)
-
-           #  content = {'title':'notice title','data':{"title":"Notice","body":str(notice.notice),"notificationType":"notice","backgroundImage":image,"image":image,"text_type":"short"}}
-           # # "notification":{"alert":"This is a FCM notification","title":"Notice","body":str(notice.notice),"sound":"default","backgroundImage":image,"backgroundImageTextColour":"#FFFFFF","image":image,"click_action":"notice"}
-           #  content_ios = {'message':{"aps":{"alert":{"title":"Notice","subtitle":"","body":str(notice.notice)},"sound":"default","category":"notice","badge":1,"mutable-content":1},"media-url":image}}
-           #  resp = fcm_messaging_to_all(content)
-           #  resp1 = apns_messaging_to_all(content_ios)
-        except:
-            pass
         return notice
 
     def update(self,instance, validated_data):
@@ -517,8 +524,8 @@ class PrimaryUserProfileSerializer(serializers.ModelSerializer):
             data['family_id'] = instance.get_file_upload.first().id
         except:
             data['family_id'] = None
-        try :
-            if instance.marrige_date :
+        try:
+            if instance.marrige_date:
                 data['marrige_date'] = instance.marrige_date
             elif instance.dom:
                 data['marrige_date'] = instance.dom
@@ -526,8 +533,12 @@ class PrimaryUserProfileSerializer(serializers.ModelSerializer):
                 data['marrige_date'] = None
         except:
             data['marrige_date'] = None
-        return data
 
+        try:
+            data['prayer_group_name'] = instance.get_file_upload_prayergroup.first().name
+        except:
+            data['prayer_group_name'] = None
+        return data
 
 
 class NoticeBereavementSerializer(serializers.ModelSerializer):
@@ -563,22 +574,22 @@ class MemberProfileSerializer(serializers.ModelSerializer):
             data['primary_user_name'] = instance.primary_user_id.name.title()
         except:
             data['primary_user_name'] = None
-        try :
+        try:
             data['primary_name'] = instance.primary_user_id.name
         except:
             data['primary_name'] = None
-            
-        try :
+
+        try:
             data['phone_no_primary'] = instance.phone_no_secondary_user
         except:
             data['phone_no_primary'] = None
 
-        try :
+        try:
             data['phone_no_secondary'] = instance.phone_no_secondary_user_secondary
         except:
             data['phone_no_secondary'] = None
 
-        try :
+        try:
             data['primary_in_memory'] = instance.primary_user_id.in_memory
         except:
             data['primary_in_memory'] = None
@@ -591,8 +602,9 @@ class MemberProfileSerializer(serializers.ModelSerializer):
             data['family_id'] = instance.primary_user_id.get_file_upload.first().id
         except:
             data['family_id'] = None
-        try :
-            if instance.marrige_date :
+
+        try:
+            if instance.marrige_date:
                 data['marrige_date'] = instance.marrige_date
             elif instance.dom:
                 data['marrige_date'] = instance.dom
@@ -600,8 +612,12 @@ class MemberProfileSerializer(serializers.ModelSerializer):
                 data['marrige_date'] = None
         except:
             data['marrige_date'] = None
-        return data
 
+        try:
+            data['prayer_group_name'] = instance.primary_user_id.get_file_upload_prayergroup.first().name
+        except:
+            data['prayer_group_name'] = None
+        return data
 
 
 class UserDetailsRetrieveSerializer(serializers.ModelSerializer):
@@ -940,8 +956,7 @@ class MemberSerializer(serializers.ModelSerializer):
 class PrimaryUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = FileUpload
-        fields = '__all__'
-        read_only_fields = ['primary_user_id']
+        fields = ['image', 'name', 'address', 'phone_no_primary', 'phone_no_secondary', 'dob', 'dom', 'blood_group', 'email', 'in_memory', 'in_memory_date', 'occupation', 'about', 'marital_status', 'landline', 'primary_user_id']
 
     def to_representation(self, obj):
 
@@ -950,24 +965,121 @@ class PrimaryUserSerializer(serializers.ModelSerializer):
         request = self.context['request']
 
         if obj.get_file_upload.first():
-            data['family_name'] = obj.get_file_upload.first().name.title()
+            fam_obj = obj.get_file_upload.first()
+            data['family_name'] = fam_obj.name.title()
+            data['active'] = fam_obj.active
+            data['family_id'] = fam_obj.id
         else:
             data['family_name'] = ''
+            data['active'] = False
+            data['family_id'] = None
 
         try:
             data['name'] = obj.name.title()
         except:
             pass
-
         if obj.image:
-            try :
+            try:
                 data['image'] = request.build_absolute_uri(obj.image.url)
             except:
                 data['image'] = None
 
+        try:
+            data['primary_name'] = obj.name.title()
+        except:
+            pass
+
+        try:
+            data['prayer_group_name'] = obj.get_file_upload_prayergroup.first().name
+        except:
+            data['prayer_group_name'] = ''
+
         data['user_type'] = 'primary'
 
+        try:
+            data['user_id'] = obj.primary_user_id
+        except:
+            data['user_id'] = None
+
         return data
+
+class MemberUserSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Members
+        fields = ['primary_user_id', 'image', 'relation', 'dob', 'dom', 'blood_group', 'email', 'in_memory', 'in_memory_date', 'occupation', 'about', 'marital_status', 'landline']
+
+    def to_representation(self, obj):
+
+        data = super().to_representation(obj)
+
+        request = self.context['request']
+
+
+        try:
+            data['about'] = obj.about
+        except:
+            pass
+
+        try:
+            fam_obj = obj.primary_user_id.get_file_upload.first()
+            data['family_name'] = fam_obj.name.title()
+            data['active'] = fam_obj.active
+            data['family_id'] = fam_obj.id
+        except:
+            data['family_name'] = ''
+            data['active'] = False
+            data['family_id'] = None
+
+        if obj.image:
+            try:
+                data['image'] = request.build_absolute_uri(obj.image.url)
+            except:
+                data['image'] = None
+
+        data['user_type'] = 'secondary'
+
+        try:
+            data['user_id'] = obj.secondary_user_id
+        except:
+            data['user_id'] = None
+
+        try:
+            data['phone_no_primary'] = obj.phone_no_secondary_user
+        except:
+            data['phone_no_primary'] = None
+
+        try:
+            data['phone_no_secondary'] = obj.phone_no_secondary_user_secondary
+        except:
+            data['phone_no_secondary'] = None
+
+        try:
+            data['address'] = ''
+        except:
+            data['address'] = None
+
+        try:
+            data['landline'] = obj.landline
+        except:
+            data['landline'] = None
+
+        try:
+            data['primary_name'] = obj.primary_user_id.name.title()
+        except:
+            data['primary_name'] = ''
+        try:
+            data['prayer_group_name'] = obj.primary_user_id.get_file_upload_prayergroup.first().name
+        except:
+            data['prayer_group_name'] = ''
+
+        try:
+            data['name'] = obj.member_name.title()
+        except:
+            data['name'] = None
+
+        return data
+
 
 
 class UserByadminSerializer(serializers.Serializer):
@@ -1103,6 +1215,7 @@ class CommonUserSerializer(serializers.Serializer):
     primary_user_id=serializers.IntegerField()
     primary_name=serializers.CharField()
     landline=serializers.CharField()
+    prayer_group_name=serializers.CharField()
 
 
 class MemberNumberSerializer(serializers.Serializer):
@@ -1286,7 +1399,7 @@ class MembersSerializerPage(serializers.ModelSerializer):
     class Meta:
         model = Members
         fields = ['image','dob','dom','blood_group','email','occupation','about','marital_status',\
-        'in_memory','in_memory_date','relation','primary_user_id','landline']
+        'in_memory','in_memory_date','relation','primary_user_id', 'landline']
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
@@ -1306,7 +1419,7 @@ class MembersSerializerPage(serializers.ModelSerializer):
             data['image'] = request.build_absolute_uri(instance.image.url)
         except:
             data['image'] = None
-        try :
+        try:
             data['address'] = ''
         except:
             data['address'] = None
@@ -1322,11 +1435,6 @@ class MembersSerializerPage(serializers.ModelSerializer):
             data['phone_no_secondary'] = None
 
         try:
-            data['landline'] = instance.landline
-        except:
-            data['landline']=None
-
-        try:
             fam_obj = instance.primary_user_id.get_file_upload.first()
             data['family_name'] = fam_obj.name.title()
             data['active'] = fam_obj.active
@@ -1335,14 +1443,16 @@ class MembersSerializerPage(serializers.ModelSerializer):
             data['family_name'] = ''
             data['active'] = False
             data['family_id'] = None
-
         try:
             data['primary_name'] = instance.primary_user_id.name.title()
         except:
             data['primary_name'] = ''
+
+        try:
+            data['prayer_group_name'] = instance.primary_user_id.get_file_upload_prayergroup.first().name
+        except:
+            data['prayer_group_name'] = ''
         return data
-
-
 
     def get_in_memory_date(self, obj):
         date = obj.in_memory_date
@@ -1401,14 +1511,20 @@ class PrimaryUserSerializerPage(serializers.ModelSerializer):
         except:
             pass
         if obj.image:
-            try :
+            try:
                 data['image'] = request.build_absolute_uri(obj.image.url)
             except:
                 data['image'] = None
 
         data['user_type'] = 'PRIMARY'
 
+        try:
+            data['prayer_group_name'] = obj.get_file_upload_prayergroup.first().name
+        except:
+            data['prayer_group_name'] = ''
+
         return data
+
 
 class UserMemorySerializer(serializers.Serializer):
     prayer_group = serializers.PrimaryKeyRelatedField(queryset=PrayerGroup.objects.all())
@@ -1517,3 +1633,95 @@ class VicarsSerializer(serializers.ModelSerializer):
         except:
             pass
         return data
+
+class PrimaryUserBirthdaySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FileUpload
+        fields = ['dob', 'dom']
+        read_only_fields = ['phone_no_primary']
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+
+        data['user_type'] = 'Primary'
+
+        request = self.context['request']
+        try :
+            data['image'] = request.build_absolute_uri(instance.image.url)
+        except:
+            data['image'] = None
+        try :
+            data['name'] = instance.name.title()
+        except:
+            pass
+        try :
+            data['id'] = instance.primary_user_id
+        except:
+            pass
+        try:
+            data['family'] = instance.get_file_upload.first().name
+        except:
+            data['family'] = None
+        try:
+            data['mobile'] = instance.phone_no_primary
+        except:
+            data['mobile'] = None
+
+        try:
+            data['prayer_group'] = instance.get_file_upload_prayergroup.first().name
+        except:
+            data['prayer_group'] = None
+        return data
+
+
+class MemberBirthdaySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Members
+        fields = ['dob', 'dom']
+        read_only_fields = ['phone_no_secondary_user']
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+
+        data['user_type'] = 'Secondary'
+
+        request = self.context['request']
+
+        try:
+            data['image'] = request.build_absolute_uri(instance.image.url)
+        except:
+            data['image'] = None
+
+        try:
+            data['name'] = instance.member_name.title()
+        except:
+            data['name'] = None
+        try:
+            data['id'] = instance.secondary_user_id
+        except:
+            data['id'] = None
+
+        try:
+            data['mobile'] = instance.phone_no_secondary_user
+        except:
+            data['mobile'] = None
+
+        try:
+            data['family'] = instance.primary_user_id.get_file_upload.first().name
+        except:
+            data['family'] = None
+
+        try:
+            data['prayer_group'] = instance.get_file_upload_prayergroup.first().name
+        except:
+            data['prayer_group'] = None
+        return data
+
+
+class NoticeFarewellSerializer(serializers.ModelSerializer):
+    created_at = serializers.DateTimeField(format="%d/%m/%Y %I:%M %p", read_only=True)
+    updated_at = serializers.DateTimeField(format="%d/%m/%Y %I:%M %p")
+
+    class Meta:
+        model=NoticeFarewell
+        fields = '__all__'

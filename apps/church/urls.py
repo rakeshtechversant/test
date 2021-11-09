@@ -11,7 +11,7 @@ from apps.api.views import UserNoticeList, NoticeBereavementDelete, NoticeBereav
     PrayerGroupBasedFamilyPaginatedView,PrayerGroupBasedMembersPaginatedView,SendWithoutOtpSecSave, UpdatePhoneNumberSecondary,\
     PrimaryToSecondaryViewset,PrimaryNumberChangeViewset,ChurchVicarEditView,ChurchHistoryEditView,DeviceInactiveView,RegisteredUsersViewAdmin,\
     UnRegisteredUsersViewAdmin,HomeViewAdmin,UserStatisticsViewAdmin,ChangeRequestModelViewSet,VicarsViewSet,StatusChangeViewset,\
-    AnniversaryAndBirthdays, UpcomingAnniversaryAndBirthdays
+    AnniversaryAndBirthdays, UpcomingAnniversaryAndBirthdays, PrayerGrouplistallView, FamilyListAllView, NoticeFarewellCreate, NoticeFarewellEdit, NoticeFarewellDelete, GrouplistView, HonourlistView
 from push_notifications.api.rest_framework import APNSDeviceAuthorizedViewSet, GCMDeviceAuthorizedViewSet
 router = DefaultRouter()
 
@@ -38,7 +38,14 @@ urlpatterns = [
     path('create-bereavementnotice/',NoticeBereavementCreate.as_view(),name='create_bereavement'),
     url(r'^(?P<pk>[\w-]+)/edit-bereavementnotice/',NoticeBereavementEdit.as_view(),name='edit_bereavement'),
     url(r'^(?P<pk>[\w-]+)/delete-bereavementnotice/',NoticeBereavementDelete.as_view(),name='delete_bereavement'),
+    path('create-farewellnotice/',NoticeFarewellCreate.as_view(),name='create_farewell'),
+    url(r'^(?P<pk>[\w-]+)/edit-farewellnotice/',NoticeFarewellEdit.as_view(),name='edit_farewell'),
+    url(r'^(?P<pk>[\w-]+)/delete-farewellnotice/',NoticeFarewellDelete.as_view(),name='delete_farewell'),
     path('prayer-group-list/',PrayerGrouplistView.as_view(),name='prayer_group_list'),
+    path('prayer-group-list-all/',PrayerGrouplistallView.as_view(),name='prayer_group_list_all'),
+    path('group-list/',GrouplistView.as_view(),name='group_list'),
+    path('honour-list/',HonourlistView.as_view(),name='honour-list'),
+    path('family-lists-all/',FamilyListAllView.as_view(),name='family_lists_all'),
     path('notice-lists/',UserNoticeList.as_view(),name='notice_lists'),
     # Family APIs
     path('family-lists/',FamilyListView.as_view(),name='family_lists'),

@@ -5,12 +5,43 @@ from django.contrib import admin
 from apps.church.models import NoticeBereavement, Members, UserProfile, PrayerGroup, Notice, Family, ChurchDetails, \
     OtpModels, FileUpload, Notification, Images, Occupation, MemberType, NoticeReadSecondary, NoticeReadPrimary, \
     NoticeReadAdmin, ViewRequestNumber, PrivacyPolicy, PhoneVersion,PrimaryToSecondary,NumberChangePrimary,UnapprovedMember,\
-    ChangeRequest, ChurchVicars
+    ChangeRequest, ChurchVicars, HonourAndRespect, Group, NoticeFarewell
 
 from import_export import resources
 from import_export.admin import ImportExportModelAdmin, ImportMixin, ExportMixin, ImportExportMixin
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 import csv
+from django.urls import path
+from rest_framework.authtoken.models import Token
+from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from django.contrib.auth.models import User
+from django.db.models.functions import Cast
+
+
+admin.site.site_header = "Administrator Website"
+
+
+class UserAdmin(BaseUserAdmin):
+    change_list_template = 'admin/logout/logout_change_list.html'
+
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path('logout_user/<int:number>/', self.logout_user)
+        ]
+        return custom_urls + urls
+
+    def logout_user(self, request, number):
+        try:
+            user_object = User.objects.get(username=number)
+            user_token = Token.objects.get(user=user_object)
+            user_token.delete()
+            self.message_user(request, "User Logged Out Successfully")
+            return HttpResponseRedirect("../")
+        except:
+            self.message_user(request, "Invalid User")
+            return HttpResponseRedirect("../")
+
 
 class FileUploadResource(resources.ModelResource):
     class Meta:
@@ -48,7 +79,9 @@ class MemberResource(resources.ModelResource):
 
 class MemeberAdmin(ImportExportModelAdmin):
     list_display = ('member_name','phone_no_secondary_user')
+    list_filter = ('blood_group',)
     search_fields = ['member_name','phone_no_secondary_user']
+
 
 
 class ImageAdmin(admin.ModelAdmin):
@@ -70,13 +103,19 @@ class FamilyAdmin(admin.ModelAdmin):
     list_display = ('name',)
     search_fields = ['name', ]
 
+
 class NoticeAdmin(admin.ModelAdmin):
     list_display = ('notice','created_at')
     search_fields = ['notice',]
 
+class OtpAdmin(admin.ModelAdmin):
+    list_display = ('mobile_number','created_time')
+    search_fields = ['mobile_number',]
+
 class PrayerAdmin(ImportExportModelAdmin):
     list_display = ['name']
     actions = ['export_users']
+
 
     def get_actions(self, request):
         actions = super().get_actions(request)
@@ -340,7 +379,7 @@ admin.site.register(PrayerGroup, PrayerAdmin)
 admin.site.register(Family, FamilyAdmin)
 admin.site.register(Notice,NoticeAdmin)
 admin.site.register(ChurchDetails)
-admin.site.register(OtpModels)
+admin.site.register(OtpModels, OtpAdmin)
 admin.site.register(Notification, NotificationAdmin)
 admin.site.register(Images, ImageAdmin)
 admin.site.register(FileUpload, FileAdmin)
@@ -359,3 +398,8 @@ admin.site.register(NumberChangePrimary)
 admin.site.register(UnapprovedMember)
 admin.site.register(ChangeRequest)
 admin.site.register(ChurchVicars)
+admin.site.register(HonourAndRespect)
+admin.site.register(Group)
+admin.site.unregister(User)
+admin.site.register(User, UserAdmin)
+admin.site.register(NoticeFarewell)
