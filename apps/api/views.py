@@ -1533,7 +1533,7 @@ class GrouplistView(ListAPIView):
 
 
 class HonourlistView(ListAPIView):
-    queryset = HonourAndRespect.objects.all().order_by('created_on')
+    queryset = HonourAndRespect.objects.all().order_by('?')
     serializer_class = HonourSerializer
 
     def list(self, request, *args, **kwargs):
