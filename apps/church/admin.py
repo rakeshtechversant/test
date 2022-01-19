@@ -5,7 +5,7 @@ from django.contrib import admin
 from apps.church.models import NoticeBereavement, Members, UserProfile, PrayerGroup, Notice, Family, ChurchDetails, \
     OtpModels, FileUpload, Notification, Images, Occupation, MemberType, NoticeReadSecondary, NoticeReadPrimary, \
     NoticeReadAdmin, ViewRequestNumber, PrivacyPolicy, PhoneVersion,PrimaryToSecondary,NumberChangePrimary,UnapprovedMember,\
-    ChangeRequest, ChurchVicars, HonourAndRespect, Group, NoticeFarewell
+    ChangeRequest, ChurchVicars, HonourAndRespect, Group, NoticeFarewell, NoticeGreeting, GroupNotice
 
 from import_export import resources
 from import_export.admin import ImportExportModelAdmin, ImportMixin, ExportMixin, ImportExportMixin
@@ -135,7 +135,8 @@ class PrayerAdmin(ImportExportModelAdmin):
             primary_qs = FileUpload.objects.all()
             if primary_qs:
                 writer.writerow(['SL NO', 'PRAYER GROUP', 'NAME', 'FAMILY NAME', 'FAMILY ABOUT', 'FAMILY IMAGE', 'MEMBERS',
-                                 'RELATION', 'PHONE NO PRIMARY', 'PHONE NO SECONDARY', 'EMAIL', 'ADDRESS', 'USER IMAGE',
+                                 'RELATION', 'PHONE NO PRIMARY', 'PHONE NO SECONDARY', 'EMAIL','STATUS','CURRENT_ADDRESS','RESIDENTIAL ADDRESS',
+                                 'PERMANENT_ADDRESS', 'PARISH_NAME', 'USER IMAGE',
                                  'OCCUPATION', 'OCCUPATION DESCRIPTION', 'ABOUT USER', 'DOB', 'DOM', 'BLOOD GROUP',
                                  'MEMORY DATE (YYYY-MM-DD)', 'ID_PRIMARY', 'ID_SECONDARY'
                                  ])
@@ -194,8 +195,8 @@ class PrayerAdmin(ImportExportModelAdmin):
 
                                 writer.writerows([''])
                                 output1.append([count, prayer_obj.name, user.name, family_obj.name, family_obj.about, img_fam,
-                                                '', user.relation, user.phone_no_primary, user.phone_no_secondary, user.email,
-                                                user.address, img, occupation, occupation_description, user.about, user.dob,
+                                                '', user.relation, user.phone_no_primary, user.phone_no_secondary, user.email,user.status,
+                                                user.current_address,user.residential_address, user.permanent_address, user.parish_name, img, occupation, occupation_description, user.about, user.dob,
                                                 dom, user.blood_group, in_memory, user.primary_user_id, ''])
                                 writer.writerows(output1)
                                 count = count + 1
@@ -241,7 +242,7 @@ class PrayerAdmin(ImportExportModelAdmin):
                                             occupation_description_sec = ''
                                         output2.append(
                                             ['', '', '', '', '', '', mem.member_name, mem.relation, mem.phone_no_secondary_user,
-                                             mem.phone_no_secondary_user_secondary, mem.email, '', img_mem, occupation_sec,
+                                             mem.phone_no_secondary_user_secondary, mem.email,mem.status, mem.current_address,mem.residential_address,mem.permanent_address,mem.parish_name,img_mem, occupation_sec,
                                              occupation_description_sec, mem.about, mem.dob, dom_sec, mem.blood_group,
                                              in_memory, '', mem.secondary_user_id])
                                     writer.writerows(output2)
@@ -260,7 +261,7 @@ class PrayerAdmin(ImportExportModelAdmin):
             response['Content-Disposition'] = 'attachment; filename="users_data.csv"'
             writer = csv.writer(response)
             writer.writerow(['SL NO', 'PRAYER GROUP', 'NAME', 'FAMILY NAME', 'FAMILY ABOUT', 'FAMILY IMAGE', 'MEMBERS',
-                             'RELATION', 'PHONE NO PRIMARY', 'PHONE NO SECONDARY', 'EMAIL', 'ADDRESS', 'USER IMAGE',
+                             'RELATION', 'PHONE NO PRIMARY', 'PHONE NO SECONDARY', 'EMAIL', 'STATUS','CURRENT_ADDRESS','RESIDENTIAL ADDRESS','PERMANENT_ADDRESS', 'PARISH_NAME','USER IMAGE',
                              'OCCUPATION', 'OCCUPATION DESCRIPTION', 'ABOUT USER', 'DOB', 'DOM', 'BLOOD GROUP',
                              'MEMORY DATE (YYYY-MM-DD)', 'ID_PRIMARY', 'ID_SECONDARY'
                              ])
@@ -315,8 +316,8 @@ class PrayerAdmin(ImportExportModelAdmin):
                         occupation_description = ''
                     writer.writerows([''])
                     output1.append([count, prayer_obj.name, user.name, family_obj.name, family_obj.about, img_fam, '',
-                                    user.relation, user.phone_no_primary, user.phone_no_secondary, user.email,
-                                    user.address, img, occupation, occupation_description, user.about, user.dob, dom,
+                                    user.relation, user.phone_no_primary, user.phone_no_secondary, user.email,user.status,
+                                    user.current_address,user.residential_address, user.permanent_address,user.parish_name, img, occupation, occupation_description, user.about, user.dob, dom,
                                     user.blood_group, in_memory, user.primary_user_id, ''])
                     writer.writerows(output1)
                     count = count + 1
@@ -362,7 +363,7 @@ class PrayerAdmin(ImportExportModelAdmin):
 
                             output2.append(
                                 ['', '', '', '', '', '', mem.member_name, mem.relation, mem.phone_no_secondary_user,
-                                 mem.phone_no_secondary_user_secondary, mem.email, '', img_mem, occupation_sec,
+                                 mem.phone_no_secondary_user_secondary, mem.email,mem.status,mem.current_address,mem.residential_address,mem.permanent_address,mem.parish_name, img_mem, occupation_sec,
                                  occupation_description_sec, mem.about, mem.dob, dom_sec, mem.blood_group, in_memory,
                                  '', mem.secondary_user_id])
                         writer.writerows(output2)
@@ -403,3 +404,5 @@ admin.site.register(Group)
 admin.site.unregister(User)
 admin.site.register(User, UserAdmin)
 admin.site.register(NoticeFarewell)
+admin.site.register(NoticeGreeting)
+admin.site.register(GroupNotice)

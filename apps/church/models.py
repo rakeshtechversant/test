@@ -11,7 +11,6 @@ from django.utils import timezone as tz
 from push_notifications.models import APNSDevice, GCMDevice
 from django.conf import settings
 import asyncio
-import base64
 
 STATUS_CHOICES = (
     ("1", "Active"),
@@ -190,6 +189,240 @@ def notifications_for_notice_bereavement_create(self):
         pass
 
 
+@mongo_archive_decorator
+def notifications_for_notice_farewell_create(self):
+    try:
+        name, family_name, image = '', '', ''
+        if self.family:
+            family_name = self.family.name
+            if self.primary_member:
+                name = self.primary_member.name
+                try:
+                    image = settings.DEFAULT_DOMAIN + str(self.primary_member.image.url)
+                except:
+                    pass
+            elif self.secondary_member:
+                name = self.secondary_member.member_name
+                try:
+                    image = settings.DEFAULT_DOMAIN + str(self.secondary_member.image.url)
+                except:
+                    pass
+        else:
+            if self.primary_member:
+                name = self.primary_member.name
+                family_name = self.primary_member.get_file_upload.first().name
+                try:
+                    image = settings.DEFAULT_DOMAIN + str(self.primary_member.image.url)
+                except:
+                    pass
+            elif self.secondary_member:
+                name = self.secondary_member.member_name
+                family_name = self.secondary_member.primary_user_id.get_file_upload.first().name
+                try:
+                    image = settings.DEFAULT_DOMAIN + str(self.secondary_member.image.url)
+                except:
+                    pass
+
+        if family_name:
+            body = {"message": "Farewell Announcement of %s belonging to %s" % (name, family_name),
+                    "user_type": "SECONDARY",
+                    "type": "farewell",
+                    "id": str(self.id)
+                    }
+        else:
+            body = {"message": "Farewell Announcement of %s" % name,
+                    "user_type": "SECONDARY",
+                    "type": "farewell",
+                    "id": str(self.id)
+                    }
+        notifications = Notification.objects.create(created_time=tz.now(), message=body)
+        primary_members = FileUpload.objects.all()
+        secondary_members = Members.objects.all()
+        for primary_member in primary_members:
+            NoticeReadPrimary.objects.create(notification=notifications, user_to=primary_member, is_read=False)
+        for secondary_member in secondary_members:
+            NoticeReadSecondary.objects.create(notification=notifications, user_to=secondary_member, is_read=False)
+        try:
+            content = {'title': 'notice title',
+                       'message':
+                           {
+                               "data":
+                                   {
+                                       "title": "Farewell Notice",
+                                       "body": "Farewell announcement of %s belonging to %s" % (name, family_name),
+                                       "notificationType": "farewell",
+                                       "backgroundImage": image,
+                                       "text_type": "long"
+                                   },
+                               "notification":
+                                   {"alert": "This is a FCM notification",
+                                    "title": "Farewell Notice",
+                                    "body": "Farewell announcement of %s belonging to %s" % (name, family_name),
+                                    "sound": "default",
+                                    "backgroundImage": image,
+                                    "backgroundImageTextColour": "#FFFFFF",
+                                    "image": image,
+                                    "click_action": "notice"
+                                    }
+                           }
+                       }
+            content_ios = {'message':
+                               {"aps":
+                                    {"alert":
+                                         {"title": "Farewell Notice",
+                                          "subtitle": "",
+                                          "body": "Farewell announcement of %s belonging to %s"
+                                                  % (name, family_name)},
+                                     "sound": "default",
+                                     "category": "notice",
+                                     "badge": 1,
+                                     "mutable-content": 1
+                                     },
+                                "media-url": image
+                                }
+                           }
+            fcm_messaging_to_all(content)
+            apns_messaging_to_all(content_ios)
+        except:
+            pass
+    except:
+        pass
+
+
+@mongo_archive_decorator
+def notifications_for_notice_greeting_create(self):
+    body = "You have received a new greeting notice"
+    notifications = Notification.objects.create(created_time=tz.now(), message=body)
+    primary_members = FileUpload.objects.all()
+    secondary_members = Members.objects.all()
+    for primary_member in primary_members:
+        NoticeReadPrimary.objects.create(notification=notifications, user_to=primary_member, is_read=False)
+    for secondary_member in secondary_members:
+        NoticeReadSecondary.objects.create(notification=notifications, user_to=secondary_member, is_read=False)
+    try:
+        if self.image == None and self.video == None and self.audio != None:
+            image = "https://cdn0.iconfinder.com/data/icons/cosmo-documents/40/file_audio-512.png"
+        elif self.image == None and self.audio == None and self.video != None:
+            image = settings.DEFAULT_DOMAIN + str(self.thumbnail.url)
+        else:
+            image = settings.DEFAULT_DOMAIN + str(self.image.url)
+    except:
+        image = ""
+    try:
+        content = {'title': 'notice title',
+                   'message':
+                       {"data":
+                            {"title": "Greeting Notice",
+                             "body": str(self.notice),
+                             "notificationType": "notice",
+                             "backgroundImage": image,
+                             "image": image,
+                             "text_type": "short"},
+                        "notification":
+                            {"alert": "This is a FCM notification",
+                             "title": "Greeting Notice",
+                             "body": str(self.notice),
+                             "sound": "default",
+                             "backgroundImage": image,
+                             "backgroundImageTextColour": "#FFFFFF",
+                             "image": image,
+                             "click_action": "notice"
+                             }
+                        }
+                   }
+        content_ios = {'message':
+                           {"aps":
+                                {"alert":
+                                     {"title": "Greeting Notice",
+                                      "subtitle": "",
+                                      "body": str(self.notice)
+                                      },
+                                 "sound": "default",
+                                 "category": "notice",
+                                 "badge": 1,
+                                 "mutable-content": 1
+                                 },
+                            "media-url": image
+                            }
+                       }
+        fcm_messaging_to_all(content)
+        apns_messaging_to_all(content_ios)
+    except:
+        pass
+
+
+@mongo_archive_decorator
+def notifications_for_group_notice(self):
+    body = "You have received a new group notice"
+    notifications = Notification.objects.create(created_time=tz.now(), message=body)
+    primary_members = self.group.primary_user.all()
+    secondary_members = self.group.secondary_user.all()
+    try:
+        if self.image == None and self.video == None and self.audio != None:
+            image = "https://cdn0.iconfinder.com/data/icons/cosmo-documents/40/file_audio-512.png"
+        elif self.image == None and self.audio == None and self.video != None:
+            image = settings.DEFAULT_DOMAIN + str(self.thumbnail.url)
+        else:
+            image = settings.DEFAULT_DOMAIN + str(self.image.url)
+    except:
+        image = ""
+    try:
+        content = {'title': 'notice title',
+                   'message':
+                       {"data":
+                            {"title": "Notice",
+                             "body": str(self.notice),
+                             "notificationType": "notice",
+                             "backgroundImage": image,
+                             "image": image,
+                             "text_type": "short"},
+                        "notification":
+                            {"alert": "This is a FCM notification",
+                             "title": "Notice",
+                             "body": str(self.notice),
+                             "sound": "default",
+                             "backgroundImage": image,
+                             "backgroundImageTextColour": "#FFFFFF",
+                             "image": image,
+                             "click_action": "notice"
+                             }
+                        }
+                   }
+        content_ios = {'message':
+                           {"aps":
+                                {"alert":
+                                     {"title": "Notice",
+                                      "subtitle": "",
+                                      "body": str(self.notice)
+                                      },
+                                 "sound": "default",
+                                 "category": "notice",
+                                 "badge": 1,
+                                 "mutable-content": 1
+                                 },
+                            "media-url": image
+                            }
+                       }
+    except:
+        pass
+    for primary_member in primary_members:
+        NoticeReadPrimary.objects.create(notification=notifications, user_to=primary_member, is_read=False)
+        try:
+            user = User.objects.get(username=primary_member.phone_no_primary)
+            fcm_messaging_to_user(user, content)
+            apns_messaging_to_user(user, content_ios)
+        except:
+            pass
+    for secondary_member in secondary_members:
+        NoticeReadSecondary.objects.create(notification=notifications, user_to=secondary_member, is_read=False)
+        try:
+            user = User.objects.get(username=secondary_member.phone_no_secondary_user)
+            fcm_messaging_to_user(user, content)
+            apns_messaging_to_user(user, content_ios)
+        except:
+            pass
+
+
 def fcm_messaging_to_all(content):
     try:
         device_android = GCMDevice.objects.filter(active=True).exclude(user__is_superuser=True)
@@ -214,6 +447,32 @@ def apns_messaging_to_all(content_ios):
         return str(exp)
 
 
+def fcm_messaging_to_user(user,content):
+    # import pdb;pdb.set_trace()
+    try:
+        device = GCMDevice.objects.filter(user=user,active=True)
+        message = content['message']['data']['body']
+        title = content['message']['data']['title']
+        # del content['data']['data']['body']
+        status = device.send_message(message,title=title, extra=content['message'])
+        return status
+    except Exception as exp:
+        print("notify",exp)
+        return str(exp)
+
+
+def apns_messaging_to_user(user,content_ios):
+    try:
+        device_ios = APNSDevice.objects.filter(user=user,active=True)
+        message_ios = content_ios['message']['aps']['alert']['body']
+        title_ios = content_ios['message']['aps']['alert']['title']
+        status = device_ios.send_message(message={"title" : title_ios, "body" : message_ios}, extra=content_ios['message'])
+        return status
+    except Exception as exp:
+        print("notify-ios",exp)
+        return str(exp)
+
+
 class Notice(models.Model):
     notice = models.CharField(max_length=255)
     description = models.TextField(max_length=10000, null=True, blank=True)
@@ -228,12 +487,13 @@ class Notice(models.Model):
 class FileUpload(models.Model):
     primary_user_id = models.AutoField(max_length=5, primary_key=True)
     name = models.CharField(max_length=200)
-    password = models.CharField(max_length=20, default="")
+    password = models.CharField(max_length=100, null=True, blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='1')
     group_position = models.CharField(max_length=20, null=True, blank=True)
     image = models.FileField(upload_to='members/', null=True, blank=True)
-    permanent_address = models.TextField(max_length=500, null=True, blank=True)
     current_address = models.TextField(max_length=500, null=True, blank=True)
+    residential_address = models.TextField(max_length=500, null=True, blank=True)
+    permanent_address = models.TextField(max_length=500, null=True, blank=True)
     parish_name = models.TextField(max_length=500, null=True, blank=True)
     phone_no_primary = models.CharField(max_length=20, null=True, blank=True)
     phone_no_secondary = models.CharField(max_length=20, null=True, blank=True)
@@ -253,10 +513,6 @@ class FileUpload(models.Model):
 
     def __str__(self):
         return self.name
-
-    def save(self, *args, **kwargs):
-        self.password = base64.b64encode(self.password.encode("ascii")).decode("ascii")
-        super().save(*args, **kwargs)
 
 
 class Family(models.Model):
@@ -279,9 +535,13 @@ class Family(models.Model):
 class Members(models.Model):
     secondary_user_id = models.AutoField(max_length=5, primary_key=True)
     member_name = models.CharField(max_length=255)
-    password = models.CharField(max_length=20, default="")
+    password = models.CharField(max_length=20, null=True, blank=True)
     group_position = models.CharField(max_length=20, null=True, blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='1')
+    current_address = models.TextField(max_length=500, null=True, blank=True)
+    residential_address = models.TextField(max_length=500, null=True, blank=True)
+    permanent_address = models.TextField(max_length=500, null=True, blank=True)
+    parish_name = models.TextField(max_length=500, null=True, blank=True)
     relation = models.CharField(max_length=255, null=True, blank=True)
     dob = models.CharField(max_length=20, null=True, blank=True)
     dom = models.CharField(max_length=20, null=True, blank=True)
@@ -302,10 +562,6 @@ class Members(models.Model):
 
     def __str__(self):
         return self.member_name
-
-    def save(self, *args, **kwargs):
-        self.password = base64.b64encode(self.password.encode("ascii")).decode("ascii")
-        super().save(*args, **kwargs)
 
 
 class UnapprovedMember(models.Model):
@@ -382,10 +638,14 @@ class PrayerGroup(models.Model):
         return self.name
 
 class Images(models.Model):
-    image = models.FileField(upload_to='pan_folder/')
+    image = models.FileField(verbose_name="Image / Video", upload_to='pan_folder/')
     title = models.CharField(max_length=200)
     category = models.CharField(max_length=200)
     date = models.DateField(default=timezone.now)
+
+    class Meta:
+        verbose_name = 'Image / Video'
+        verbose_name_plural = 'Images / Videos'
 
 class ChurchDetails(models.Model):
     church_name = models.CharField(max_length=200)
@@ -612,93 +872,34 @@ class NoticeFarewell(models.Model):
     secondary_member = models.ForeignKey(Members, on_delete=models.CASCADE, null=True, blank=True)
 
     def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-        try:
-            if self.primary_member:
-                self.primary_member.status = '4'
-            if self.secondary_member:
-                self.secondary_member.status = '4'
-            name, family_name = '', ''
-            if self.family:
-                family_name = self.family.name
-                if self.primary_member:
-                    name = self.primary_member.name
-                elif self.secondary_member:
-                    name = self.secondary_member.member_name
-            else:
-                if self.primary_member:
-                    name = self.primary_member.name
-                    family_name = self.primary_member.get_file_upload.first().name
-                elif self.secondary_member:
-                    name = self.secondary_member.member_name
-                    family_name = self.secondary_member.primary_user_id.get_file_upload.first().name
+        if self.id:
+            super().save(*args, **kwargs)
+        else:
+            super().save(*args, **kwargs)
+            notifications_for_notice_farewell_create(self)
 
 
-            if family_name:
-                body = {"message": "Farewell Notice of %s belonging to %s" % (name, family_name),
-                        "user_type": "SECONDARY",
-                        "type": "farewell",
-                        "id": str(self.id)
-                        }
-            else:
-                body = {"message": "Farewell Notice of %s" % name,
-                        "user_type": "SECONDARY",
-                        "type": "farewell",
-                        "id": str(self.id)
-                        }
-            notifications = Notification.objects.create(created_time=tz.now(), message=body)
-            primary_members = FileUpload.objects.all()
-            secondary_members = Members.objects.all()
-            for primary_member in primary_members:
-                NoticeReadPrimary.objects.create(notification=notifications, user_to=primary_member, is_read=False)
-            for secondary_member in secondary_members:
-                NoticeReadSecondary.objects.create(notification=notifications, user_to=secondary_member, is_read=False)
-            image = ""
-            try:
-                content = {"title": "notice title",
-                           "message":
-                               {"data":
-                                    {
-				     "title": "Farewell Notice",
-                                     "body": "Farewell Notice of %s belonging to %s" % (name, family_name),
-                                     "notificationType": "notice",
-                                     "backgroundImage": image,
-                                     "text_type": "short"
-				    },
-                                "notification":
-                                    {
-				     "alert": "This is a FCM notification",
-                                     "title": "Farewell Notice",
-                                     "body": "Farewell Notice of %s belonging to %s" % (name, family_name),
-                                     "sound": "default",
-                                     "backgroundImage": image,
-                                     "backgroundImageTextColour": "#FFFFFF",
-                                     "image": image,
-                                     "click_action": "notice"
-                                    }
-                                }
-                           }
-                content_ios = {"message":
-                                   {"aps":
-                                        {"alert":
-                                             {"title": "Farewell Notice",
-                                              "subtitle": "",
-                                              "body": "Farewell Notice of %s belonging to %s" % (name, family_name)
-                                              },
-                                         "sound": "default",
-                                         "category": "notice",
-                                         "badge": 1,
-                                         "mutable-content": 1
-                                         },
-                                    "media-url": image
-                                    }
-                               }
-                fcm_messaging_to_all(content)
-                apns_messaging_to_all(content_ios)
-            except:
-                pass
-        except:
-            pass
+class NoticeGreeting(models.Model):
+    notice = models.CharField(max_length=255, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
+    updated = models.BooleanField(default=False)
+    description = models.TextField(max_length=100, null=True, blank=True)
+    prayer_group = models.ForeignKey(PrayerGroup, on_delete=models.CASCADE, null=True, blank=True)
+    family = models.ForeignKey(Family, on_delete=models.CASCADE, null=True, blank=True)
+    primary_member = models.ManyToManyField(FileUpload, null=True, blank=True)
+    secondary_member = models.ManyToManyField(Members, null=True, blank=True)
+    image = models.FileField(upload_to='pan_folder/', null=True, blank=True)
+    audio = models.FileField(upload_to='audio_files/', null=True, blank=True)
+    video = models.FileField(upload_to='video_files/', null=True, blank=True)
+    thumbnail = models.FileField(upload_to='thumbnails/', null=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        if self.id:
+            super().save(*args, **kwargs)
+        else:
+            super().save(*args, **kwargs)
+            notifications_for_notice_greeting_create(self)
 
 
 class Group(models.Model):
@@ -712,3 +913,17 @@ class Group(models.Model):
         return self.group_name
 
 
+class GroupNotice(models.Model):
+    notice = models.CharField(max_length=255, null=True, blank=True)
+    group = models.ForeignKey(Group, on_delete=models.CASCADE)
+    description = models.TextField(max_length=10000, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
+    image = models.FileField(upload_to='pan_folder/', null=True, blank=True)
+    audio = models.FileField(upload_to='audio_files/', null=True, blank=True)
+    video = models.FileField(upload_to='video_files/', null=True, blank=True)
+    thumbnail = models.FileField(upload_to='thumbnails/', null=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        notifications_for_group_notice(self)

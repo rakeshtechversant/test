@@ -11,12 +11,13 @@ from apps.api.views import UserNoticeList, NoticeBereavementDelete, NoticeBereav
     PrayerGroupBasedFamilyPaginatedView,PrayerGroupBasedMembersPaginatedView,SendWithoutOtpSecSave, UpdatePhoneNumberSecondary,\
     PrimaryToSecondaryViewset,PrimaryNumberChangeViewset,ChurchVicarEditView,ChurchHistoryEditView,DeviceInactiveView,RegisteredUsersViewAdmin,\
     UnRegisteredUsersViewAdmin,HomeViewAdmin,UserStatisticsViewAdmin,ChangeRequestModelViewSet,VicarsViewSet,StatusChangeViewset,\
-    AnniversaryAndBirthdays, UpcomingAnniversaryAndBirthdays, PrayerGrouplistallView, FamilyListAllView, NoticeFarewellCreate, NoticeFarewellEdit, NoticeFarewellDelete, GrouplistView, HonourlistView
+    AnniversaryAndBirthdays, UpcomingAnniversaryAndBirthdays, PrayerGrouplistallView, FamilyListAllView, NoticeFarewellCreate, NoticeFarewellEdit, NoticeFarewellDelete, GrouplistView, HonourlistView, NoticeGreetingCreate, NoticeGreetingEdit, NoticeGreetingDelete, GroupDetailView, GroupNoticeModelViewSet
 from push_notifications.api.rest_framework import APNSDeviceAuthorizedViewSet, GCMDeviceAuthorizedViewSet
 router = DefaultRouter()
 
 # Notice APIs
 router.register(r'notices', NoticeModelViewSet)
+router.register(r'group-notices', GroupNoticeModelViewSet)
 router.register(r'change-request', ChangeRequestModelViewSet)
 router.register(r'phone-version', PhoneVersionView)
 router.register(r'occupations', views.OccupationView)
@@ -41,6 +42,9 @@ urlpatterns = [
     path('create-farewellnotice/',NoticeFarewellCreate.as_view(),name='create_farewell'),
     url(r'^(?P<pk>[\w-]+)/edit-farewellnotice/',NoticeFarewellEdit.as_view(),name='edit_farewell'),
     url(r'^(?P<pk>[\w-]+)/delete-farewellnotice/',NoticeFarewellDelete.as_view(),name='delete_farewell'),
+    path('create-greeting/', NoticeGreetingCreate.as_view(), name='create_greeting'),
+    url(r'^(?P<pk>[\w-]+)/edit-greeting/', NoticeGreetingEdit.as_view(), name='edit_greeting'),
+    url(r'^(?P<pk>[\w-]+)/delete-greeting/', NoticeGreetingDelete.as_view(), name='delete_greeting'),
     path('prayer-group-list/',PrayerGrouplistView.as_view(),name='prayer_group_list'),
     path('prayer-group-list-all/',PrayerGrouplistallView.as_view(),name='prayer_group_list_all'),
     path('group-list/',GrouplistView.as_view(),name='group_list'),
@@ -57,7 +61,7 @@ urlpatterns = [
     url(r'^prayer-group-based-family-group-list-paginated/(?P<pk>\d+)/$',PrayerGroupBasedFamilyPaginatedView.as_view(),name='prayer_group_list_paginated'),
     url(r'^prayer-group-based-member-list-paginated/(?P<pk>\d+)/$',PrayerGroupBasedMembersPaginatedView.as_view(),name='prayer_group_member_list_paginated'),
     url(r'^family-detail/(?P<pk>\d+)/$',FamilyDetailView.as_view(),name='family_detail'),
-
+    url(r'^group-detail/(?P<pk>\d+)/$',GroupDetailView.as_view(),name='group_detail'),
     url(r'^(?P<pk>[\w-]+)/church-vicar-details/$',ChurchVicarView.as_view(),name='church_vicar'),
     url(r'^(?P<pk>[\w-]+)/church-details/$',ChurchHistoryView.as_view(),name='church_history'),
     url(r'^(?P<pk>[\w-]+)/church-images-details/$',ChurchImagesView.as_view(),name='church_images'),

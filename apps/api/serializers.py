@@ -5,7 +5,7 @@ import requests
 from apps.church.models import UserProfile, ChurchDetails, FileUpload, OtpModels, \
     OtpVerify, PrayerGroup, Notification, Family, Members, Notice, NoticeBereavement, \
     UnapprovedMember, NoticeReadPrimary, NoticeReadSecondary, NoticeReadAdmin, ViewRequestNumber, PrivacyPolicy, \
-    PhoneVersion, Images, PrimaryToSecondary, NumberChangePrimary, ChangeRequest, ChurchVicars, NoticeFarewell, Group, HonourAndRespect
+    PhoneVersion, Images, PrimaryToSecondary, NumberChangePrimary, ChangeRequest, ChurchVicars, NoticeFarewell, Group, HonourAndRespect, NoticeGreeting, GroupNotice
 from rest_framework.serializers import CharField
 from apps.api.token_create import get_tokens_for_user
 from django.utils.crypto import get_random_string
@@ -138,12 +138,16 @@ class FamilyListSerializer(serializers.ModelSerializer):
             data['last_modified'] = datetime.strftime(obj.last_modified, '%Y-%m-%d %H:%M:%S')
         except:
             data['last_modified'] = None
+        try:
+            data['phone_no_primary'] = obj.primary_user_id.phone_no_primary
+        except:
+            data['phone_no_primary'] = None
         return data
 
     def get_members_length(self, obj):
             try:
                 name = obj.primary_user_id
-                number_list = Members.objects.filter(primary_user_id=name.primary_user_id, is_deleted=False).count()
+                number_list = Members.objects.filter(primary_user_id=name.primary_user_id).count()
                 number_list = number_list + 1
             except:
                 number_list = 0
@@ -205,7 +209,7 @@ class UserListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = FileUpload
-        fields = ['primary_user_id','name','address','phone_no_primary','phone_no_secondary','dob','dom','blood_group','email','occupation','about','marital_status','landline']
+        fields = ['primary_user_id','name','status','current_address','residential_address', 'permanent_address', 'parish_name','phone_no_primary','phone_no_secondary','dob','dom','blood_group','email','occupation','about','marital_status','landline']
 
 
 
@@ -626,7 +630,7 @@ class UserDetailsRetrieveSerializer(serializers.ModelSerializer):
     # family_description = serializers.SerializerMethodField()
     class Meta:
         model = FileUpload
-        fields = ['primary_user_id','image','name','address','phone_no_primary','phone_no_secondary','dob','dom','blood_group','email','in_memory','in_memory_date','occupation','about','relation','landline']
+        fields = ['primary_user_id','image','name','status','current_address','residential_address','permanent_address','parish_name','phone_no_primary','phone_no_secondary','dob','dom','blood_group','email','in_memory','in_memory_date','occupation','about','relation','landline']
 
     def get_in_memory_date(self, obj):
         date = obj.in_memory_date
@@ -956,7 +960,7 @@ class MemberSerializer(serializers.ModelSerializer):
 class PrimaryUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = FileUpload
-        fields = ['image', 'name', 'address', 'phone_no_primary', 'phone_no_secondary', 'dob', 'dom', 'blood_group', 'email', 'in_memory', 'in_memory_date', 'occupation', 'about', 'marital_status', 'landline', 'primary_user_id']
+        fields = ['image', 'name','status','current_address','residential_address', 'permanent_address','parish_name', 'phone_no_primary', 'phone_no_secondary', 'dob', 'dom', 'blood_group', 'email', 'in_memory', 'in_memory_date', 'occupation', 'about', 'marital_status', 'landline', 'primary_user_id']
 
     def to_representation(self, obj):
 
@@ -1007,7 +1011,7 @@ class MemberUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Members
-        fields = ['primary_user_id', 'image', 'relation', 'dob', 'dom', 'blood_group', 'email', 'in_memory', 'in_memory_date', 'occupation', 'about', 'marital_status', 'landline']
+        fields = ['primary_user_id', 'image','status', 'relation', 'dob', 'dom', 'blood_group', 'email', 'in_memory', 'in_memory_date', 'occupation', 'about', 'marital_status', 'landline']
 
     def to_representation(self, obj):
 
@@ -1055,9 +1059,21 @@ class MemberUserSerializer(serializers.ModelSerializer):
             data['phone_no_secondary'] = None
 
         try:
-            data['address'] = ''
+            data['current_address'] = obj.current_address
         except:
-            data['address'] = None
+            data['current_address'] = None
+        try:
+            data['residential_address'] = obj.residential_address
+        except:
+            data['residential_address'] = None
+        try:
+            data['permanent_address'] = obj.permanent_address
+        except:
+            data['permanent_address'] = None
+        try:
+            data['parish_name'] = obj.parish_name
+        except:
+            data['parish_name'] = None
 
         try:
             data['landline'] = obj.landline
@@ -1086,6 +1102,11 @@ class UserByadminSerializer(serializers.Serializer):
     prayer_group = serializers.PrimaryKeyRelatedField(queryset=PrayerGroup.objects.all())
     family = serializers.PrimaryKeyRelatedField(queryset=Family.objects.all())
     name = serializers.CharField()
+    status = serializers.ChoiceField(choices=['1', '2', '3', '4'])
+    current_address = serializers.CharField(allow_blank=True,required=False)
+    permanent_address = serializers.CharField(allow_blank=True,required=False)
+    residential_address = serializers.CharField(allow_blank=True,required=False)
+    parish_name = serializers.CharField(allow_blank=True,required=False)
     blood_group = serializers.CharField(allow_blank=True,required=False)
     dob = serializers.CharField(allow_blank=True,required=False)
     email = serializers.EmailField(allow_blank=True,required=False)
@@ -1096,7 +1117,6 @@ class UserByadminSerializer(serializers.Serializer):
     marital_status = serializers.CharField(allow_blank=True,required=False)
     marrige_date = serializers.CharField(allow_blank=True,required=False)
     member_type = serializers.CharField()
-    member_status = serializers.ChoiceField(choices=['active', 'in_memory'])
     about = serializers.CharField(allow_blank=True,required=False)
     landline = serializers.CharField(allow_blank=True,required=False)
 
@@ -1104,6 +1124,11 @@ class UserByMembersSerializer(serializers.Serializer):
     prayer_group = serializers.PrimaryKeyRelatedField(queryset=PrayerGroup.objects.all())
     family = serializers.PrimaryKeyRelatedField(queryset=Family.objects.all())
     name = serializers.CharField()
+    status = serializers.ChoiceField(choices=['1', '2', '3', '4'])
+    current_address = serializers.CharField(allow_blank=True, required=False)
+    permanent_address = serializers.CharField(allow_blank=True, required=False)
+    residential_address = serializers.CharField(allow_blank=True, required=False)
+    parish_name = serializers.CharField(allow_blank=True, required=False)
     blood_group = serializers.CharField(allow_blank=True,required=False)
     dob = serializers.CharField(allow_blank=True,required=False)
     email = serializers.EmailField(allow_blank=True,required=False)
@@ -1114,7 +1139,6 @@ class UserByMembersSerializer(serializers.Serializer):
     marital_status = serializers.CharField(allow_blank=True,required=False)
     marrige_date = serializers.CharField(allow_blank=True,required=False)
     member_type = serializers.CharField()
-    member_status = serializers.ChoiceField(choices=['active', 'in_memory'])
     about = serializers.CharField(allow_blank=True,required=False)
     landline = serializers.CharField(allow_blank=True,required=False)
 
@@ -1194,8 +1218,12 @@ class GalleryImagesCreateSerializer(serializers.ModelSerializer):
 class CommonUserSerializer(serializers.Serializer):
     user_id = serializers.IntegerField()
     name=serializers.CharField()
+    status=serializers.CharField()
     image=serializers.CharField()
-    address=serializers.CharField()
+    current_address=serializers.CharField()
+    residential_address=serializers.CharField()
+    permanent_address=serializers.CharField()
+    parish_name=serializers.CharField()
     phone_no_primary=serializers.CharField()
     phone_no_secondary=serializers.CharField()
     dob=serializers.CharField()
@@ -1208,6 +1236,38 @@ class CommonUserSerializer(serializers.Serializer):
     in_memory=serializers.CharField()
     in_memory_date=serializers.CharField()
     family_name=serializers.CharField()
+    active=serializers.BooleanField()
+    family_id=serializers.IntegerField()
+    user_type=serializers.CharField()
+    relation=serializers.CharField()
+    primary_user_id=serializers.IntegerField()
+    primary_name=serializers.CharField()
+    landline=serializers.CharField()
+    prayer_group_name=serializers.CharField()
+
+
+class CommonUserGroupSerializer(serializers.Serializer):
+    user_id = serializers.IntegerField()
+    name=serializers.CharField()
+    status=serializers.CharField()
+    group_position = serializers.CharField()
+    image=serializers.CharField()
+    current_address=serializers.CharField()
+    residential_address=serializers.CharField()
+    permanent_address=serializers.CharField()
+    parish_name=serializers.CharField()
+    phone_no_primary=serializers.CharField()
+    phone_no_secondary=serializers.CharField()
+    dob=serializers.CharField()
+    dom=serializers.CharField()
+    blood_group=serializers.CharField()
+    email=serializers.CharField()
+    occupation=serializers.CharField()
+    about=serializers.CharField()
+    marital_status=serializers.CharField()
+    in_memory=serializers.CharField()
+    in_memory_date=serializers.CharField()
+    membership_id=serializers.CharField()
     active=serializers.BooleanField()
     family_id=serializers.IntegerField()
     user_type=serializers.CharField()
@@ -1398,7 +1458,7 @@ class MembersSerializerPage(serializers.ModelSerializer):
 
     class Meta:
         model = Members
-        fields = ['image','dob','dom','blood_group','email','occupation','about','marital_status',\
+        fields = ['image','status','dob','dom','blood_group','email','occupation','about','marital_status',\
         'in_memory','in_memory_date','relation','primary_user_id', 'landline']
 
     def to_representation(self, instance):
@@ -1419,10 +1479,23 @@ class MembersSerializerPage(serializers.ModelSerializer):
             data['image'] = request.build_absolute_uri(instance.image.url)
         except:
             data['image'] = None
+
         try:
-            data['address'] = ''
+            data['current_address'] = instance.current_address
         except:
-            data['address'] = None
+            data['current_address'] = None
+        try:
+            data['residential_address'] = instance.residential_address
+        except:
+            data['residential_address'] = None
+        try:
+            data['permanent_address'] = instance.permanent_address
+        except:
+            data['permanent_address'] = None
+        try:
+            data['parish_name'] = instance.parish_name
+        except:
+            data['parish_name'] = None
 
         try:
             data['phone_no_primary'] = instance.phone_no_secondary_user
@@ -1475,10 +1548,108 @@ class MembersSerializerPage(serializers.ModelSerializer):
     #         return primary_number
     #     return None
 
+
+class MembersGroupSerializer(serializers.ModelSerializer):
+    # phone_no_primary = serializers.SerializerMethodField()
+    in_memory_date = serializers.SerializerMethodField()
+    # family_
+
+    class Meta:
+        model = Members
+        fields = ['group_position','image','status','dob','dom','blood_group','email','occupation','about','marital_status',\
+        'in_memory','in_memory_date','relation','primary_user_id', 'landline']
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        # data['name'] = data.pop('member_name')
+        data['user_type'] = 'SECONDARY'
+        data['user_id'] = instance.secondary_user_id
+        request = self.context['request']
+        try:
+            data['name'] = instance.member_name.title()
+        except:
+            data['name'] = None
+        try:
+            data['about'] = instance.about
+        except:
+            pass
+        try :
+            data['image'] = request.build_absolute_uri(instance.image.url)
+        except:
+            data['image'] = None
+        try:
+            data['current_address'] = instance.current_address
+        except:
+            data['current_address'] = None
+        try:
+            data['residential_address'] = instance.residential_address
+        except:
+            data['residential_address'] = None
+        try:
+            data['permanent_address'] = instance.permanent_address
+        except:
+            data['permanent_address'] = None
+        try:
+            data['parish_name'] = instance.parish_name
+        except:
+            data['parish_name'] = None
+
+        try:
+            data['phone_no_primary'] = instance.phone_no_secondary_user
+        except:
+            data['phone_no_primary'] = None
+
+        try:
+            data['phone_no_secondary'] = instance.phone_no_secondary_user_secondary
+        except:
+            data['phone_no_secondary'] = None
+
+        try:
+            fam_obj = instance.primary_user_id.get_file_upload.first()
+            data['membership_id'] = fam_obj.name.title()
+            data['active'] = fam_obj.active
+            data['family_id'] = fam_obj.id
+        except:
+            data['membership_id'] = ''
+            data['active'] = False
+            data['family_id'] = None
+        try:
+            data['primary_name'] = instance.primary_user_id.name.title()
+        except:
+            data['primary_name'] = ''
+
+        try:
+            data['prayer_group_name'] = instance.primary_user_id.get_file_upload_prayergroup.first().name
+        except:
+            data['prayer_group_name'] = ''
+        return data
+
+    def get_in_memory_date(self, obj):
+        date = obj.in_memory_date
+        if date:
+            return date
+        else:
+            return None
+
+    # def get_primary_name(self, obj):
+    #     name = obj.primary_user_id.name
+    #     if name:
+    #         serializer = UserRetrieveSerializerPage(name,context=self.context)
+    #         return name
+    #     return None
+
+    # def get_phone_no_primary(self, obj):
+    #     primary_number = obj.primary_user_id.phone_no_primary
+    #     if primary_number:
+    #         serializer = UserRetrieveSerializerPage(primary_number)
+    #         return primary_number
+    #     return None
+
+
 class PrimaryUserSerializerPage(serializers.ModelSerializer):
     class Meta:
         model = FileUpload
-        fields =['name','image','address','phone_no_primary','phone_no_secondary','dob','dom','blood_group','email','occupation','about','marital_status',\
+        fields =['name','image','status','current_address','residential_address','permanent_address','parish_name','phone_no_primary','phone_no_secondary','dob','dom','blood_group','email','occupation','about','marital_status',\
         'in_memory','in_memory_date','relation','primary_user_id', 'landline']
         read_only_fields = ['primary_user_id']
 
@@ -1526,6 +1697,58 @@ class PrimaryUserSerializerPage(serializers.ModelSerializer):
         return data
 
 
+
+class PrimaryUserGroupSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FileUpload
+        fields =['name','image','group_position', 'status','current_address','residential_address','permanent_address','parish_name','phone_no_primary','phone_no_secondary','dob','dom','blood_group','email','occupation','about','marital_status',\
+        'in_memory','in_memory_date','relation','primary_user_id', 'landline']
+        read_only_fields = ['primary_user_id']
+
+    def to_representation(self, obj):
+
+        data = super().to_representation(obj)
+
+        request = self.context['request']
+
+        if obj.get_file_upload.first():
+            fam_obj = obj.get_file_upload.first()
+            data['membership_id'] = fam_obj.name.title()
+            data['active'] = fam_obj.active
+            data['family_id'] = fam_obj.id
+        else:
+            data['membership_id'] = ''
+            data['active'] = False
+            data['family_id'] = None
+
+        try:
+            data['name'] = obj.name.title()
+        except:
+            pass
+        try:
+            data['primary_name'] = obj.name.title()
+        except:
+            pass
+        try:
+            data['user_id'] = obj.primary_user_id
+        except:
+            pass
+        if obj.image:
+            try:
+                data['image'] = request.build_absolute_uri(obj.image.url)
+            except:
+                data['image'] = None
+
+        data['user_type'] = 'PRIMARY'
+
+        try:
+            data['prayer_group_name'] = obj.get_file_upload_prayergroup.first().name
+        except:
+            data['prayer_group_name'] = ''
+
+        return data
+
+
 class UserMemorySerializer(serializers.Serializer):
     prayer_group = serializers.PrimaryKeyRelatedField(queryset=PrayerGroup.objects.all())
     family = serializers.PrimaryKeyRelatedField(queryset=Family.objects.all())
@@ -1539,7 +1762,7 @@ class UserMemorySerializer(serializers.Serializer):
     # marital_status = serializers.CharField()
     # marrige_date = serializers.CharField(allow_blank=True)
     member_type = serializers.CharField()
-    member_status = serializers.ChoiceField(choices=['active', 'in_memory'])
+    status = serializers.ChoiceField(choices=['1', '2', '3', '4'])
     in_memory_date = serializers.DateTimeField()
     # about = serializers.CharField()
 
@@ -1725,3 +1948,44 @@ class NoticeFarewellSerializer(serializers.ModelSerializer):
     class Meta:
         model=NoticeFarewell
         fields = '__all__'
+
+
+class NoticeGreetingSerializer(serializers.ModelSerializer):
+    created_at = serializers.DateTimeField(format="%d/%m/%Y %I:%M %p", read_only=True)
+    updated_at = serializers.DateTimeField(format="%d/%m/%Y %I:%M %p")
+
+    class Meta:
+        model=NoticeGreeting
+        fields = '__all__'
+
+
+class GroupNoticeSerializer(serializers.ModelSerializer):
+    created_at = serializers.DateTimeField(format="%d/%m/%Y %I:%M %p", read_only=True)
+    updated_at = serializers.DateTimeField(format="%d/%m/%Y %I:%M %p", read_only=True)
+
+    class Meta:
+        model = GroupNotice
+        fields = '__all__'
+
+    def create(self, validated_data):
+        notice = GroupNotice(**validated_data)
+        notice.save()
+        return notice
+
+    def update(self, instance, validated_data):
+        instance = super().update(instance, validated_data)
+        if validated_data.get('audio') != None:
+            instance.image = None
+            instance.video = None
+            instance.thumbnail = None
+        elif validated_data.get('video') != None:
+            instance.image = None
+            instance.audio = None
+        elif validated_data.get('image') != None:
+            instance.video = None
+            instance.audio = None
+            instance.thumbnail = None
+        else:
+            pass
+        instance.save()
+        return instance
