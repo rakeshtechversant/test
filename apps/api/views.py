@@ -132,7 +132,7 @@ class UserLoginMobileView(APIView):
         mobile_number = request.data['mobile_number']
         user_type  = request.data['user_type']
         user_id  = request.data['user_id']
-        password = request.data['password']
+        #password = request.data['password']
         try:
             superusers = AdminProfile.objects.filter(user__is_superuser=True).first()
             admin_phonenumber = superusers.mobile_number
@@ -147,8 +147,8 @@ class UserLoginMobileView(APIView):
                 user_profile = Members.objects.get(secondary_user_id=user_id)
                 if user_type == 'SECONDARY' and user_id :
                     if user_profile.primary_user_id.phone_no_primary == mobile_number or user_profile.primary_user_id.phone_no_secondary == mobile_number:
-                        if password != user_profile.password:
-                            return Response({'success': False, 'message': 'Invalid Password'}, status=HTTP_404_NOT_FOUND)
+                        # if password != user_profile.password:
+                        #     return Response({'success': False, 'message': 'Invalid Password'}, status=HTTP_404_NOT_FOUND)
                         if(user_profile.primary_user_id.phone_no_secondary == None):
                             data = {
                                 'admin_mobile_number' : admin_phonenumber,
@@ -228,9 +228,9 @@ class UserLoginMobileView(APIView):
                     user_profiles = FileUpload.objects.filter(phone_no_primary=mobile_number)
                     for user_profile in user_profiles:
                         if mobile_number == user_profile.phone_no_primary:
-                            if password != user_profile.password:
-                                return Response({'success': False, 'message': 'Invalid Password'},
-                                                status=HTTP_404_NOT_FOUND)
+                            # if password != user_profile.password:
+                            #     return Response({'success': False, 'message': 'Invalid Password'},
+                            #                     status=HTTP_404_NOT_FOUND)
                             user,created=User.objects.get_or_create(username=mobile_number)
                             token, created = Token.objects.get_or_create(user=user)
                             data = {
@@ -268,9 +268,9 @@ class UserLoginMobileView(APIView):
                     user_profiles = FileUpload.objects.filter(phone_no_secondary=mobile_number)
                     for user_profile in user_profiles:
                         if mobile_number == user_profile.phone_no_secondary:
-                            if password != user_profile.password:
-                                return Response({'success': False, 'message': 'Invalid Password'},
-                                                status=HTTP_404_NOT_FOUND)
+                            # if password != user_profile.password:
+                            #     return Response({'success': False, 'message': 'Invalid Password'},
+                            #                     status=HTTP_404_NOT_FOUND)
                             user,created=User.objects.get_or_create(username=mobile_number)
                             token, created = Token.objects.get_or_create(user=user)
                             data = {
@@ -307,8 +307,8 @@ class UserLoginMobileView(APIView):
                         user,created=User.objects.get_or_create(username=mobile_number)
                         token, created = Token.objects.get_or_create(user=user)
                         if mobile_number == user_profile.phone_no_secondary_user:
-                            if password != user_profile.password:
-                                return Response({'success': False, 'message': 'Invalid Password'}, status=HTTP_404_NOT_FOUND)
+                            # if password != user_profile.password:
+                            #     return Response({'success': False, 'message': 'Invalid Password'}, status=HTTP_404_NOT_FOUND)
                             data = {
                                 'mobile': user_profile.phone_no_secondary_user,
                                 'user_type': 'SECONDARY',
@@ -369,11 +369,11 @@ class UserLoginMobileWithOutOtpView(APIView):
         mobile_number = request.data['mobile_number']
         user_type  = request.data['user_type']
         user_id  = request.data['user_id']
-        password = request.data['password']
+        # password = request.data['password']
         f.write(mobile_number)
         f.write(user_type)
         f.write(user_id)
-        f.write(password)
+        # f.write(password)
         try:
             superusers = AdminProfile.objects.filter(user__is_superuser=True).first()
             admin_phonenumber = superusers.mobile_number
@@ -394,8 +394,8 @@ class UserLoginMobileWithOutOtpView(APIView):
                         return Response({'success': False, 'message': 'Your family is in inactive state.Please contact admin','user_details': data},status=HTTP_400_BAD_REQUEST)
 
                     if user_profile.primary_user_id.phone_no_primary == mobile_number or user_profile.primary_user_id.phone_no_secondary == mobile_number:
-                        if password != user_profile.password:
-                            return Response({'success': False, 'message': 'Invalid Password'}, status=HTTP_404_NOT_FOUND)
+                        # if password != user_profile.password:
+                        #     return Response({'success': False, 'message': 'Invalid Password'}, status=HTTP_404_NOT_FOUND)
                         if(user_profile.primary_user_id.phone_no_secondary == None):
                             data = {
                                 'admin_mobile_number' : admin_phonenumber,
@@ -460,9 +460,9 @@ class UserLoginMobileWithOutOtpView(APIView):
                                     'family_status' : 'inactive',
                                     }
                                 return Response({'success': False, 'message': 'Your family is in inactive state.Please contact admin','user_details': data},status=HTTP_400_BAD_REQUEST)
-                            if password != user_profile.password:
-                                return Response({'success': False, 'message': 'Invalid Password'},
-                                                status=HTTP_404_NOT_FOUND)
+                            # if password != user_profile.password:
+                            #     return Response({'success': False, 'message': 'Invalid Password'},
+                            #                     status=HTTP_404_NOT_FOUND)
                             user,created=User.objects.get_or_create(username=mobile_number)
                             token, created = Token.objects.get_or_create(user=user)
                             data = {
@@ -494,9 +494,9 @@ class UserLoginMobileWithOutOtpView(APIView):
                                     'family_status' : 'inactive',
                                     }
                                 return Response({'success': False, 'message': 'Your family is in inactive state.Please contact admin','user_details': data},status=HTTP_400_BAD_REQUEST)
-                            if password != user_profile.password:
-                                return Response({'success': False, 'message': 'Invalid Password'},
-                                                status=HTTP_404_NOT_FOUND)
+                            # if password != user_profile.password:
+                            #     return Response({'success': False, 'message': 'Invalid Password'},
+                            #                     status=HTTP_404_NOT_FOUND)
                             user,created=User.objects.get_or_create(username=mobile_number)
                             token, created = Token.objects.get_or_create(user=user)
                             data = {
@@ -527,8 +527,8 @@ class UserLoginMobileWithOutOtpView(APIView):
                                     'family_status' : 'inactive',
                                     }
                             return Response({'success': False, 'message': 'Your family is in inactive state.Please contact admin','user_details': data},status=HTTP_400_BAD_REQUEST)
-                        if password != user_profile.password:
-                            return Response({'success': False, 'message': 'Invalid Password'}, status=HTTP_404_NOT_FOUND)
+                        # if password != user_profile.password:
+                        #     return Response({'success': False, 'message': 'Invalid Password'}, status=HTTP_404_NOT_FOUND)
                         user,created=User.objects.get_or_create(username=mobile_number)
                         token, created = Token.objects.get_or_create(user=user)
                         if mobile_number == user_profile.phone_no_secondary_user:
