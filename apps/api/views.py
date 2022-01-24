@@ -8645,10 +8645,10 @@ class UserRegisterView(APIView):
     def post(self, request, format=None):
         try:
             name = request.data['name']
-            password = request.data['password']
+            # password = request.data['password']
             mobile_number = request.data['mobile_number']
             membership_id = request.data['membership_number']
-            if name and password and mobile_number and membership_id is not None:
+            if name and mobile_number and membership_id is not None:
                 family = Family.objects.get(name=str(membership_id))
 
                 if not family.primary_user_id:
@@ -8670,7 +8670,6 @@ class UserRegisterView(APIView):
                     instance = Members(
                         member_name=name,
                         phone_no_secondary_user=mobile_number,
-                        password=password,
                         primary_user_id=family.primary_user_id
                     )
                     instance.save()
