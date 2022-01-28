@@ -1054,14 +1054,12 @@ class UserListCommonView(ListAPIView):
                 term.lower()
                 queryset_primary = PrimaryUserSerializerPage(
                     FileUpload.objects.filter(Q(name__nospaces__icontains=term) |
-                                              Q(occupation__icontains=term) |
                                               Q(phone_no_primary__icontains=term) |
                                               Q(phone_no_secondary__icontains=term) |
                                               Q(blood_group__nospaces__icontains=term)),
                     many=True, context=context).data
                 queryset_secondary = MembersSerializerPage(
                     Members.objects.filter(Q(member_name__nospaces__icontains=term) |
-                                           Q(occupation__icontains=term) |
                                            Q(phone_no_secondary_user__icontains=term) |
                                            Q(phone_no_secondary_user_secondary__icontains=term) |
                                            Q(blood_group__nospaces__icontains=term)),
@@ -1224,6 +1222,27 @@ class UserDetailView(APIView):
                 except:
                     prayer_id = None
 
+                d_o_b, d_o_m = None, None
+                try:
+                    date_patterns = ["%d/%m/%Y", '%d/%b']
+                    for pattern in date_patterns:
+                        if user_details.dob is not None:
+                            try:
+                                d_o_b = datetime.strptime(user_details.dob, pattern)
+                            except:
+                                pass
+                        if date_om is not None:
+                            try:
+                                d_o_m = datetime.strptime(date_om, pattern)
+                            except:
+                                pass
+                    if d_o_b:
+                        d_o_b = datetime.strftime(d_o_b, "%d/%b")
+                    if d_o_m:
+                        d_o_m = datetime.strftime(d_o_m, "%d/%b")
+                except:
+                    d_o_b, d_o_m = user_details.dob, date_om
+
                 data={
                     'name':user_details.member_name,
                     'status': user_details.status,
@@ -1232,8 +1251,8 @@ class UserDetailView(APIView):
                     'permanent_address': user_details.permanent_address,
                     'parish_name': user_details.parish_name,
                     'relation':user_details.relation,
-                    'dob':user_details.dob,
-                    'dom':date_om,
+                    'dob':d_o_b,
+                    'dom':d_o_m,
                     # 'image':user_details.image,
                     'is_accepted':is_accepted,
                     'phone_no_secondary_user':user_details.phone_no_secondary_user,
@@ -1297,6 +1316,27 @@ class UserDetailView(APIView):
                     except:
                         prayer_id = None
 
+                    d_o_b, d_o_m = None, None
+                    try:
+                        date_patterns = ["%d/%m/%Y", '%d/%b']
+                        for pattern in date_patterns:
+                            if user_details.dob is not None:
+                                try:
+                                    d_o_b = datetime.strptime(user_details.dob, pattern)
+                                except:
+                                    pass
+                            if date_om is not None:
+                                try:
+                                    d_o_m = datetime.strptime(date_om, pattern)
+                                except:
+                                    pass
+                        if d_o_b:
+                            d_o_b = datetime.strftime(d_o_b, "%d/%b")
+                        if d_o_m:
+                            d_o_m = datetime.strftime(d_o_m, "%d/%b")
+                    except:
+                        d_o_b, d_o_m = user_details.dob, date_om
+
                     data={
                        # 'member_name':user_details.primary_user_id,
                        'name':user_details.name,
@@ -1309,8 +1349,8 @@ class UserDetailView(APIView):
                        'is_accepted':is_accepted,
                        'phone_no_primary':user_details.phone_no_primary,
                        'phone_no_secondary':user_details.phone_no_secondary,
-                       'dob':user_details.dob,
-                       'dom':date_om,
+                       'dob': d_o_b,
+                       'dom': d_o_m,
                        'blood_group':user_details.blood_group,
                        'email':user_details.email,
                        'occupation':user_details.occupation,
@@ -5324,8 +5364,15 @@ class PrayerGroupBasedMembersPaginatedView(ListAPIView):
             if term:
                 term = term.replace(" ", "")
                 term.lower()
-                queryset = queryset.filter(Q(member_name__nospaces__icontains=term)|Q(occupation__icontains=term)).order_by('member_name')
-                queryset_primary = self.primary_user.filter(Q(name__nospaces__icontains=term)|Q(occupation__icontains=term))
+
+                queryset = queryset.filter(Q(member_name__nospaces__icontains=term) |
+                                           Q(phone_no_secondary_user__icontains=term) |
+                                           Q(phone_no_secondary_user_secondary__icontains=term) |
+                                           Q(blood_group__nospaces__icontains=term)).order_by('member_name')
+                queryset_primary = self.primary_user.filter(Q(name__nospaces__icontains=term) |
+                                                            Q(phone_no_primary__icontains=term) |
+                                                            Q(phone_no_secondary__icontains=term) |
+                                                            Q(blood_group__nospaces__icontains=term))
             else:
                 queryset = self.filter_queryset(self.get_queryset())
                 queryset_primary = self.primary_user.all()
@@ -7352,7 +7399,7 @@ class UserStatisticsViewAdmin(APIView):
 
     def get_anniversary_and_birthday(self, users):
         #date_patterns = ["%d/%m/%Y", "%Y/%m/%d", "%d-%m-%Y", "%Y-%m-%d", "%d.%m.%Y", "%Y.%m.%d"]
-        date_patterns = ["%d/%m/%Y"]
+        date_patterns = ["%d/%m/%Y", '%d/%b']
         birthday, anniversary = [], []
         today = datetime.today().date()
         for row in users:
@@ -7378,7 +7425,7 @@ class UserStatisticsViewAdmin(APIView):
 
     def get_upcoming_anniversary_and_birthday(self, users):
         #date_patterns = ["%d/%m/%Y", "%Y/%m/%d", "%d-%m-%Y", "%Y-%m-%d", "%d.%m.%Y", "%Y.%m.%d"]
-        date_patterns = ["%d/%m/%Y"]
+        date_patterns = ["%d/%m/%Y", '%d/%b']
         birthday, anniversary = [], []
         start = datetime.today().date() + timedelta(1)
         max_days = 31
