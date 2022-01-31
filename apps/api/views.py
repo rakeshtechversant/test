@@ -7399,8 +7399,7 @@ class UserStatisticsViewAdmin(APIView):
 
     def get_anniversary_and_birthday(self, users):
         #date_patterns = ["%d/%m/%Y", "%Y/%m/%d", "%d-%m-%Y", "%Y-%m-%d", "%d.%m.%Y", "%Y.%m.%d"]
-        # date_patterns = ["%d/%m/%Y", '%d/%b']
-        date_patterns = ["%d/%m/%Y"]
+        date_patterns = ["%d/%m/%Y", "%m/%d/%Y", "%d/%b"]
         birthday, anniversary = [], []
         today = datetime.today().date()
         for row in users:
@@ -7426,8 +7425,7 @@ class UserStatisticsViewAdmin(APIView):
 
     def get_upcoming_anniversary_and_birthday(self, users):
         #date_patterns = ["%d/%m/%Y", "%Y/%m/%d", "%d-%m-%Y", "%Y-%m-%d", "%d.%m.%Y", "%Y.%m.%d"]
-        # date_patterns = ["%d/%m/%Y", '%d/%b']
-        date_patterns = ["%d/%m/%Y"]
+        date_patterns = ["%d/%m/%Y", "%m/%d/%Y", "%d/%b"]
         birthday, anniversary = [], []
         start = datetime.today().date() + timedelta(1)
         max_days = 31
@@ -7535,8 +7533,20 @@ class UserStatisticsViewAdmin(APIView):
         todays_anniversary = primary_anniversary_data + secondary_anniversary_data
         upcoming_birthday = upcoming_primary_birthday_data + upcoming_secondary_birthday_data
         upcoming_birthday.sort(key=lambda item: item['dob'][5:])
+        for user in upcoming_birthday:
+            try:
+                dob = datetime.strptime(user['dob'], '%Y-%m-%d')
+                user['dob'] = datetime.strftime(dob, '%d-%b')
+            except:
+                pass
         upcoming_anniversary = upcoming_primary_anniversary_data + upcoming_secondary_anniversary_data
         upcoming_anniversary.sort(key=lambda item: item['dom'][5:])
+        for user in upcoming_anniversary:
+            try:
+                dom = datetime.strptime(user['dom'], '%Y-%m-%d')
+                user['dom'] = datetime.strftime(dom, '%d-%b')
+            except:
+                pass
 
 
         # sms balance
