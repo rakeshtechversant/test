@@ -1264,7 +1264,7 @@ class UserDetailView(APIView):
                     'occupation':user_details.occupation,
                     'about':user_details.about,
                     'marital_status':user_details.marital_status,
-                    'marrige_date':date_om,
+                    'marrige_date':d_o_m,
                     'in_memory':user_details.in_memory,
                     'in_memory_date':user_details.in_memory_date,
                     'image':image,
@@ -1356,7 +1356,7 @@ class UserDetailView(APIView):
                        'occupation':user_details.occupation,
                        'about':user_details.about,
                        'marital_status':user_details.marital_status,
-                       'marrige_date':date_om,
+                       'marrige_date':d_o_m,
                        'in_memory':user_details.in_memory,
                        'in_memory_date':user_details.in_memory_date,
                        'image':image,
@@ -7399,7 +7399,8 @@ class UserStatisticsViewAdmin(APIView):
 
     def get_anniversary_and_birthday(self, users):
         #date_patterns = ["%d/%m/%Y", "%Y/%m/%d", "%d-%m-%Y", "%Y-%m-%d", "%d.%m.%Y", "%Y.%m.%d"]
-        date_patterns = ["%d/%m/%Y", '%d/%b']
+        # date_patterns = ["%d/%m/%Y", '%d/%b']
+        date_patterns = ["%d/%m/%Y"]
         birthday, anniversary = [], []
         today = datetime.today().date()
         for row in users:
@@ -7425,7 +7426,8 @@ class UserStatisticsViewAdmin(APIView):
 
     def get_upcoming_anniversary_and_birthday(self, users):
         #date_patterns = ["%d/%m/%Y", "%Y/%m/%d", "%d-%m-%Y", "%Y-%m-%d", "%d.%m.%Y", "%Y.%m.%d"]
-        date_patterns = ["%d/%m/%Y", '%d/%b']
+        # date_patterns = ["%d/%m/%Y", '%d/%b']
+        date_patterns = ["%d/%m/%Y"]
         birthday, anniversary = [], []
         start = datetime.today().date() + timedelta(1)
         max_days = 31
