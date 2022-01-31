@@ -1224,7 +1224,7 @@ class UserDetailView(APIView):
 
                 d_o_b, d_o_m = None, None
                 try:
-                    date_patterns = ["%d/%m/%Y", '%d/%b']
+                    date_patterns = ["%d/%m/%Y", "%m/%d/%Y", '%d/%b']
                     for pattern in date_patterns:
                         if user_details.dob is not None:
                             try:
@@ -1318,7 +1318,7 @@ class UserDetailView(APIView):
 
                     d_o_b, d_o_m = None, None
                     try:
-                        date_patterns = ["%d/%m/%Y", '%d/%b']
+                        date_patterns = ["%d/%m/%Y", "%m/%d/%Y", '%d/%b']
                         for pattern in date_patterns:
                             if user_details.dob is not None:
                                 try:
