@@ -1224,7 +1224,7 @@ class UserDetailView(APIView):
 
                 d_o_b, d_o_m = None, None
                 try:
-                    date_patterns = ["%d/%m/%Y", "%m/%d/%Y", '%d/%b']
+                    date_patterns = ["%m/%d/%Y", '%d/%b', "%d/%m/%Y"]
                     for pattern in date_patterns:
                         if user_details.dob is not None:
                             try:
@@ -1318,7 +1318,7 @@ class UserDetailView(APIView):
 
                     d_o_b, d_o_m = None, None
                     try:
-                        date_patterns = ["%d/%m/%Y", "%m/%d/%Y", '%d/%b']
+                        date_patterns = ["%m/%d/%Y", '%d/%b', "%d/%m/%Y"]
                         for pattern in date_patterns:
                             if user_details.dob is not None:
                                 try:
@@ -7399,7 +7399,7 @@ class UserStatisticsViewAdmin(APIView):
 
     def get_anniversary_and_birthday(self, users):
         #date_patterns = ["%d/%m/%Y", "%Y/%m/%d", "%d-%m-%Y", "%Y-%m-%d", "%d.%m.%Y", "%Y.%m.%d"]
-        date_patterns = ["%d/%m/%Y", "%m/%d/%Y", "%d/%b"]
+        date_patterns = ["%m/%d/%Y", '%d/%b', "%d/%m/%Y"]
         birthday, anniversary = [], []
         today = datetime.today().date()
         for row in users:
@@ -7425,7 +7425,7 @@ class UserStatisticsViewAdmin(APIView):
 
     def get_upcoming_anniversary_and_birthday(self, users):
         #date_patterns = ["%d/%m/%Y", "%Y/%m/%d", "%d-%m-%Y", "%Y-%m-%d", "%d.%m.%Y", "%Y.%m.%d"]
-        date_patterns = ["%d/%m/%Y", "%m/%d/%Y", "%d/%b"]
+        date_patterns = ["%m/%d/%Y", '%d/%b', "%d/%m/%Y"]
         birthday, anniversary = [], []
         start = datetime.today().date() + timedelta(1)
         max_days = 31

@@ -412,6 +412,29 @@ class MembersSerializer(serializers.ModelSerializer):
             data['prayer_group_name'] = instance.primary_user_id.get_file_upload_prayergroup.first().name
         except:
             data['prayer_group_name'] = ''
+
+        d_o_b, d_o_m = None, None
+        try:
+            date_patterns = ["%m/%d/%Y", '%d/%b', "%d/%m/%Y"]
+            for pattern in date_patterns:
+                if instance.dob is not None:
+                    try:
+                        d_o_b = datetime.strptime(instance.dob, pattern)
+                    except:
+                        pass
+                if instance.dom is not None:
+                    try:
+                        d_o_m = datetime.strptime(instance.dom, pattern)
+                    except:
+                        pass
+            if d_o_b:
+                d_o_b = datetime.strftime(d_o_b, "%d/%b")
+            if d_o_m:
+                d_o_m = datetime.strftime(d_o_m, "%d/%b")
+        except:
+            d_o_b, d_o_m = instance.dob, instance.dom
+        data['dob'] = d_o_b
+        data['dom'] = d_o_m
         return data
 
 
@@ -695,6 +718,31 @@ class UserDetailsRetrieveSerializer(serializers.ModelSerializer):
             data['family_name'] = instance.get_file_upload.first().name
         except:
             data['family_name'] = None
+
+        d_o_b, d_o_m = None, None
+        try:
+            date_patterns = ["%m/%d/%Y", '%d/%b', "%d/%m/%Y"]
+            for pattern in date_patterns:
+                if instance.dob is not None:
+                    try:
+                        d_o_b = datetime.strptime(instance.dob, pattern)
+                    except:
+                        pass
+                if data['dom'] is not None:
+                    try:
+                        d_o_m = datetime.strptime(data['dom'], pattern)
+                    except:
+                        pass
+            if d_o_b:
+                d_o_b = datetime.strftime(d_o_b, "%d/%b")
+            if d_o_m:
+                d_o_m = datetime.strftime(d_o_m, "%d/%b")
+        except:
+            d_o_b, d_o_m = instance.dob, data['dom']
+        data['dob'] = d_o_b
+        data['dom'] = d_o_m
+        data['marrige_date'] = d_o_m
+
         return data
 
     # def get_family_name(self, obj):
