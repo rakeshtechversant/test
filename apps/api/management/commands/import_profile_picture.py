@@ -16,12 +16,9 @@ class Command(BaseCommand):
             #         user.save()
             members = Members.objects.all()
             for member in members:
-                if member.relation == "Wife" or "Husband":
-                    d_o_m = member.primary_user_id.dom
-                    member.dom = d_o_m
-                    member.marrige_date = d_o_m
-                    member.primary_user_id.marrige_date = d_o_m
-                    member.primary_user_id.save()
+                if not member.relation == "Wife" and not member.relation == "Husband":
+                    member.dom = None
+                    member.marrige_date = None
                     member.save()
             print("completed")
         except Exception as e:
