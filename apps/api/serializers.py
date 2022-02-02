@@ -427,6 +427,11 @@ class MembersSerializer(serializers.ModelSerializer):
                         d_o_m = datetime.strptime(instance.dom, pattern)
                     except:
                         pass
+                if d_o_m is None:
+                    try:
+                        d_o_m = datetime.strptime(instance.marrige_date, pattern)
+                    except:
+                        pass
             if d_o_b:
                 d_o_b = datetime.strftime(d_o_b, "%d/%b")
             if d_o_m:
