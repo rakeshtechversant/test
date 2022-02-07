@@ -202,6 +202,8 @@ class UserLoginMobileView(APIView):
                         otp_number = '99956'
                     elif mobile_number == '9999988888':
                         otp_number = '99955'
+                    elif mobile_number == '1234567890':
+                        otp_number = '12345'
                     else:
                         otp_number = get_random_string(length=6, allowed_chars='1234567890')
                     try:
