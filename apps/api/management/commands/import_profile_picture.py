@@ -8,14 +8,12 @@ class Command(BaseCommand):
             familys = Family.objects.all()
             for family in familys:
                 family_image = family.image
-                if not family.primary_user_id.image:
-                    family.primary_user_id.image = family_image
-                    family.primary_user_id.save()
+                family.primary_user_id.image = family_image
+                family.primary_user_id.save()
                 members = Members.objects.filter(primary_user_id=family.primary_user_id)
                 for user in members:
-                    if not family.primary_user_id.image:
-                        user.image = family_image
-                        user.save()
+                    user.image = family_image
+                    user.save()
             print("completed")
         except Exception as e:
             print(str(e))
