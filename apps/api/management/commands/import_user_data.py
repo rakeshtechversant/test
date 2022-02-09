@@ -5,7 +5,7 @@ from apps.church.models import FileUpload, Family, Members, PrayerGroup
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        f = open('production_data.csv', 'r')
+        f = open('production_data2.csv', 'r')
         data = csv.reader(f, delimiter=',')
         for index, row in enumerate(data):
             if index == 0:
@@ -23,6 +23,7 @@ class Command(BaseCommand):
                 parish_name = row[11]
                 dob = row[12]
                 dom = row[13]
+                marriage_date = row[13]
                 blood_group = row[14]
                 email = row[7]
 
@@ -36,7 +37,8 @@ class Command(BaseCommand):
                                                    dob=dob,
                                                    dom=dom,
                                                    blood_group=blood_group,
-                                                   email=email)
+                                                   email=email,
+                                                   marrige_date=marriage_date)
 
                 family = Family.objects.create(name=membership_id,
                                                 primary_user_id=primary_user)
@@ -48,6 +50,9 @@ class Command(BaseCommand):
                 if row[15]:
                     name = row[15]
                     relation = row[16]
+                    if not relation == "Wife" and not relation == "Husband":
+                        dom = None
+                        marriage_date = None
                     dob = row[17]
                     blood_group = row[18]
                     phone_no_secondary_user = row[19]
@@ -57,6 +62,8 @@ class Command(BaseCommand):
                                                      relation=relation,
                                                      primary_user_id=primary_user,
                                                      dob=dob,
+                                                     dom=dom,
+                                                     marrige_date=marriage_date,
                                                      current_address=current_address,
                                                      residential_address=residential_address,
                                                      permanent_address=permanent_address,
@@ -69,6 +76,9 @@ class Command(BaseCommand):
                     if row[21]:
                         name = row[21]
                         relation = row[22]
+                        if not relation == "Wife" and not relation == "Husband":
+                            dom = None
+                            marriage_date = None
                         dob = row[23]
                         blood_group = row[24]
                         phone_no_secondary_user = row[25]
@@ -84,12 +94,18 @@ class Command(BaseCommand):
                                                                 parish_name=parish_name,
                                                                 phone_no_secondary_user=phone_no_secondary_user,
                                                                 blood_group=blood_group,
-                                                                email=email)
+                                                                email=email,
+                                                                dom=dom,
+                                                                marrige_date=marriage_date
+                                                                )
                         prayer_group[0].sec_member.add(secondary_user)
 
                     if row[27]:
                         name = row[27]
                         relation = row[28]
+                        if not relation == "Wife" and not relation == "Husband":
+                            dom = None
+                            marriage_date = None
                         dob = row[29]
                         blood_group = row[30]
                         phone_no_secondary_user = row[31]
@@ -105,12 +121,18 @@ class Command(BaseCommand):
                                                                 parish_name=parish_name,
                                                                 phone_no_secondary_user=phone_no_secondary_user,
                                                                 blood_group=blood_group,
-                                                                email=email)
+                                                                email=email,
+                                                                dom=dom,
+                                                                marrige_date=marriage_date
+                                                                )
                         prayer_group[0].sec_member.add(secondary_user)
 
                         if row[33]:
                             name = row[33]
                             relation = row[34]
+                            if not relation == "Wife" and not relation == "Husband":
+                                dom = None
+                                marriage_date = None
                             dob = row[35]
                             blood_group = row[36]
                             phone_no_secondary_user = row[37]
@@ -126,12 +148,17 @@ class Command(BaseCommand):
                                                                     parish_name=parish_name,
                                                                     phone_no_secondary_user=phone_no_secondary_user,
                                                                     blood_group=blood_group,
-                                                                    email=email)
+                                                                    email=email,
+                                                                    dom=dom,
+                                                                    marrige_date=marriage_date)
                             prayer_group[0].sec_member.add(secondary_user)
 
                         if row[39]:
                             name = row[39]
                             relation = row[40]
+                            if not relation == "Wife" and not relation == "Husband":
+                                dom = None
+                                marriage_date = None
                             dob = row[41]
                             blood_group = row[42]
                             phone_no_secondary_user = row[43]
@@ -147,12 +174,17 @@ class Command(BaseCommand):
                                                                     parish_name=parish_name,
                                                                     phone_no_secondary_user=phone_no_secondary_user,
                                                                     blood_group=blood_group,
-                                                                    email=email)
+                                                                    email=email,
+                                                                    dom=dom,
+                                                                    marrige_date=marriage_date)
                             prayer_group[0].sec_member.add(secondary_user)
 
                         if row[45]:
                             name = row[45]
                             relation = row[46]
+                            if not relation == "Wife" and not relation == "Husband":
+                                dom = None
+                                marriage_date = None
                             dob = row[47]
                             blood_group = row[48]
                             phone_no_secondary_user = row[49]
@@ -168,12 +200,17 @@ class Command(BaseCommand):
                                                                     parish_name=parish_name,
                                                                     phone_no_secondary_user=phone_no_secondary_user,
                                                                     blood_group=blood_group,
-                                                                    email=email)
+                                                                    email=email,
+                                                                    dom=dom,
+                                                                    marrige_date=marriage_date)
                             prayer_group[0].sec_member.add(secondary_user)
 
                         if row[51]:
                             name = row[51]
                             relation = row[52]
+                            if not relation == "Wife" and not relation == "Husband":
+                                dom = None
+                                marriage_date = None
                             dob = row[53]
                             blood_group = row[54]
                             phone_no_secondary_user = row[55]
@@ -189,12 +226,17 @@ class Command(BaseCommand):
                                                                     parish_name=parish_name,
                                                                     phone_no_secondary_user=phone_no_secondary_user,
                                                                     blood_group=blood_group,
-                                                                    email=email)
+                                                                    email=email,
+                                                                    dom=dom,
+                                                                    marrige_date=marriage_date)
                             prayer_group[0].sec_member.add(secondary_user)
 
                         if row[57]:
                             name = row[57]
                             relation = row[58]
+                            if not relation == "Wife" and not relation == "Husband":
+                                dom = None
+                                marriage_date = None
                             dob = row[59]
                             blood_group = row[60]
                             phone_no_secondary_user = row[61]
@@ -210,7 +252,9 @@ class Command(BaseCommand):
                                                                     parish_name=parish_name,
                                                                     phone_no_secondary_user=phone_no_secondary_user,
                                                                     blood_group=blood_group,
-                                                                    email=email)
+                                                                    email=email,
+                                                                    dom=dom,
+                                                                    marrige_date=marriage_date)
                             prayer_group[0].sec_member.add(secondary_user)
             except Exception as e:
                 print(str(e))
