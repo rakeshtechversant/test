@@ -2563,8 +2563,12 @@ class FamilyDetailView(ListAPIView):
         except:
             family_images = None
         try:
-            prayer_group_name = self.primary_user.get_file_upload_prayergroup.first().name
-            prayer_group_id = self.primary_user.get_file_upload_prayergroup.first().id
+            if self.primary_user:
+                prayer_group_name = self.primary_user.get_file_upload_prayergroup.first().name
+                prayer_group_id = self.primary_user.get_file_upload_prayergroup.first().id
+            else:
+                prayer_group_name = self.family_obj.prayergroup_set.first().name
+                prayer_group_id = self.family_obj.prayergroup_set.first().id
         except:
             prayer_group_name = None
             prayer_group_id = None
