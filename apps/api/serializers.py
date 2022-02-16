@@ -880,6 +880,7 @@ class MembersDetailsSerializer(serializers.ModelSerializer):
             d_o_b, d_o_m = instance.dob, instance.dom
         data['dob'] = d_o_b
         data['dom'] = d_o_m
+        data['marrige_date'] = d_o_m
         return data
 
 
