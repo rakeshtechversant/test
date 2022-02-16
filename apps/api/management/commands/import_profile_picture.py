@@ -4,9 +4,9 @@ from apps.church.models import Family, Members
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        try:
-            familys = Family.objects.all()
-            for family in familys:
+        familys = Family.objects.all()
+        for family in familys:
+            try:
                 family_image = family.image
                 family.primary_user_id.image = family_image
                 family.primary_user_id.save()
@@ -14,6 +14,8 @@ class Command(BaseCommand):
                 for user in members:
                     user.image = family_image
                     user.save()
-            print("completed")
-        except Exception as e:
-            print(str(e))
+            except Exception as e:
+                print(str(e))
+                pass
+        print("completed")
+
