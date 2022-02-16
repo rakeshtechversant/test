@@ -427,7 +427,7 @@ class MembersSerializer(serializers.ModelSerializer):
                         d_o_m = datetime.strptime(instance.dom, pattern)
                     except:
                         pass
-                if d_o_m is None:
+                else:
                     try:
                         d_o_m = datetime.strptime(instance.marrige_date, pattern)
                     except:
@@ -733,7 +733,7 @@ class UserDetailsRetrieveSerializer(serializers.ModelSerializer):
                         d_o_b = datetime.strptime(instance.dob, pattern)
                     except:
                         pass
-                if data['dom'] is not None:
+                else:
                     try:
                         d_o_m = datetime.strptime(data['dom'], pattern)
                     except:
@@ -867,7 +867,7 @@ class MembersDetailsSerializer(serializers.ModelSerializer):
                         d_o_m = datetime.strptime(instance.dom, pattern)
                     except:
                         pass
-                if d_o_m is None:
+                else:
                     try:
                         d_o_m = datetime.strptime(instance.marrige_date, pattern)
                     except:
