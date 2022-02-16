@@ -852,6 +852,34 @@ class MembersDetailsSerializer(serializers.ModelSerializer):
                 data['in_memory_date_format'] = None
         except:
             data['in_memory_date_format'] = None
+
+        d_o_b, d_o_m = None, None
+        try:
+            date_patterns = ["%m/%d/%Y", '%d/%b', "%d/%m/%Y"]
+            for pattern in date_patterns:
+                if instance.dob is not None:
+                    try:
+                        d_o_b = datetime.strptime(instance.dob, pattern)
+                    except:
+                        pass
+                if instance.dom is not None:
+                    try:
+                        d_o_m = datetime.strptime(instance.dom, pattern)
+                    except:
+                        pass
+                if d_o_m is None:
+                    try:
+                        d_o_m = datetime.strptime(instance.marrige_date, pattern)
+                    except:
+                        pass
+            if d_o_b:
+                d_o_b = datetime.strftime(d_o_b, "%d/%b")
+            if d_o_m:
+                d_o_m = datetime.strftime(d_o_m, "%d/%b")
+        except:
+            d_o_b, d_o_m = instance.dob, instance.dom
+        data['dob'] = d_o_b
+        data['dom'] = d_o_m
         return data
 
 
