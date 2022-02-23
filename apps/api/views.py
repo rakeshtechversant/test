@@ -179,7 +179,7 @@ class UserLoginMobileView(APIView):
                             #     "&flash=0&type=1&sender=MARCHR",
                             #     headers={"X-API-Key": "918e0674e62e01ec16ddba9a0cea447b"})
                             #send_sms(mobile_number,message)
-                            return Response({'success': True, 'message': 'OTP Sent Successfully', 'user_details': data},
+                            return Response({'success': True, 'message': 'Please enter the OTP sent to Admin', 'user_details': data},
                                             status=HTTP_200_OK)
                                            
                     else:
@@ -221,7 +221,7 @@ class UserLoginMobileView(APIView):
                     #     "&flash=0&type=1&sender=MARCHR",
                     #     headers={"X-API-Key": "918e0674e62e01ec16ddba9a0cea447b"})
                     #send_sms(mobile_number,message)
-                    return Response({'success': True, 'message': 'OTP Sent Successfully', 'user_details': data},
+                    return Response({'success': True, 'message': 'Please enter the OTP sent to Admin', 'user_details': data},
                                     status=HTTP_200_OK)
                 else:
                     pass
@@ -259,7 +259,7 @@ class UserLoginMobileView(APIView):
                             #     "&flash=0&type=1&sender=TVRSNT",
                             #     headers={"X-API-Key": "ed6edfa3928bb18628e1cb94b79c7319"})
                             #send_sms(mobile_number,message)
-                            return Response({'success': True, 'message': 'OTP Sent Successfully', 'user_details': data},
+                            return Response({'success': True, 'message': 'Please enter the OTP sent to Admin', 'user_details': data},
                                             status=HTTP_200_OK)
                         else:
                             data = {}
