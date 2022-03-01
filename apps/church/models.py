@@ -927,3 +927,16 @@ class GroupNotice(models.Model):
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
         notifications_for_group_notice(self)
+
+
+class ActiveUser(models.Model):
+    name = models.CharField(max_length=200)
+    mobile_number = models.CharField(max_length=20, null=True, blank=True)
+    membership_id = models.CharField(max_length=20, null=True, blank=True)
+    last_login = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+
+
+class InactiveUser(models.Model):
+    name = models.CharField(max_length=200)
+    mobile_number = models.CharField(max_length=20, null=True, blank=True)
+    membership_id = models.CharField(max_length=20)

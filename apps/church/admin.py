@@ -5,7 +5,7 @@ from django.contrib import admin
 from apps.church.models import NoticeBereavement, Members, UserProfile, PrayerGroup, Notice, Family, ChurchDetails, \
     OtpModels, FileUpload, Notification, Images, Occupation, MemberType, NoticeReadSecondary, NoticeReadPrimary, \
     NoticeReadAdmin, ViewRequestNumber, PrivacyPolicy, PhoneVersion,PrimaryToSecondary,NumberChangePrimary,UnapprovedMember,\
-    ChangeRequest, ChurchVicars, HonourAndRespect, Group, NoticeFarewell, NoticeGreeting, GroupNotice
+    ChangeRequest, ChurchVicars, HonourAndRespect, Group, NoticeFarewell, NoticeGreeting, GroupNotice, ActiveUser, InactiveUser
 
 from import_export import resources
 from import_export.admin import ImportExportModelAdmin, ImportMixin, ExportMixin, ImportExportMixin
@@ -100,7 +100,7 @@ class OccupationAdmin(admin.ModelAdmin):
 
 
 class FamilyAdmin(admin.ModelAdmin):
-    list_display = ('name',)
+    list_display = ('name', 'id',)
     search_fields = ['name', ]
 
 
@@ -113,7 +113,7 @@ class OtpAdmin(admin.ModelAdmin):
     search_fields = ['mobile_number',]
 
 class PrayerAdmin(ImportExportModelAdmin):
-    list_display = ['name']
+    list_display = ['name', 'id']
     actions = ['export_users']
 
 
@@ -375,6 +375,16 @@ class PrayerAdmin(ImportExportModelAdmin):
             return response
 
 
+class ActiveUserAdmin(admin.ModelAdmin):
+    list_display = ('name', 'mobile_number', 'membership_id', 'last_login')
+    search_fields = ['name', 'mobile_number', 'membership_id']
+
+
+class InactiveUserAdmin(admin.ModelAdmin):
+    list_display = ('name', 'mobile_number', 'membership_id')
+    search_fields = ['name', 'mobile_number', 'membership_id']
+
+
 admin.site.register(UserProfile)
 admin.site.register(PrayerGroup, PrayerAdmin)
 admin.site.register(Family, FamilyAdmin)
@@ -406,3 +416,5 @@ admin.site.register(User, UserAdmin)
 admin.site.register(NoticeFarewell)
 admin.site.register(NoticeGreeting)
 admin.site.register(GroupNotice)
+admin.site.register(ActiveUser, ActiveUserAdmin)
+admin.site.register(InactiveUser, InactiveUserAdmin)
