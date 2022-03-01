@@ -42,7 +42,7 @@ from apps.api.serializers import ChurchHistorySerializer, ChurchImagesSerializer
     VicarsSerializer,ChurchHistoryEditSerializer, PrimaryUserBirthdaySerializer, MemberBirthdaySerializer, MemberUserSerializer,PrayerGroupAllSerializer, NoticeFarewellSerializer, GroupSerializer, HonourSerializer, NoticeGreetingSerializer, PrimaryUserGroupSerializer, MembersGroupSerializer, CommonUserGroupSerializer, GroupNoticeSerializer
 from apps.church.models import Members, Family, UserProfile, ChurchDetails, FileUpload, OtpModels, \
     PrayerGroup, Notification, Notice, NoticeBereavement, UnapprovedMember, NoticeReadPrimary, NoticeReadSecondary, \
-    ViewRequestNumber, NoticeReadAdmin, PrivacyPolicy, PhoneVersion, Images, PrimaryToSecondary, NumberChangePrimary, ChangeRequest, ChurchVicars, NoticeFarewell, Group, HonourAndRespect, NoticeGreeting, GroupNotice
+    ViewRequestNumber, NoticeReadAdmin, PrivacyPolicy, PhoneVersion, Images, PrimaryToSecondary, NumberChangePrimary, ChangeRequest, ChurchVicars, NoticeFarewell, Group, HonourAndRespect, NoticeGreeting, GroupNotice, ActiveUser, InactiveUser
 
 from apps.api.models import AdminProfile
 from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_400_BAD_REQUEST, HTTP_401_UNAUTHORIZED, \
@@ -570,8 +570,6 @@ class OtpVerifyViewSet(CreateAPIView):
     serializer_class = OTPVeifySerializer
 
     def create(self, request):
-        f = open("testlog.txt", "a")
-        f.write("OTP1")
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         otp = serializer.validated_data.get("otp", None)
@@ -650,8 +648,6 @@ class OtpVerifyUserIdViewSet(CreateAPIView):
     serializer_class = OTPVeifySerializerUserId
 
     def create(self, request):
-        f = open("testlog.txt", "a")
-        f.write("OTP2")
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         otp = serializer.validated_data.get("otp", None)
@@ -738,8 +734,6 @@ class OtpVerifyUserCheckNumberViewSet(CreateAPIView):
     serializer_class = OTPVeifySerializerUserId
 
     def create(self, request):
-        f = open("testlog.txt", "a")
-        f.write("OTP3")
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         otp = serializer.validated_data.get("otp", None)
@@ -906,6 +900,26 @@ class OtpVerifyUserCheckNumberViewSet(CreateAPIView):
                 user = User.objects.get(username=user)
             except User.DoesNotExist:
                 return Response({'success': False, 'message': ' User does not exist'}, status=HTTP_404_NOT_FOUND)
+
+            if user_type != "ADMIN":
+                try:
+                    ActiveUser.objects.filter(name=data['name'],mobile_number=data['mobile'],
+                                              membership_id=data['family_name']).delete()
+                except:
+                    pass
+                try:
+                    InactiveUser.objects.filter(name=data['name'],mobile_number=data['mobile'],
+                                              membership_id=data['family_name']).delete()
+                except:
+                    pass
+                try:
+                    active_user = ActiveUser()
+                    active_user.mobile_number = data['mobile']
+                    active_user.name = data['name']
+                    active_user.membership_id = data['family_name']
+                    active_user.save()
+                except:
+                    pass
 
             token, created = Token.objects.get_or_create(user=user)
             data.update({"token": token.key})
