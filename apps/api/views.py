@@ -570,6 +570,8 @@ class OtpVerifyViewSet(CreateAPIView):
     serializer_class = OTPVeifySerializer
 
     def create(self, request):
+        f = open("testlog.txt", "a")
+        f.write("OTP1")
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         otp = serializer.validated_data.get("otp", None)
@@ -648,6 +650,8 @@ class OtpVerifyUserIdViewSet(CreateAPIView):
     serializer_class = OTPVeifySerializerUserId
 
     def create(self, request):
+        f = open("testlog.txt", "a")
+        f.write("OTP2")
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         otp = serializer.validated_data.get("otp", None)
@@ -734,6 +738,8 @@ class OtpVerifyUserCheckNumberViewSet(CreateAPIView):
     serializer_class = OTPVeifySerializerUserId
 
     def create(self, request):
+        f = open("testlog.txt", "a")
+        f.write("OTP3")
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         otp = serializer.validated_data.get("otp", None)
