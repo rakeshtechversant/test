@@ -637,23 +637,6 @@ class OtpVerifyViewSet(CreateAPIView):
                 user = User.objects.get(username=user)
             except User.DoesNotExist:
                 return Response({'success': False, 'message': ' User does not exist'}, status=HTTP_404_NOT_FOUND)
-            try:
-                f = open("testlog.txt", "a")
-                f.write("OTP1")
-                f.write("\n")
-                f.write("***")
-                f.write(str(data['name']))
-                f.write("***")
-                f.write(str(data['mobile']))
-                f.write("***")
-                f.write(str(data['family_name']))
-                f.write("***")
-                f.write("Login Success")
-                f.write("***")
-                f.write("\n")
-                f.close()
-            except:
-                pass
             token, created = Token.objects.get_or_create(user=user)
             data.update({"token": token.key})
             return Response({'success': True, 'message': 'OTP Verified Successfully', 'user_details': data}, status=HTTP_201_CREATED)
@@ -740,23 +723,6 @@ class OtpVerifyUserIdViewSet(CreateAPIView):
                 user = User.objects.get(username=user)
             except User.DoesNotExist:
                 return Response({'success': False, 'message': ' User does not exist'}, status=HTTP_404_NOT_FOUND)
-            try:
-                f = open("testlog.txt", "a")
-                f.write("OTP2")
-                f.write("\n")
-                f.write("***")
-                f.write(str(data['name']))
-                f.write("***")
-                f.write(str(data['mobile']))
-                f.write("***")
-                f.write(str(data['family_name']))
-                f.write("***")
-                f.write("Login Success")
-                f.write("***")
-                f.write("\n")
-                f.close()
-            except:
-                pass
             token, created = Token.objects.get_or_create(user=user)
             data.update({"token": token.key})
             return Response({'success': True, 'message': 'OTP Verified Successfully', 'user_details': data}, status=HTTP_201_CREATED)
@@ -952,23 +918,6 @@ class OtpVerifyUserCheckNumberViewSet(CreateAPIView):
                     active_user.save()
                 except:
                     pass
-            try:
-                f = open("testlog.txt", "a")
-                f.write("OTP3")
-                f.write("\n")
-                f.write("***")
-                f.write(str(data['name']))
-                f.write("***")
-                f.write(str(data['mobile']))
-                f.write("***")
-                f.write(str(data['family_name']))
-                f.write("***")
-                f.write("Login Success")
-                f.write("***")
-                f.write("\n")
-                f.close()
-            except:
-                pass
             token, created = Token.objects.get_or_create(user=user)
             data.update({"token": token.key})
             return Response({'success': True, 'message': 'OTP Verified Successfully', 'user_details': data}, status=HTTP_201_CREATED)

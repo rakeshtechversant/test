@@ -733,9 +733,14 @@ class UserDetailsRetrieveSerializer(serializers.ModelSerializer):
                         d_o_b = datetime.strptime(instance.dob, pattern)
                     except:
                         pass
+                if instance.dom is not None:
+                    try:
+                        d_o_m = datetime.strptime(instance.dom, pattern)
+                    except:
+                        pass
                 else:
                     try:
-                        d_o_m = datetime.strptime(data['dom'], pattern)
+                        d_o_m = datetime.strptime(instance.marrige_date, pattern)
                     except:
                         pass
             if d_o_b:
@@ -743,7 +748,7 @@ class UserDetailsRetrieveSerializer(serializers.ModelSerializer):
             if d_o_m:
                 d_o_m = datetime.strftime(d_o_m, "%d/%b")
         except:
-            d_o_b, d_o_m = instance.dob, data['dom']
+            d_o_b, d_o_m = instance.dob, instance.dom
         data['dob'] = d_o_b
         data['dom'] = d_o_m
         data['marrige_date'] = d_o_m
