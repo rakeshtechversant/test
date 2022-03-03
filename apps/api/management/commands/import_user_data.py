@@ -5,7 +5,7 @@ from apps.church.models import FileUpload, Family, Members, PrayerGroup
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        f = open('production_data4.csv', 'r')
+        f = open('production_data5.csv', 'r')
         data = csv.reader(f, delimiter=',')
         for index, row in enumerate(data):
             if index == 0:
