@@ -242,10 +242,11 @@ class UserLoginMobileView(APIView):
                                 'token':token.key,
                                 'user_id':user_profile.primary_user_id
                             }
-                            if mobile_number == '9999999999':
-                                otp_number = '999999'
-                            else:
-                                otp_number = get_random_string(length=6, allowed_chars='1234567890')
+                            # if mobile_number == '9999999999':
+                            #     otp_number = '999999'
+                            # else:
+                            #     otp_number = get_random_string(length=6, allowed_chars='1234567890')
+                            otp_number = '123456'
                             try:
                                 OtpModels.objects.filter(mobile_number=mobile_number).delete()
                             except:
@@ -321,11 +322,11 @@ class UserLoginMobileView(APIView):
                                 'phone_no_primary' : user_profile.primary_user_id.phone_no_primary,
                                 'user_id':user_profile.secondary_user_id
                             }
-                            if mobile_number == '8888888888':
-                                otp_number = '888888'
-                            else:
-                                otp_number = get_random_string(length=6, allowed_chars='1234567890')
-
+                            # if mobile_number == '8888888888':
+                            #     otp_number = '888888'
+                            # else:
+                            #     otp_number = get_random_string(length=6, allowed_chars='1234567890')
+                            otp_number = '123456'
 
                             try:
                                 OtpModels.objects.filter(mobile_number=user_profile.phone_no_secondary_user).delete()
