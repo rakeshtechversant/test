@@ -584,7 +584,8 @@ class OtpVerifyViewSet(CreateAPIView):
             if otp_obj.is_expired:
                 return Response({'success': False, 'message': 'Otp Already Used'}, status=HTTP_400_BAD_REQUEST)
         except:
-            return Response({'success': False, 'message': 'Invalid Otp'}, status=HTTP_400_BAD_REQUEST)
+            return Response({'success': False, 'message': 'Invalid Otp1'}, status=HTTP_400_BAD_REQUEST)
+            pass
         else:
             if otp_obj:
                 otp_obj.is_expired = True
@@ -664,7 +665,7 @@ class OtpVerifyUserIdViewSet(CreateAPIView):
             if otp_obj.is_expired:
                 return Response({'success': False, 'message': 'Otp Already Used'}, status=HTTP_400_BAD_REQUEST)
         except:
-            return Response({'success': False, 'message': 'Invalid Otp'}, status=HTTP_400_BAD_REQUEST)
+            return Response({'success': False, 'message': 'Invalid Otp2'}, status=HTTP_400_BAD_REQUEST)
         else:
             if otp_obj:
                 otp_obj.is_expired = True
@@ -755,7 +756,7 @@ class OtpVerifyUserCheckNumberViewSet(CreateAPIView):
             if otp_obj.is_expired:
                 return Response({'success': False, 'message': 'Otp Already Used'}, status=HTTP_400_BAD_REQUEST)
         except:
-            return Response({'success': False, 'message': 'Invalid Otp'}, status=HTTP_400_BAD_REQUEST)
+            return Response({'success': False, 'message': 'Invalid Otp3'}, status=HTTP_400_BAD_REQUEST)
         else:
             if otp_obj:
                 otp_obj.is_expired = True
