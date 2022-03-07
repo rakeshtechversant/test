@@ -584,7 +584,7 @@ class OtpVerifyViewSet(CreateAPIView):
             if otp_obj.is_expired:
                 return Response({'success': False, 'message': 'Otp Already Used'}, status=HTTP_400_BAD_REQUEST)
         except:
-            return Response({'success': False, 'message': 'Invalid Otp1'}, status=HTTP_400_BAD_REQUEST)
+            return Response({'success': False, 'message': 'Invalid Otp'}, status=HTTP_400_BAD_REQUEST)
             pass
         else:
             if otp_obj:
@@ -665,7 +665,7 @@ class OtpVerifyUserIdViewSet(CreateAPIView):
             if otp_obj.is_expired:
                 return Response({'success': False, 'message': 'Otp Already Used'}, status=HTTP_400_BAD_REQUEST)
         except:
-            return Response({'success': False, 'message': 'Invalid Otp2'}, status=HTTP_400_BAD_REQUEST)
+            return Response({'success': False, 'message': 'Invalid Otp'}, status=HTTP_400_BAD_REQUEST)
         else:
             if otp_obj:
                 otp_obj.is_expired = True
@@ -748,7 +748,7 @@ class OtpVerifyUserCheckNumberViewSet(CreateAPIView):
             admin_phonenumber = ''
 
         try:
-            otp_obj = OtpModels.objects.get(otp=otp)
+            otp_obj = OtpModels.objects.get(otp=otp, mobile_number=phone_number)
             if (datetime.now(timezone.utc) - otp_obj.created_time).total_seconds() >= 1800:
                 otp_obj.is_expired = True
                 otp_obj.save()
@@ -756,7 +756,7 @@ class OtpVerifyUserCheckNumberViewSet(CreateAPIView):
             if otp_obj.is_expired:
                 return Response({'success': False, 'message': 'Otp Already Used'}, status=HTTP_400_BAD_REQUEST)
         except:
-            return Response({'success': False, 'message': 'Invalid Otp3'}, status=HTTP_400_BAD_REQUEST)
+            return Response({'success': False, 'message': 'Invalid Otp'}, status=HTTP_400_BAD_REQUEST)
         else:
             if otp_obj:
                 otp_obj.is_expired = True
