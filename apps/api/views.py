@@ -2703,9 +2703,11 @@ class NoticeBereavementCreate(CreateAPIView):
                     except:
                         return Response({'success': False,'message': 'Member doesnot exist'}, status=HTTP_400_BAD_REQUEST)
                     member_id.in_memory = True
-                    f = open("testlog.txt", "a")
-                    f.write(str(dob))
-                    member_id.in_memory_date = tz.now()
+                    try:
+                        member_id.in_memory_date = datetime.strptime(dob, '%d/%m/%Y')
+                    except:
+                        member_id.in_memory_date = tz.now()
+
                     if request.FILES.get('image'):
                         member_id.image = request.FILES['image']
                     member_id.save()
@@ -2717,7 +2719,10 @@ class NoticeBereavementCreate(CreateAPIView):
                     except:
                         return Response({'success': False,'message': 'Member doesnot exist'}, status=HTTP_400_BAD_REQUEST)
                     member_id.in_memory = True
-                    member_id.in_memory_date = tz.now()
+                    try:
+                        member_id.in_memory_date = datetime.strptime(dob, '%d/%m/%Y')
+                    except:
+                        member_id.in_memory_date = tz.now()
                     if request.FILES.get('image'):
                         member_id.image = request.FILES['image']
                     member_id.save()
@@ -3697,10 +3702,6 @@ class UserNoticeList(ListAPIView):
                             image = request.build_absolute_uri(member.image.url)
                         else:
                             image = 'null'
-                        if member.dob:
-                            dob = member.dob
-                        else:
-                            dob = 'Expired'
                         import datetime as dt
                         today = dt.datetime.now()
                         try:
@@ -3711,6 +3712,10 @@ class UserNoticeList(ListAPIView):
                         except:
                             in_memory_date_format_year = today.year
                             in_memory_date_format_date = today
+                        try:
+                            expired_on = member.in_memory_date.strftime("%d/%m/%Y")
+                        except:
+                            expired_on = today.strftime("%d/%m/%Y")
                         new_data = {
                             'id': bereavement['id'],
                             'type': 'bereavement',
@@ -3722,7 +3727,7 @@ class UserNoticeList(ListAPIView):
                             'occupation': member.occupation,
                             'current_year': int(in_memory_date_format_year),
                             'current_date': in_memory_date_format_date,
-                            'expired_on': dob,
+                            'expired_on': expired_on,
                             'image': image,
                             'created_at': bereavement['created_at'],
                             'updated_at': bereavement['updated_at'],
@@ -3740,10 +3745,6 @@ class UserNoticeList(ListAPIView):
                             image = request.build_absolute_uri(member_name.image.url)
                         else:
                             image = 'null'
-                        if member_name.dob:
-                            dob = member_name.dob
-                        else:
-                            dob = 'Expired'
                         try:
                             in_memory_date_format_year = tz.localtime(member_name.in_memory_date,
                                                                       pytz.timezone('Asia/Kolkata')).strftime("%Y")
@@ -3752,6 +3753,10 @@ class UserNoticeList(ListAPIView):
                         except:
                             in_memory_date_format_year = today.year
                             in_memory_date_format_date = today
+                        try:
+                            expired_on = member_name.in_memory_date.strftime("%d/%m/%Y")
+                        except:
+                            expired_on = today.strftime("%d/%m/%Y")
                         new_data = {
                             'id': bereavement['id'],
                             'type': 'bereavement',
@@ -3764,7 +3769,7 @@ class UserNoticeList(ListAPIView):
                             'image': image,
                             'current_year': int(in_memory_date_format_year),
                             'current_date': in_memory_date_format_date,
-                            'expired_on': dob,
+                            'expired_on': expired_on,
                             'occupation': member_name.occupation,
                             'created_at': bereavement['created_at'],
                             'updated_at': bereavement['updated_at'],
