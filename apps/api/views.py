@@ -3713,7 +3713,8 @@ class UserNoticeList(ListAPIView):
                             in_memory_date_format_year = today.year
                             in_memory_date_format_date = today
                         try:
-                            expired_on = member.in_memory_date.strftime("%d/%m/%Y")
+                            expired_on = tz.localtime(
+                                member.in_memory_date, pytz.timezone('Asia/Kolkata')).strftime("%d/%m/%Y")
                         except:
                             expired_on = today.strftime("%d/%m/%Y")
                         new_data = {
@@ -3754,7 +3755,8 @@ class UserNoticeList(ListAPIView):
                             in_memory_date_format_year = today.year
                             in_memory_date_format_date = today
                         try:
-                            expired_on = member_name.in_memory_date.strftime("%d/%m/%Y")
+                            expired_on = tz.localtime(
+                                member_name.in_memory_date, pytz.timezone('Asia/Kolkata')).strftime("%d/%m/%Y")
                         except:
                             expired_on = today.strftime("%d/%m/%Y")
                         new_data = {
