@@ -2703,9 +2703,9 @@ class NoticeBereavementCreate(CreateAPIView):
                     except:
                         return Response({'success': False,'message': 'Member doesnot exist'}, status=HTTP_400_BAD_REQUEST)
                     member_id.in_memory = True
+                    f = open("testlog.txt", "a")
+                    f.write(str(dob))
                     member_id.in_memory_date = tz.now()
-                    if dob:
-                        member_id.dob = dob
                     if request.FILES.get('image'):
                         member_id.image = request.FILES['image']
                     member_id.save()
@@ -2718,8 +2718,6 @@ class NoticeBereavementCreate(CreateAPIView):
                         return Response({'success': False,'message': 'Member doesnot exist'}, status=HTTP_400_BAD_REQUEST)
                     member_id.in_memory = True
                     member_id.in_memory_date = tz.now()
-                    if dob:
-                        member_id.dob = dob
                     if request.FILES.get('image'):
                         member_id.image = request.FILES['image']
                     member_id.save()
