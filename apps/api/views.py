@@ -2764,7 +2764,10 @@ class NoticeBereavementEdit(RetrieveUpdateAPIView):
             beri_obj.description = request.POST['description']
             beri_obj.updated = True
         if dob:
-            member_id.dob = request.POST['dob']
+            try:
+                member_id.in_memory_date = datetime.strptime(dob, '%d/%m/%Y')
+            except:
+                pass
             beri_obj.updated = True
         if request.FILES.get('image'):
             member_id.image = request.FILES['image']
