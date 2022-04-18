@@ -2784,8 +2784,8 @@ class NoticeBereavementEdit(RetrieveUpdateAPIView):
                 "notification":{"alert":"This is a FCM notification","title":"Funeral Notice Update","body":"Update About Funeral of %s belonging to %s"%(username,family_name),"sound":"default","backgroundImage":image,"backgroundImageTextColour":"#FFFFFF","image":image,"click_action":"notice"}} } 
             
                 content_ios = {'message':{"aps":{"alert":{"title":"Funeral Notice Update","subtitle":"","body":"Update About Funeral of %s belonging to %s"%(username,family_name)},"sound":"default","category":"notice","badge":1,"mutable-content":1},"media-url":image}}
-                resp = fcm_messaging_to_all(content)
-                resp1 = apns_messaging_to_all(content_ios)
+                # resp = fcm_messaging_to_all(content)
+                # resp1 = apns_messaging_to_all(content_ios)
             except:
                 pass
         return Response({'success': True,'message':'Notice Updated Successfully'}, status=status.HTTP_200_OK)
