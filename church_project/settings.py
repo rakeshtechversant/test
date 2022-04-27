@@ -57,8 +57,8 @@ INSTALLED_APPS = [
 ]
 
 PUSH_NOTIFICATIONS_SETTINGS = {
-        "FCM_API_KEY": "AAAAcPOq68o:APA91bFcR0_j7y3VX09kGeKAN4yiF0YOpBhSvSU21tZgwNtWwzzvIUQLZf3fKm8MY9qa4Dk3pNAP54spZAiKyzN-pNk0B5ln1iwOK34RBCasyWn4JDnUAkBASOmGeFcPVRK9bQHaSQHr",
-        "GCM_API_KEY": "AAAAcPOq68o:APA91bFcR0_j7y3VX09kGeKAN4yiF0YOpBhSvSU21tZgwNtWwzzvIUQLZf3fKm8MY9qa4Dk3pNAP54spZAiKyzN-pNk0B5ln1iwOK34RBCasyWn4JDnUAkBASOmGeFcPVRK9bQHaSQHr",
+        "FCM_API_KEY": "AAAA1gbkJM0:APA91bEY8L23AzHx9as00rLjO8ckJk93-2C_mlIfwD90HGi8ePjqsQcz7kRynjc02crnPR4k0PKrFomPkcNybpXxzgRbGPrlK8do4T3Rgb7dMExbvynQJahYGAOjPuwgDWPtsjFZxeRc",
+        "GCM_API_KEY": "AAAA1gbkJM0:APA91bEY8L23AzHx9as00rLjO8ckJk93-2C_mlIfwD90HGi8ePjqsQcz7kRynjc02crnPR4k0PKrFomPkcNybpXxzgRbGPrlK8do4T3Rgb7dMExbvynQJahYGAOjPuwgDWPtsjFZxeRc",
         # "APNS_CERTIFICATE": os.path.join(BASE_DIR, "pushcert.pem"),
         # "APNS_TOPIC": "com.example.push_test",
         "WNS_PACKAGE_SECURITY_ID": "[your package security id, e.g: 'ms-app://e-3-4-6234...']",
@@ -73,10 +73,10 @@ PUSH_NOTIFICATIONS_SETTINGS = {
 
   # collection of all defined applications
   "APPLICATIONS": {
-    "com.techversant.churchapp": {
+    "com.techversant.paulschurchapp": {
       # PLATFORM (required) determines what additional settings are required.
       "PLATFORM": "FCM",
-      "API_KEY" : "AAAAcPOq68o:APA91bFcR0_j7y3VX09kGeKAN4yiF0YOpBhSvSU21tZgwNtWwzzvIUQLZf3fKm8MY9qa4Dk3pNAP54spZAiKyzN-pNk0B5ln1iwOK34RBCasyWn4JDnUAkBASOmGeFcPVRK9bQHaSQHr",
+      "API_KEY" : "AAAA1gbkJM0:APA91bEY8L23AzHx9as00rLjO8ckJk93-2C_mlIfwD90HGi8ePjqsQcz7kRynjc02crnPR4k0PKrFomPkcNybpXxzgRbGPrlK8do4T3Rgb7dMExbvynQJahYGAOjPuwgDWPtsjFZxeRc",
     },
     "com.techversant.MukhathalaMarThomaChurch":{
         "PLATFORM": "APNS",
